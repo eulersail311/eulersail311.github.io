@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计网知识 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一些之后可能会用到知识 提问1.TCP三次握手四次挥手TCP（传输控制协议）是一种可靠的、面向连接的传输层协议，用于在网络中可靠地传输数据。在建立和终止连接时，TCP 使用三次握手和四次挥手来确保通信的可靠性。下面我会分别解释三次握手和四次挥手的过程： TCP 三次握手（Three-Way Handshake）：  第一次握手（SYN）：客户端向服务器发送一个连接请求报文段，其中设置 SYN（同步">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计网知识 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一些之后可能会用到知识 提问1.TCP三次握手四次挥手TCP（传输控制协议）是一种可靠的、面向连接的传输层协议，用于在网络中可靠地传输数据。在建立和终止连接时，TCP 使用三次握手和四次挥手来确保通信的可靠性。下面我会分别解释三次握手和四次挥手的过程： TCP 三次握手（Three-Way Handshake）：    sequenceDiagram     participant C as 客户">
 <meta property="og:type" content="article">
 <meta property="og:title" content="计网知识">
 <meta property="og:url" content="http://eulersail.com/esblog/15738.html">
 <meta property="og:site_name" content="Better late than never">
-<meta property="og:description" content="一些之后可能会用到知识 提问1.TCP三次握手四次挥手TCP（传输控制协议）是一种可靠的、面向连接的传输层协议，用于在网络中可靠地传输数据。在建立和终止连接时，TCP 使用三次握手和四次挥手来确保通信的可靠性。下面我会分别解释三次握手和四次挥手的过程： TCP 三次握手（Three-Way Handshake）：  第一次握手（SYN）：客户端向服务器发送一个连接请求报文段，其中设置 SYN（同步">
+<meta property="og:description" content="一些之后可能会用到知识 提问1.TCP三次握手四次挥手TCP（传输控制协议）是一种可靠的、面向连接的传输层协议，用于在网络中可靠地传输数据。在建立和终止连接时，TCP 使用三次握手和四次挥手来确保通信的可靠性。下面我会分别解释三次握手和四次挥手的过程： TCP 三次握手（Three-Way Handshake）：    sequenceDiagram     participant C as 客户">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://eulersail.com/img/avatar.png">
 <meta property="article:published_time" content="2023-07-21T10:30:16.000Z">
-<meta property="article:modified_time" content="2023-07-21T11:44:41.400Z">
+<meta property="article:modified_time" content="2026-08-31T04:00:00.000Z">
 <meta property="article:author" content="eulersail">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="http://eulersail.com/esblog/15738.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
@@ -57,7 +57,7 @@
   isHome: false,
   isHighlightShrink: false,
   isToc: true,
-  postUpdate: '2023-07-21 19:44:41'
+  postUpdate: '2026-08-31 12:00:00'
 }</script><noscript><style type="text/css">
   #nav {
     opacity: 1
@@ -161,15 +161,37 @@
       }
     }
     detectApple()
-    })(window)</script><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">计网知识</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-07-21T10:30:16.000Z" title="发表于 2023-07-21 18:30:16">2023-07-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-07-21T11:44:41.400Z" title="更新于 2023-07-21 19:44:41">2023-07-21</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="计网知识"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>一些之后可能会用到知识</p>
+    })(window)</script><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">计网知识</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-07-21T10:30:16.000Z" title="发表于 2023-07-21 18:30:16">2023-07-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-31T04:00:00.000Z" title="更新于 2026-08-31 12:00:00">2026-08-31</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="计网知识"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>一些之后可能会用到知识</p>
 <h2 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h2><h3 id="1-TCP三次握手四次挥手"><a href="#1-TCP三次握手四次挥手" class="headerlink" title="1.TCP三次握手四次挥手"></a>1.TCP三次握手四次挥手</h3><p>TCP（传输控制协议）是一种可靠的、面向连接的传输层协议，用于在网络中可靠地传输数据。在建立和终止连接时，TCP 使用三次握手和四次挥手来确保通信的可靠性。下面我会分别解释三次握手和四次挥手的过程：</p>
 <p><strong>TCP 三次握手（Three-Way Handshake）：</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  sequenceDiagram
+    participant C as 客户端
+    participant S as 服务器
+    C-&gt;&gt;S: SYN，Seq&#x3D;x
+    S--&gt;&gt;C: SYN + ACK，Seq&#x3D;y，Ack&#x3D;x+1
+    C-&gt;&gt;S: ACK，Ack&#x3D;y+1
+    Note over C,S: TCP 连接建立
+  </pre></div>
+
 <ol>
 <li>第一次握手（SYN）：客户端向服务器发送一个连接请求报文段，其中设置 SYN（同步序列编号）标志为 1，并选择一个初始序列号（Seq）用于后续的数据传输。</li>
 <li>第二次握手（SYN+ACK）：服务器收到客户端的连接请求后，会返回一个连接应答报文段。该应答报文段设置 SYN 和 ACK 标志为 1，表示确认客户端的连接请求，并为后续数据传输选择自己的初始序列号（Seq），同时也确认客户端的初始序列号（Seq+1）。</li>
 <li>第三次握手（ACK）：客户端收到服务器的连接应答后，会再次发送确认报文段。该报文段的 ACK 标志为 1，表示确认服务器的连接应答，客户端和服务器的连接建立完成。</li>
 </ol>
 <p><strong>TCP 四次挥手（Four-Way Handshake）：</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  sequenceDiagram
+    participant C as 客户端
+    participant S as 服务器
+    C-&gt;&gt;S: FIN
+    S--&gt;&gt;C: ACK
+    Note right of S: 服务器仍可发送剩余数据
+    S--&gt;&gt;C: FIN
+    C-&gt;&gt;S: ACK
+    Note over C,S: 连接关闭
+  </pre></div>
+
 <ol>
 <li>第一次挥手（FIN）：客户端希望关闭连接，向服务器发送一个连接释放报文段。该报文段设置 FIN（终止）标志为 1，表示客户端不再发送数据。</li>
 <li>第二次挥手（ACK）：服务器收到客户端的连接释放请求后，发送一个确认报文段作为响应，表示已经收到了客户端的释放请求。</li>
@@ -179,6 +201,16 @@
 <p>值得注意的是，TCP 是全双工的协议，所以客户端和服务器可以同时进行收发数据。在四次挥手中，客户端和服务器都需要发送 FIN 报文段来关闭连接，因此总共需要四次握手才能完成连接的终止。</p>
 <h3 id="2-OSI七层网络模型"><a href="#2-OSI七层网络模型" class="headerlink" title="2.OSI七层网络模型"></a>2.OSI七层网络模型</h3><p>OSI（开放式系统互联）七层网络模型是一种用于理解和描述计算机网络功能的框架。它将计算机网络通信过程划分为七个层次，每个层次负责特定的功能。每个层次都依赖于其下方的层次，并为上方的层次提供服务。这样的模型提供了一种标准化的方法，使不同厂商的网络设备和软件能够相互通信。</p>
 <p>以下是 OSI 七层网络模型及其对应的功能：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TB
+    L7[7 应用层&lt;br&#x2F;&gt;网络应用接口] --&gt; L6[6 表示层&lt;br&#x2F;&gt;格式、编码、加密与压缩]
+    L6 --&gt; L5[5 会话层&lt;br&#x2F;&gt;建立、维护与终止会话]
+    L5 --&gt; L4[4 传输层&lt;br&#x2F;&gt;端到端传输：TCP &#x2F; UDP]
+    L4 --&gt; L3[3 网络层&lt;br&#x2F;&gt;IP 寻址与路由]
+    L3 --&gt; L2[2 数据链路层&lt;br&#x2F;&gt;帧传输与差错检测]
+    L2 --&gt; L1[1 物理层&lt;br&#x2F;&gt;比特与传输介质]
+  </pre></div>
+
 <ol>
 <li><strong>物理层（Physical Layer）</strong>：<ul>
 <li>功能：负责在物理介质上传输原始比特流，即在传输介质上发送和接收二进制数据。处理传输介质、接口、电压和物理连接等。</li>
@@ -235,7 +267,43 @@ function panguInit () {
   }
 }
 
-document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
 POWERMODE.shake = true;
 POWERMODE.mobile = true;
 document.body.addEventListener('input', POWERMODE);

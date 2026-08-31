@@ -55,7 +55,7 @@
   isHome: true,
   isHighlightShrink: false,
   isToc: false,
-  postUpdate: '2026-08-29 17:58:37'
+  postUpdate: '2026-08-31 11:03:12'
 }</script><noscript><style type="text/css">
   #nav {
     opacity: 1
@@ -163,24 +163,35 @@
 这篇文章不追求列出一份“必听排行榜”，而是选择七首性格不同的作品。每一首只关注一个问题，七天之后，你会得到一张属于自己的初步聆听地图。
 
 
-第一天：听见秩序巴赫《G 大调第一无伴奏大提琴组曲》前奏曲，BWV 1007一把大提琴，没有乐队，也没有歌词，却能让人感觉声音一直在向前流动。开头的分解和弦不断改变重心，像水流绕过石头：纹理相似，方向却始终在变化。
-第一次听，不必分析和声，只留意三个问题：
 
-哪些音型在重复？
-音乐何时开始积累紧张感？
-结尾为什么会让人觉得终于抵达？
+  flowchart LR
+    A[巴赫&lt;br&#x2F;&gt;秩序] --&gt; B[莫扎特&lt;br&#x2F;&gt;对话]
+    B --&gt; C[贝多芬&lt;br&#x2F;&gt;动机发展]
+    C --&gt; D[肖邦&lt;br&#x2F;&gt;呼吸与诠释]
+    D --&gt; E[柴可夫斯基&lt;br&#x2F;&gt;配器色彩]
+    E --&gt; F[德彪西&lt;br&#x2F;&gt;和声空间]
+    F --&gt; G[拉威尔&lt;br&#x2F;&gt;重复与变化]
+  
 
-巴赫适合训练“纵向听觉”：旋律并不是孤立的一条线，每个音还暗示着看不见的和声与声部。听见这些关系，就是听见音乐内部的秩序。
-第二天：听见对话莫扎特《G 小调第四十交响曲》第一乐章，K. 550这段开头没有长篇铺垫，弦乐轻轻躁动，主题几乎立刻出现。它听起来优雅，却并不轻松；明亮的古典主义外形里，始终有一股不安。
-这一次，把乐队想象成一群正 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/43018.html" title="从文档到可检索知识库：RAGFlow 搭建与调优实战">从文档到可检索知识库：RAGFlow 搭建与调优实战</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-29T02:00:00.000Z" title="发表于 2026-08-29 10:00:00">2026-08-29</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="content">搭建 RAG 知识库并不只是“上传文档，再接一个大模型”。真正影响效果的环节包括文档解析、分块、向量化、混合检索、重排以及回答阶段的约束。RAGFlow 把这些环节放进一套可视化流程中，适合用于内部制度问答、产品手册检索、技术资料助手等场景。
+第一天：听见秩序巴赫《G 大调第一无伴奏大提琴组曲》前奏曲，BWV 1007一把大提琴，没有乐队，也没有歌词， ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/43018.html" title="从文档到可检索知识库：RAGFlow 搭建与调优实战">从文档到可检索知识库：RAGFlow 搭建与调优实战</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2026-08-29T02:00:00.000Z" title="发表于 2026-08-29 10:00:00">2026-08-29</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="content">搭建 RAG 知识库并不只是“上传文档，再接一个大模型”。真正影响效果的环节包括文档解析、分块、向量化、混合检索、重排以及回答阶段的约束。RAGFlow 把这些环节放进一套可视化流程中，适合用于内部制度问答、产品手册检索、技术资料助手等场景。
 本文以本地 Docker Compose 部署为起点，完成一个可以检索、测试和持续优化的知识库。示例不包含任何真实凭据。
 
 
 1. 先理解数据怎样流动一份文档进入 RAGFlow 后，大致会经过下面这条链路：
-12345678910111213原始文件  ↓版面解析与内容提取  ↓按规则切分为文本块  ↓生成向量并建立全文索引  ↓关键词检索 + 向量检索  ↓可选的重排  ↓将相关文本块交给对话模型生成回答
 
-Docker Compose 默认还会启动若干基础服务：MySQL 保存业务元数据，MinIO 保存对象文件，Elasticsearch 默认承担全文和向量检索，Redis 用于缓存与任务协作。理解这些组件后，排查问题时就能先判断故障发生在“文件没有保存”“解析任务未完成”，还是“索引没有召回”。
-2. 部署前检查根据 RAGFlow 官 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/1.html" title="Visual Studio快捷键汇总">Visual Studio快捷键汇总</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-05-15T07:53:26.116Z" title="发表于 2025-05-15 15:53:26">2025-05-15</time></span></div><div class="content">以下是Visual Studio常用快捷键的汇总，涵盖编辑、调试、文件操作、导航和视图等多个方面，帮助提升开发效率：
+  flowchart LR
+    A[原始文件] --&gt; B[版面解析与内容提取]
+    B --&gt; C[按规则切分文本块]
+    C --&gt; D[向量化与全文索引]
+    D --&gt; E[关键词与向量混合检索]
+    E --&gt; F{是否启用重排}
+    F -- 是 --&gt; G[重排候选文本块]
+    F -- 否 --&gt; H[选择相关文本块]
+    G --&gt; H
+    H --&gt; I[对话模型生成回答]
+  
+
+Docker Compose 默认还会启动若干 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/1.html" title="Visual Studio快捷键汇总">Visual Studio快捷键汇总</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-05-15T07:53:26.116Z" title="发表于 2025-05-15 15:53:26">2025-05-15</time></span></div><div class="content">以下是Visual Studio常用快捷键的汇总，涵盖编辑、调试、文件操作、导航和视图等多个方面，帮助提升开发效率：
 常用编辑快捷键
 注释代码：Ctrl + K, Ctrl + C
 取消注释：Ctrl + K, Ctrl + U
@@ -273,20 +284,25 @@ xxxxxxxxxx Emp_data &#x3D; np.loadtxt(‘Employedpopulation.csv’,delimite ...
 提问1.TCP三次握手四次挥手TCP（传输控制协议）是一种可靠的、面向连接的传输层协议，用于在网络中可靠地传输数据。在建立和终止连接时，TCP 使用三次握手和四次挥手来确保通信的可靠性。下面我会分别解释三次握手和四次挥手的过程：
 TCP 三次握手（Three-Way Handshake）：
 
+  sequenceDiagram
+    participant C as 客户端
+    participant S as 服务器
+    C-&gt;&gt;S: SYN，Seq&#x3D;x
+    S--&gt;&gt;C: SYN + ACK，Seq&#x3D;y，Ack&#x3D;x+1
+    C-&gt;&gt;S: ACK，Ack&#x3D;y+1
+    Note over C,S: TCP 连接建立
+  
+
+
 第一次握手（SYN）：客户端向服务器发送一个连接请求报文段，其中设置 SYN（同步序列编号）标志为 1，并选择一个初始序列号（Seq）用于后续的数据传输。
-第二次握手（SYN+ACK）：服务器收到客户端的连接请求后，会返回一个连接应答报文段。该应答报文段设置 SYN 和 ACK 标志为 1，表示确认客户端的连接请求，并为后续数据传输选择自己的初始序列号（Seq），同时也确认客户端的初始序列号（Seq+1）。
-第三次握手（ACK）：客户端收到服务器的连接应答后，会再次发送确认报文段。该报文段的 ACK 标志为 1，表示确认服务器的连接应答，客户端和服务器的连接建立完成。
-
-TCP 四次挥手（Four-Way Handshake）：
-
-第一次挥手（FIN）：客户端希望关闭连接， ...</div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">努力，为拥有拒绝的底气</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/29394.html" title="古典音乐入门：从七首作品开始建立聆听地图">古典音乐入门：从七首作品开始建立聆听地图</a><time datetime="2026-08-29T12:00:00.000Z" title="发表于 2026-08-29 20:00:00">2026-08-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/43018.html" title="从文档到可检索知识库：RAGFlow 搭建与调优实战">从文档到可检索知识库：RAGFlow 搭建与调优实战</a><time datetime="2026-08-29T02:00:00.000Z" title="发表于 2026-08-29 10:00:00">2026-08-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/1.html" title="Visual Studio快捷键汇总">Visual Studio快捷键汇总</a><time datetime="2025-05-15T07:53:26.116Z" title="发表于 2025-05-15 15:53:26">2025-05-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/24365.html" title="数据可视化">数据可视化</a><time datetime="2023-07-24T09:09:25.000Z" title="发表于 2023-07-24 17:09:25">2023-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64712.html" title="用Numpy进行简单统计">用Numpy进行简单统计</a><time datetime="2023-07-24T09:05:28.000Z" title="发表于 2023-07-24 17:05:28">2023-07-24</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+第二次握手（SYN+ACK）：服务器收到客户端的连接请求后，会返回一个连接应答报文段。该 ...</div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">努力，为拥有拒绝的底气</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/29394.html" title="古典音乐入门：从七首作品开始建立聆听地图">古典音乐入门：从七首作品开始建立聆听地图</a><time datetime="2026-08-29T12:00:00.000Z" title="发表于 2026-08-29 20:00:00">2026-08-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/43018.html" title="从文档到可检索知识库：RAGFlow 搭建与调优实战">从文档到可检索知识库：RAGFlow 搭建与调优实战</a><time datetime="2026-08-29T02:00:00.000Z" title="发表于 2026-08-29 10:00:00">2026-08-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/1.html" title="Visual Studio快捷键汇总">Visual Studio快捷键汇总</a><time datetime="2025-05-15T07:53:26.116Z" title="发表于 2025-05-15 15:53:26">2025-05-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/24365.html" title="数据可视化">数据可视化</a><time datetime="2023-07-24T09:09:25.000Z" title="发表于 2023-07-24 17:09:25">2023-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64712.html" title="用Numpy进行简单统计">用Numpy进行简单统计</a><time datetime="2023-07-24T09:05:28.000Z" title="发表于 2023-07-24 17:05:28">2023-07-24</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
             <i class="fas fa-folder-open"></i>
             <span>分类</span>
             
             </div>
             <ul class="card-category-list" id="aside-cat-list">
             <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><span class="card-category-list-name">AI 工程</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><span class="card-category-list-name">音乐随笔</span><span class="card-category-list-count">1</span></a></li>
-            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/%E8%81%86%E5%90%AC%E6%8C%87%E5%8D%97/" style="font-size: 1.1em; color: #999">聆听指南</a> <a href="/tags/RAG/" style="font-size: 1.1em; color: #999">RAG</a> <a href="/tags/%E7%9F%A5%E8%AF%86%E5%BA%93/" style="font-size: 1.1em; color: #999">知识库</a> <a href="/tags/RAGFlow/" style="font-size: 1.1em; color: #999">RAGFlow</a> <a href="/tags/%E5%8F%A4%E5%85%B8%E9%9F%B3%E4%B9%90/" style="font-size: 1.1em; color: #999">古典音乐</a> <a href="/tags/Docker/" style="font-size: 1.1em; color: #999">Docker</a> <a href="/tags/%E9%9F%B3%E4%B9%90%E9%89%B4%E8%B5%8F/" style="font-size: 1.1em; color: #999">音乐鉴赏</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/08/"><span class="card-archive-list-date">八月 2026</span><span class="card-archive-list-count">2</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/05/"><span class="card-archive-list-date">五月 2025</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">七月 2023</span><span class="card-archive-list-count">4</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">7</div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">17.7k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-08-29T09:58:37.537Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/background.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Docker/" style="font-size: 1.1em; color: #999">Docker</a> <a href="/tags/RAGFlow/" style="font-size: 1.1em; color: #999">RAGFlow</a> <a href="/tags/RAG/" style="font-size: 1.1em; color: #999">RAG</a> <a href="/tags/%E8%81%86%E5%90%AC%E6%8C%87%E5%8D%97/" style="font-size: 1.1em; color: #999">聆听指南</a> <a href="/tags/%E9%9F%B3%E4%B9%90%E9%89%B4%E8%B5%8F/" style="font-size: 1.1em; color: #999">音乐鉴赏</a> <a href="/tags/%E7%9F%A5%E8%AF%86%E5%BA%93/" style="font-size: 1.1em; color: #999">知识库</a> <a href="/tags/%E5%8F%A4%E5%85%B8%E9%9F%B3%E4%B9%90/" style="font-size: 1.1em; color: #999">古典音乐</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/08/"><span class="card-archive-list-date">八月 2026</span><span class="card-archive-list-count">2</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/05/"><span class="card-archive-list-date">五月 2025</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">七月 2023</span><span class="card-archive-list-count">4</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">7</div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">18.2k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-08-31T03:03:12.456Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/background.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
   if (typeof pangu === 'object') pangu.autoSpacingPage()
   else {
     getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
@@ -333,7 +349,43 @@ document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-
     document.getElementById("subtitle").textContent = "沉舟侧畔千帆过，病树前头万木春。"
   }
 }
-typedJSFn.run(subtitleType)</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+typedJSFn.run(subtitleType)</script><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
 POWERMODE.shake = true;
 POWERMODE.mobile = true;
 document.body.addEventListener('input', POWERMODE);
