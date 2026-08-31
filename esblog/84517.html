@@ -1,0 +1,322 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 入门四题：把题意翻译成判断、计数与模拟 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用 4A、71A、231A 与 158A 四道 800 分题，练习从自然语言中提取条件、状态和边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 入门四题：把题意翻译成判断、计数与模拟">
+<meta property="og:url" content="https://eulersail.com/esblog/84517.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用 4A、71A、231A 与 158A 四道 800 分题，练习从自然语言中提取条件、状态和边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-08-31T09:10:00.000Z">
+<meta property="article:modified_time" content="2026-08-31T09:10:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="入门算法">
+<meta property="article:tag" content="模拟">
+<meta property="article:tag" content="贪心">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/84517.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 入门四题：把题意翻译成判断、计数与模拟',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-31 17:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 入门四题：把题意翻译成判断、计数与模拟</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-31T09:10:00.000Z" title="发表于 2026-08-31 17:10:00">2026-08-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-31T09:10:00.000Z" title="更新于 2026-08-31 17:10:00">2026-08-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 入门四题：把题意翻译成判断、计数与模拟"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>刚开始做算法题时，最困难的部分往往不是语法，而是把一段自然语言压缩成几个明确条件。Codeforces 的 800 分题很适合训练这项能力：代码通常不长，错误却能准确暴露题意理解、下标和边界处理上的问题。</p>
+<p>本文选择四道官方入门题，不复述完整题面，而是专注于“怎样从要求得到判断式”。每题标题都链接到 Codeforces 官方页面，建议先独立阅读和尝试，再回来对照分析。</p>
+<span id="more"></span>
+
+<h2 id="1-通用翻译流程"><a href="#1-通用翻译流程" class="headerlink" title="1. 通用翻译流程"></a>1. 通用翻译流程</h2><p>面对一道短题，可以先写出四行草稿：输入是什么、输出是什么、每个条件怎样判断、最小边界在哪里。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[阅读输入与输出] --&gt; B[圈出必须满足的条件]
+    B --&gt; C[把条件写成布尔表达式]
+    C --&gt; D[用最小值和临界值测试]
+    D --&gt; E[再开始编码]
+  </pre></div>
+
+<p>不要急着寻找“算法名称”。如果题目只需要扫描、计数或判断，直接实现就是正确算法。</p>
+<h2 id="2-4A-Watermelon：必要条件与充分条件"><a href="#2-4A-Watermelon：必要条件与充分条件" class="headerlink" title="2. 4A Watermelon：必要条件与充分条件"></a>2. 4A Watermelon：必要条件与充分条件</h2><p><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/4/A">官方题目：4A Watermelon</a> · 难度 800 · 官方标签：<code>math</code>、<code>brute force</code></p>
+<h3 id="核心要求"><a href="#核心要求" class="headerlink" title="核心要求"></a>核心要求</h3><p>把一个整数重量拆成两个<strong>正偶数</strong>。我们不需要找出具体拆法，只需判断是否存在。</p>
+<p>两个偶数之和一定是偶数，所以总重量必须为偶数；但仅仅为偶数还不够，因为最小正偶数是 2，总重量为 2 时无法拆成两个正数。</p>
+<p>因此条件可以收敛成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">重量是偶数，并且重量大于 2</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> weight;</span><br><span class="line">    cin &gt;&gt; weight;</span><br><span class="line">    cout &lt;&lt; ((weight &gt; <span class="number">2</span> &amp;&amp; weight % <span class="number">2</span> == <span class="number">0</span>) ? <span class="string">&quot;YES&quot;</span> : <span class="string">&quot;NO&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这道题真正训练的是“必要条件是否已经充分”。偶数是必要条件，排除最小边界后，它才成为充分条件。</p>
+<h2 id="3-71A-Way-Too-Long-Words：按规则压缩字符串"><a href="#3-71A-Way-Too-Long-Words：按规则压缩字符串" class="headerlink" title="3. 71A Way Too Long Words：按规则压缩字符串"></a>3. 71A Way Too Long Words：按规则压缩字符串</h2><p><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/71/A">官方题目：71A Way Too Long Words</a> · 难度 800 · 官方标签：<code>strings</code></p>
+<h3 id="核心要求-1"><a href="#核心要求-1" class="headerlink" title="核心要求"></a>核心要求</h3><p>只有长度超过阈值的单词才缩写。缩写由首字符、中间字符数量和末字符组成。</p>
+<p>如果字符串长度为 <code>n</code>，被省略的是从第二个字符到倒数第二个字符，一共有 <code>n - 2</code> 个。这是一个常见的“首尾保留，中间计数”结构。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> count;</span><br><span class="line">    cin &gt;&gt; count;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (count--) &#123;</span><br><span class="line">        string word;</span><br><span class="line">        cin &gt;&gt; word;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (word.<span class="built_in">size</span>() &gt; <span class="number">10</span>) &#123;</span><br><span class="line">            cout &lt;&lt; word.<span class="built_in">front</span>() &lt;&lt; word.<span class="built_in">size</span>() - <span class="number">2</span> &lt;&lt; word.<span class="built_in">back</span>();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            cout &lt;&lt; word;</span><br><span class="line">        &#125;</span><br><span class="line">        cout &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>容易出错的地方是把“超过 10”写成“大于等于 10”。遇到自然语言阈值时，先在纸上列出临界长度 10 和 11，判断哪一个开始变化。</p>
+<h2 id="4-231A-Team：把多数意见转成计数"><a href="#4-231A-Team：把多数意见转成计数" class="headerlink" title="4. 231A Team：把多数意见转成计数"></a>4. 231A Team：把多数意见转成计数</h2><p><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/231/A">官方题目：231A Team</a> · 难度 800 · 官方标签：<code>brute force</code>、<code>greedy</code></p>
+<h3 id="核心要求-2"><a href="#核心要求-2" class="headerlink" title="核心要求"></a>核心要求</h3><p>每道题有三个人分别表示是否确定会做。当至少两个人确定时，团队才实现这道题。</p>
+<p>输入使用 0 和 1，所以“三个人中至少两人同意”可以直接变成求和后判断 <code>&gt;= 2</code>，无需写三组逻辑表达式。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> problemCount;</span><br><span class="line">    cin &gt;&gt; problemCount;</span><br><span class="line">    <span class="type">int</span> solved = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (problemCount--) &#123;</span><br><span class="line">        <span class="type">int</span> first, second, third;</span><br><span class="line">        cin &gt;&gt; first &gt;&gt; second &gt;&gt; third;</span><br><span class="line">        <span class="keyword">if</span> (first + second + third &gt;= <span class="number">2</span>) &#123;</span><br><span class="line">            ++solved;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    cout &lt;&lt; solved;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个技巧可以推广到更多投票问题：当状态只有 0 和 1 时，求和就是满足条件的数量。</p>
+<h2 id="5-158A-Next-Round：阈值与正数条件同时成立"><a href="#5-158A-Next-Round：阈值与正数条件同时成立" class="headerlink" title="5. 158A Next Round：阈值与正数条件同时成立"></a>5. 158A Next Round：阈值与正数条件同时成立</h2><p><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/158/A">官方题目：158A Next Round</a> · 难度 800 · 官方标签：<code>implementation</code></p>
+<h3 id="核心要求-3"><a href="#核心要求-3" class="headerlink" title="核心要求"></a>核心要求</h3><p>给定按非递增顺序排列的得分，统计可以晋级的人数。晋级者既要达到第 <code>k</code> 名的分数，也必须取得正分。</p>
+<p>题目已经保证分数有序，所以第 <code>k</code> 名对应数组下标 <code>k - 1</code>。扫描所有分数，统计同时满足两个条件的元素即可。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> participantCount, rank;</span><br><span class="line">    cin &gt;&gt; participantCount &gt;&gt; rank;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">scores</span><span class="params">(participantCount)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> &amp;score : scores) &#123;</span><br><span class="line">        cin &gt;&gt; score;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> threshold = scores[rank - <span class="number">1</span>];</span><br><span class="line">    <span class="type">int</span> advanced = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> score : scores) &#123;</span><br><span class="line">        <span class="keyword">if</span> (score &gt; <span class="number">0</span> &amp;&amp; score &gt;= threshold) &#123;</span><br><span class="line">            ++advanced;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    cout &lt;&lt; advanced;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为什么不能只判断 <code>score &gt;= threshold</code>？因为当第 <code>k</code> 名得分为 0 时，后面的 0 分也会满足这个比较，但题目额外要求得分必须为正。</p>
+<h2 id="6-四道题放在一起看"><a href="#6-四道题放在一起看" class="headerlink" title="6. 四道题放在一起看"></a>6. 四道题放在一起看</h2><table>
+<thead>
+<tr>
+<th>题目</th>
+<th>最小思维单元</th>
+<th>关键边界</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4A</td>
+<td>奇偶判断</td>
+<td>最小正偶数拆分</td>
+</tr>
+<tr>
+<td>71A</td>
+<td>字符串长度与首尾访问</td>
+<td>长度 10 与 11</td>
+</tr>
+<tr>
+<td>231A</td>
+<td>0&#x2F;1 状态计数</td>
+<td>至少两人</td>
+</tr>
+<tr>
+<td>158A</td>
+<td>有序数组扫描</td>
+<td><code>k - 1</code> 下标与 0 分</td>
+</tr>
+</tbody></table>
+<p>它们的共同点是：先把题意压缩成一个布尔条件，再让循环只负责重复应用这个条件。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[题意中的自然语言] --&gt; B{可以直接变成条件吗}
+    B -- 是 --&gt; C[写出布尔表达式]
+    B -- 否 --&gt; D[先定义需要维护的状态]
+    C --&gt; E[测试临界值]
+    D --&gt; E
+    E --&gt; F[一次扫描或直接输出]
+  </pre></div>
+
+<h2 id="7-建议的练习方式"><a href="#7-建议的练习方式" class="headerlink" title="7. 建议的练习方式"></a>7. 建议的练习方式</h2><ol>
+<li>第一次只写条件，不写完整程序；</li>
+<li>主动列出一个最小输入和一个临界输入；</li>
+<li>完成后解释每个判断为什么不能删；</li>
+<li>如果提交错误，先对照题意条件，而不是立刻重写代码；</li>
+<li>四题完成后，再进入固定窗口、双指针和二分查找。</li>
+</ol>
+<p>下一篇：<a href="/esblog/91263.html">Codeforces 序列优化三题：滑动窗口、双指针与二分查找</a>。</p>
+<h2 id="官方来源"><a href="#官方来源" class="headerlink" title="官方来源"></a>官方来源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/apiHelp/methods#problemset.problems">Codeforces Problemset API</a></li>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/4/A">4A Watermelon</a></li>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/71/A">71A Way Too Long Words</a></li>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/231/A">231A Team</a></li>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/158/A">158A Next Round</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/84517.html">https://eulersail.com/esblog/84517.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%85%A5%E9%97%A8%E7%AE%97%E6%B3%95/">入门算法</a><a class="post-meta__tags" href="/tags/%E6%A8%A1%E6%8B%9F/">模拟</a><a class="post-meta__tags" href="/tags/%E8%B4%AA%E5%BF%83/">贪心</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/91263.html" title="Codeforces 序列优化三题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Codeforces 序列优化三题：滑动窗口、双指针与二分查找</div></div></a></div><div class="next-post pull-right"><a href="/esblog/70624.html" title="个人知识地图：用分类、标签与链接组织长期写作"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">个人知识地图：用分类、标签与链接组织长期写作</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/91263.html" title="Codeforces 序列优化三题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化三题：滑动窗口、双指针与二分查找</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%80%9A%E7%94%A8%E7%BF%BB%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="toc-text">1. 通用翻译流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4A-Watermelon%EF%BC%9A%E5%BF%85%E8%A6%81%E6%9D%A1%E4%BB%B6%E4%B8%8E%E5%85%85%E5%88%86%E6%9D%A1%E4%BB%B6"><span class="toc-text">2. 4A Watermelon：必要条件与充分条件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E6%B1%82"><span class="toc-text">核心要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-71A-Way-Too-Long-Words%EF%BC%9A%E6%8C%89%E8%A7%84%E5%88%99%E5%8E%8B%E7%BC%A9%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-text">3. 71A Way Too Long Words：按规则压缩字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E6%B1%82-1"><span class="toc-text">核心要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-231A-Team%EF%BC%9A%E6%8A%8A%E5%A4%9A%E6%95%B0%E6%84%8F%E8%A7%81%E8%BD%AC%E6%88%90%E8%AE%A1%E6%95%B0"><span class="toc-text">4. 231A Team：把多数意见转成计数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E6%B1%82-2"><span class="toc-text">核心要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-158A-Next-Round%EF%BC%9A%E9%98%88%E5%80%BC%E4%B8%8E%E6%AD%A3%E6%95%B0%E6%9D%A1%E4%BB%B6%E5%90%8C%E6%97%B6%E6%88%90%E7%AB%8B"><span class="toc-text">5. 158A Next Round：阈值与正数条件同时成立</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E6%B1%82-3"><span class="toc-text">核心要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%9B%9B%E9%81%93%E9%A2%98%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7%E7%9C%8B"><span class="toc-text">6. 四道题放在一起看</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E5%BB%BA%E8%AE%AE%E7%9A%84%E7%BB%83%E4%B9%A0%E6%96%B9%E5%BC%8F"><span class="toc-text">7. 建议的练习方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E6%9D%A5%E6%BA%90"><span class="toc-text">官方来源</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/91263.html" title="Codeforces 序列优化三题：滑动窗口、双指针与二分查找">Codeforces 序列优化三题：滑动窗口、双指针与二分查找</a><time datetime="2026-08-31T09:20:00.000Z" title="发表于 2026-08-31 17:20:00">2026-08-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/84517.html" title="Codeforces 入门四题：把题意翻译成判断、计数与模拟">Codeforces 入门四题：把题意翻译成判断、计数与模拟</a><time datetime="2026-08-31T09:10:00.000Z" title="发表于 2026-08-31 17:10:00">2026-08-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/70624.html" title="个人知识地图：用分类、标签与链接组织长期写作">个人知识地图：用分类、标签与链接组织长期写作</a><time datetime="2026-08-31T08:40:00.000Z" title="发表于 2026-08-31 16:40:00">2026-08-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/31876.html" title="古典音乐中的主题变形：四个音怎样长成一首曲子">古典音乐中的主题变形：四个音怎样长成一首曲子</a><time datetime="2026-08-31T08:30:00.000Z" title="发表于 2026-08-31 16:30:00">2026-08-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/58241.html" title="RAG 知识库评测：从检索命中到可信回答">RAG 知识库评测：从检索命中到可信回答</a><time datetime="2026-08-31T08:20:00.000Z" title="发表于 2026-08-31 16:20:00">2026-08-31</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
