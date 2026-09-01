@@ -305,46 +305,70 @@ RAG、可观测性、聆听指南
     H --&gt; I[对话模型生成回答]
   
 
-Docker Compose 默认还会启动若干 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/1.html" title="Visual Studio 常用快捷键：编辑、调试与导航">Visual Studio 常用快捷键：编辑、调试与导航</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-05-15T07:53:26.000Z" title="发表于 2025-05-15 15:53:26">2025-05-15</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具</a></span></div><div class="content">快捷键的价值不在于一次记住全部组合，而在于把最常用的编辑、调试和导航动作逐步变成肌肉记忆。下面按使用场景整理 Visual Studio 常用快捷键。
+Docker Compose 默认还会启动若干 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/1.html" title="Visual Studio 常用快捷键：编辑、调试与导航">Visual Studio 常用快捷键：编辑、调试与导航</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-05-15T07:53:26.000Z" title="发表于 2025-05-15 15:53:26">2025-05-15</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具</a></span></div><div class="content">快捷键的价值不在于背下一张长表，而在于让高频动作逐渐离开鼠标。本文以 Visual Studio 2022 的 General（常规）配置文件为基准，按一次开发任务的实际顺序整理：先搜索和定位，再编辑与重构，最后构建和调试。
 
 
-常用编辑快捷键
-注释代码：Ctrl + K, Ctrl + C
-取消注释：Ctrl + K, Ctrl + U
-代码格式化：
-格式化整个文档：Ctrl + K, Ctrl + D
-格式化选中内容：Ctrl + K, Ctrl + F
+
+Visual Studio 的按键绑定会受开发设置配置文件、键盘布局、当前窗口上下文和个人修改影响。如果本文与本机表现不同，以“工具 → 选项 → 环境 → 键盘”中显示的命令绑定为准。
+
+先记住组合键的读法Visual Studio 中经常出现 Ctrl + K, Ctrl + D 这样的两段式组合键。它不是同时按四个键，而是：
+
+按下 Ctrl + K 后松开；
+再按 Ctrl + D。
+
+前半段相当于命令前缀，使大量功能可以复用有限的按键。如果第二段按错，按 Esc 即可取消等待状态。
+第一组：搜索与代码导航这一组最值得优先形成肌肉记忆，因为阅读代码时“找到目标”往往比“输入代码”更耗时间。
 
 
-复制整行代码（无需选中）：将光标放在行上，Ctrl + C
-剪切整行代码：将光标放在行上，Ctrl + X
-删除整行代码：Ctrl + Shift + K
-撤销：Ctrl + Z
-重做：Ctrl + Y 或 Ctrl + Shift + Z
-查找：Ctrl + F
-查找全部文件：Ctrl + Shift + F
-替换：Ctrl + H
-转到定义：F12
-转到声明：Ctrl + F12
-查找所有引用：Shift + F12
-跳转到指定行：Ctrl + G
-插入代码片段：Ctrl + K, Ctrl + X
-切换书签：Ctrl + K, Ctrl + K
-切换行注释（VS2022及以上）：Ctrl +  ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/24365.html" title="Matplotlib 数据可视化基础：从画布到常见图表">Matplotlib 数据可视化基础：从画布到常见图表</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-07-24T09:09:25.000Z" title="发表于 2023-07-24 17:09:25">2023-07-24</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="content">数据可视化的重点不只是“把图画出来”，还包括选择合适的图形、控制画布结构，以及让标题、坐标轴和图例准确传递信息。这份笔记从 Matplotlib 的基础对象开始，逐步整理常见图表。
+
+动作
+默认快捷键
+适用场景
 
 
-一、Matplotlib 概述常见的数据可视化工具包括 Matplotlib、Seaborn 和 Bokeh。Matplotlib 提供底层而灵活的绘图能力；Seaborn 在其基础上封装了更适合统计图形的接口；Bokeh 更侧重交互式图表。本文主要使用 Matplotlib。
-为什么使用 Matplotlib使用Matplotlib实现数据图形化的优势是：
 
-接口覆盖从快速绘图到精细布局的不同需求；
-支持交互式探索，也适合生成静态报告图表；
-文字和公式可以使用 LaTeX 风格排版；
-可以控制坐标轴、图例、颜色与布局等细节；
-支持 PNG、PDF、SVG 和 EPS 等常见格式。
+搜索文件、类型、成员和命令
+Ctrl + T、Ctrl + , 或 Ctrl + P
+不知道目标在哪个文件时
 
-二、创建简单图形（一）导入绘图模块1import matplotlib.pyplot as plt
 
-（二）创建 Figure 对象12345678910111213141516171819202122import mat ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/64712.html" title="NumPy 数据读写与常用统计方法">NumPy 数据读写与常用统计方法</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-07-24T09:05:28.000Z" title="发表于 2023-07-24 17:05:28">2023-07-24</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="content">NumPy 不仅用于数组计算，也提供了轻量的数据读写、汇总统计和索引工具。本篇按“读写—统计—排序—去重—搜索”的路径组织常用方法，便于按任务快速查找。
+转到定义 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/24365.html" title="Matplotlib 数据可视化基础：从 Figure 到可复用图表">Matplotlib 数据可视化基础：从 Figure 到可复用图表</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-07-24T09:09:25.000Z" title="发表于 2023-07-24 17:09:25">2023-07-24</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="content">数据可视化不只是“把图画出来”。一张合格的图需要回答三个问题：比较的对象是什么、变化或差异在哪里、读者应该得出什么结论。本文从 Matplotlib 的对象模型开始，用一组无需外部数据文件的示例，建立从选图到导出的完整工作流。
+
+
+一、先理解 Figure、Axes 与 ArtistMatplotlib 图形可以用三层结构理解：
+
+Figure：整张画布，负责整体尺寸、布局和导出；
+Axes：画布中的一个绘图区，包含坐标轴、标题和刻度；
+Artist：图上的具体元素，例如折线、散点、文字和图例。
+
+日常绘图推荐从 plt.subplots() 获得 Figure 和 Axes，再调用 ax.plot()、ax.scatter() 等方法。相比把所有状态交给 pyplot，这种对象式写法在多子图和函数封装中更清晰。
+二、根据问题选择图表
+
+
+想回答的问题
+推荐图表
+常见误区
+
+
+
+数值如何随时间或顺序变化
+折线图
+横轴没有自然顺序却强行连线
+
+
+两个数值变量是否相关
+散点图
+点重叠严重但没有透明度
+
+
+不同类别谁高谁低
+柱状图
+从非零基线开始夸大差异
+
+
+连续变量如何分布
+直方图
+只看一 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/esblog/64712.html" title="NumPy 数据读写与常用统计方法">NumPy 数据读写与常用统计方法</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-07-24T09:05:28.000Z" title="发表于 2023-07-24 17:05:28">2023-07-24</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="content">NumPy 不仅用于数组计算，也提供了轻量的数据读写、汇总统计和索引工具。本篇按“读写—统计—排序—去重—搜索”的路径组织常用方法，便于按任务快速查找。
 
 
 一、NumPy 读取数据(一) 使用NumPy读写文本文件1.将1维或2维数组写入TXT文件或CSV格式文件​		(1) 写入后缀名为txt或csv的文件
@@ -386,7 +410,7 @@ header
             </div>
             <ul class="card-category-list" id="aside-cat-list">
             <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><span class="card-category-list-name">AI 工程</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><span class="card-category-list-name">写作与知识管理</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/"><span class="card-category-list-name">开发工具</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><span class="card-category-list-name">数据分析</span><span class="card-category-list-count">3</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/"><span class="card-category-list-name">算法与竞赛</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><span class="card-category-list-name">计算机基础</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><span class="card-category-list-name">音乐随笔</span><span class="card-category-list-count">2</span></a></li>
-            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Codeforces/" style="font-size: 1.5em; color: #99a9bf">Codeforces</a> <a href="/tags/Docker/" style="font-size: 1.1em; color: #999">Docker</a> <a href="/tags/Matplotlib/" style="font-size: 1.1em; color: #999">Matplotlib</a> <a href="/tags/NumPy/" style="font-size: 1.5em; color: #99a9bf">NumPy</a> <a href="/tags/RAG/" style="font-size: 1.5em; color: #99a9bf">RAG</a> <a href="/tags/RAGFlow/" style="font-size: 1.1em; color: #999">RAGFlow</a> <a href="/tags/TCP-IP/" style="font-size: 1.1em; color: #999">TCP/IP</a> <a href="/tags/Visual-Studio/" style="font-size: 1.1em; color: #999">Visual Studio</a> <a href="/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" style="font-size: 1.1em; color: #999">二分查找</a> <a href="/tags/%E4%BD%9C%E6%9B%B2%E6%96%B9%E6%B3%95/" style="font-size: 1.1em; color: #999">作曲方法</a> <a href="/tags/%E5%85%A5%E9%97%A8%E7%AE%97%E6%B3%95/" style="font-size: 1.1em; color: #999">入门算法</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 1.1em; color: #999">博客</a> <a href="/tags/%E5%8F%8C%E6%8C%87%E9%92%88/" style="font-size: 1.1em; color: #999">双指针</a> <a href="/tags/%E5%8F%A4%E5%85%B8%E9%9F%B3%E4%B9%90/" style="font-size: 1.5em; color: #99a9bf">古典音乐</a> <a href="/tags/%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/" style="font-size: 1.1em; color: #999">可观测性</a> <a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/" style="font-size: 1.1em; color: #999">开发工具</a> <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%B1%E5%9B%AD/" style="font-size: 1.1em; color: #999">数字花园</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" style="font-size: 1.5em; color: #99a9bf">数据分析</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96/" style="font-size: 1.1em; color: #999">数据可视化</a> <a href="/tags/%E6%A8%A1%E6%8B%9F/" style="font-size: 1.1em; color: #999">模拟</a> <a href="/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/" style="font-size: 1.1em; color: #999">滑动窗口</a> <a href="/tags/%E7%9F%A5%E8%AF%86%E5%BA%93/" style="font-size: 1.5em; color: #99a9bf">知识库</a> <a href="/tags/%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/" style="font-size: 1.1em; color: #999">知识管理</a> <a href="/tags/%E8%81%86%E5%90%AC%E6%8C%87%E5%8D%97/" style="font-size: 1.5em; color: #99a9bf">聆听指南</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 1.1em; color: #999">计算机网络</a> <a href="/tags/%E8%AF%84%E6%B5%8B/" style="font-size: 1.1em; color: #999">评测</a> <a href="/tags/%E8%B4%AA%E5%BF%83/" style="font-size: 1.1em; color: #999">贪心</a> <a href="/tags/%E9%9F%B3%E4%B9%90%E9%89%B4%E8%B5%8F/" style="font-size: 1.1em; color: #999">音乐鉴赏</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/08/"><span class="card-archive-list-date">八月 2026</span><span class="card-archive-list-count">7</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/05/"><span class="card-archive-list-date">五月 2025</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">七月 2023</span><span class="card-archive-list-count">4</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">12</div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">25.9k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-08-31T09:20:00.000Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/background.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Codeforces/" style="font-size: 1.5em; color: #99a9bf">Codeforces</a> <a href="/tags/Docker/" style="font-size: 1.1em; color: #999">Docker</a> <a href="/tags/Matplotlib/" style="font-size: 1.1em; color: #999">Matplotlib</a> <a href="/tags/NumPy/" style="font-size: 1.5em; color: #99a9bf">NumPy</a> <a href="/tags/RAG/" style="font-size: 1.5em; color: #99a9bf">RAG</a> <a href="/tags/RAGFlow/" style="font-size: 1.1em; color: #999">RAGFlow</a> <a href="/tags/TCP-IP/" style="font-size: 1.1em; color: #999">TCP/IP</a> <a href="/tags/Visual-Studio/" style="font-size: 1.1em; color: #999">Visual Studio</a> <a href="/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" style="font-size: 1.1em; color: #999">二分查找</a> <a href="/tags/%E4%BD%9C%E6%9B%B2%E6%96%B9%E6%B3%95/" style="font-size: 1.1em; color: #999">作曲方法</a> <a href="/tags/%E5%85%A5%E9%97%A8%E7%AE%97%E6%B3%95/" style="font-size: 1.1em; color: #999">入门算法</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 1.1em; color: #999">博客</a> <a href="/tags/%E5%8F%8C%E6%8C%87%E9%92%88/" style="font-size: 1.1em; color: #999">双指针</a> <a href="/tags/%E5%8F%A4%E5%85%B8%E9%9F%B3%E4%B9%90/" style="font-size: 1.5em; color: #99a9bf">古典音乐</a> <a href="/tags/%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/" style="font-size: 1.1em; color: #999">可观测性</a> <a href="/tags/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/" style="font-size: 1.1em; color: #999">开发工具</a> <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%B1%E5%9B%AD/" style="font-size: 1.1em; color: #999">数字花园</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" style="font-size: 1.5em; color: #99a9bf">数据分析</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96/" style="font-size: 1.1em; color: #999">数据可视化</a> <a href="/tags/%E6%A8%A1%E6%8B%9F/" style="font-size: 1.1em; color: #999">模拟</a> <a href="/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/" style="font-size: 1.1em; color: #999">滑动窗口</a> <a href="/tags/%E7%9F%A5%E8%AF%86%E5%BA%93/" style="font-size: 1.5em; color: #99a9bf">知识库</a> <a href="/tags/%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/" style="font-size: 1.1em; color: #999">知识管理</a> <a href="/tags/%E8%81%86%E5%90%AC%E6%8C%87%E5%8D%97/" style="font-size: 1.5em; color: #99a9bf">聆听指南</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 1.1em; color: #999">计算机网络</a> <a href="/tags/%E8%AF%84%E6%B5%8B/" style="font-size: 1.1em; color: #999">评测</a> <a href="/tags/%E8%B4%AA%E5%BF%83/" style="font-size: 1.1em; color: #999">贪心</a> <a href="/tags/%E9%9F%B3%E4%B9%90%E9%89%B4%E8%B5%8F/" style="font-size: 1.1em; color: #999">音乐鉴赏</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/08/"><span class="card-archive-list-date">八月 2026</span><span class="card-archive-list-count">7</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/05/"><span class="card-archive-list-date">五月 2025</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">七月 2023</span><span class="card-archive-list-count">4</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">12</div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">27.5k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-09-01T04:00:00.000Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/background.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
   if (typeof pangu === 'object') pangu.autoSpacingPage()
   else {
     getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
