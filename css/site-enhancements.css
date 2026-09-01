@@ -299,7 +299,7 @@
 
 .music-track-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -330,6 +330,10 @@
 
 .music-track-voyage {
   --track-accent: #5eead4;
+}
+
+.music-track-harbor {
+  --track-accent: #fbbf24;
 }
 
 .music-track-visual {
@@ -481,6 +485,11 @@
   --algorithm-accent: #7c3aed;
 }
 
+.algorithm-level-card-prefix {
+  --algorithm-accent: #059669;
+  grid-column: 1 / -1;
+}
+
 .algorithm-level-number {
   position: absolute;
   top: -0.16em;
@@ -599,6 +608,10 @@
 
   .algorithm-roadmap {
     grid-template-columns: 1fr;
+  }
+
+  .algorithm-level-card-prefix {
+    grid-column: auto;
   }
 
   .algorithm-level-card > p {
