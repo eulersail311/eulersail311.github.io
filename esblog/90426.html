@@ -1,0 +1,337 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>策略梯度入门：从 REINFORCE 到 Actor-Critic | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从随机策略和对数概率技巧推导 REINFORCE，理解 rewards-to-go、基线与优势函数怎样降低方差，并过渡到 Actor-Critic。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="策略梯度入门：从 REINFORCE 到 Actor-Critic">
+<meta property="og:url" content="https://eulersail.com/esblog/90426.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从随机策略和对数概率技巧推导 REINFORCE，理解 rewards-to-go、基线与优势函数怎样降低方差，并过渡到 Actor-Critic。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-04T02:40:00.000Z">
+<meta property="article:modified_time" content="2026-09-04T02:40:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="强化学习">
+<meta property="article:tag" content="策略梯度">
+<meta property="article:tag" content="REINFORCE">
+<meta property="article:tag" content="Actor-Critic">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/90426.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '策略梯度入门：从 REINFORCE 到 Actor-Critic',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-04 10:40:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">策略梯度入门：从 REINFORCE 到 Actor-Critic</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-04T02:40:00.000Z" title="发表于 2026-09-04 10:40:00">2026-09-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-04T02:40:00.000Z" title="更新于 2026-09-04 10:40:00">2026-09-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="策略梯度入门：从 REINFORCE 到 Actor-Critic"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>Q-learning 先估计每个动作的价值，再选价值最大的动作；策略梯度则直接调整策略参数，让带来较高回报的动作以后更可能发生，让结果较差的动作概率下降。</p>
+<p>这条路线特别适合随机策略和连续动作，但代价是梯度估计噪声很大、数据通常只能使用一次，而且更新过猛时容易破坏已有策略。本文从最小的随机策略开始，逐步解释 REINFORCE、基线、优势函数与 Actor-Critic 的关系。</p>
+<span id="more"></span>
+
+<h2 id="1-从动作价值转向参数化策略"><a href="#1-从动作价值转向参数化策略" class="headerlink" title="1. 从动作价值转向参数化策略"></a>1. 从动作价值转向参数化策略</h2><p>设策略为 <code>πθ(a|s)</code>，参数 <code>θ</code> 可以是一个表格，也可以是神经网络权重。它接收状态，并输出动作的概率分布。我们的目标是最大化策略产生轨迹的期望回报：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">J(θ) = Eτ~πθ [R(τ)]</span><br></pre></td></tr></table></figure>
+
+<p>一条轨迹包含状态、动作和奖励。策略改变动作分布，动作又改变之后访问到的状态，因此无法像监督学习那样直接为每个动作准备“正确标签”。</p>
+<p>策略梯度定理提供了一个可以从采样轨迹估计的方向：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">∇θ J(θ) = E[Σt ∇θ log πθ(at|st) × A(st, at)]</span><br></pre></td></tr></table></figure>
+
+<p>可以把它读成：动作的对数概率梯度，乘以该动作比基准好多少。</p>
+<h2 id="2-为什么出现-log-π"><a href="#2-为什么出现-log-π" class="headerlink" title="2. 为什么出现 log π"></a>2. 为什么出现 log π</h2><p>概率分布的期望中含有 <code>πθ</code>。使用恒等式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">∇θ πθ(a|s) = πθ(a|s) × ∇θ log πθ(a|s)</span><br></pre></td></tr></table></figure>
+
+<p>就能把对所有动作求和改写成“从当前策略采样后取平均”。这称为对数导数技巧或 score-function estimator。它不要求奖励函数本身可导，只要求策略的对数概率对参数可导。</p>
+<p>若某次动作带来正的优势，梯度上升会提高它的概率；若优势为负，则降低它的概率。更新的是概率分布，不是把动作直接推向某个数值标签。</p>
+<h2 id="3-REINFORCE：用完整回报加权动作"><a href="#3-REINFORCE：用完整回报加权动作" class="headerlink" title="3. REINFORCE：用完整回报加权动作"></a>3. REINFORCE：用完整回报加权动作</h2><p>最基础的 Monte Carlo 策略梯度可以按以下流程工作：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[用当前策略采样完整轨迹] --&gt; B[从后向前计算 rewards-to-go]
+    B --&gt; C[每一步计算 log π 与回报乘积]
+    C --&gt; D[对整批轨迹求平均梯度]
+    D --&gt; E[梯度上升更新策略]
+    E --&gt; A
+  </pre></div>
+
+<p>在时刻 <code>t</code>，过去的奖励已经无法被当前动作改变，因此通常使用从当前时刻开始的 rewards-to-go：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Gt = rt + γ rt+1 + γ² rt+2 + ...</span><br></pre></td></tr></table></figure>
+
+<p>REINFORCE 用 <code>Gt</code> 加权 <code>∇ log π(at|st)</code>。它只在一局结束后更新，不需要价值函数，也没有自举偏差；但一条轨迹的偶然性会影响其中许多动作，导致梯度方差很大。</p>
+<h2 id="4-一个最小可运行实验"><a href="#4-一个最小可运行实验" class="headerlink" title="4. 一个最小可运行实验"></a>4. 一个最小可运行实验</h2><p>下面用两动作老虎机展示策略概率如何更新。动作 1 的成功概率为 <code>0.8</code>，动作 0 为 <code>0.2</code>。一个标量 <code>logit</code> 决定选择动作 1 的概率，运行均值作为基线。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sigmoid</span>(<span class="params">value</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1.0</span> / (<span class="number">1.0</span> + math.exp(-value))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">rng = random.Random(<span class="number">7</span>)</span><br><span class="line">success_probability = [<span class="number">0.2</span>, <span class="number">0.8</span>]</span><br><span class="line">logit = <span class="number">0.0</span></span><br><span class="line">baseline = <span class="number">0.0</span></span><br><span class="line">alpha = <span class="number">0.05</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">5001</span>):</span><br><span class="line">    probability_one = sigmoid(logit)</span><br><span class="line">    action = <span class="number">1</span> <span class="keyword">if</span> rng.random() &lt; probability_one <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    reward = <span class="number">1.0</span> <span class="keyword">if</span> rng.random() &lt; success_probability[action] <span class="keyword">else</span> <span class="number">0.0</span></span><br><span class="line"></span><br><span class="line">    advantage = reward - baseline</span><br><span class="line">    score = action - probability_one</span><br><span class="line">    logit += alpha * advantage * score</span><br><span class="line"></span><br><span class="line">    baseline += (reward - baseline) / step</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;P(action=1):&quot;</span>, <span class="built_in">round</span>(sigmoid(logit), <span class="number">3</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;average reward:&quot;</span>, <span class="built_in">round</span>(baseline, <span class="number">3</span>))</span><br></pre></td></tr></table></figure>
+
+<p>对于 Bernoulli 策略，<code>action - probability_one</code> 正好是动作对数概率关于 <code>logit</code> 的导数。这个例子没有状态和延迟奖励，因此不是完整 REINFORCE 训练器，但它把“高于基线的结果提高动作概率”这件事单独展示出来。</p>
+<h2 id="5-基线为什么能降方差"><a href="#5-基线为什么能降方差" class="headerlink" title="5. 基线为什么能降方差"></a>5. 基线为什么能降方差</h2><p>直接使用 <code>Gt</code> 时，即使一局整体回报很高，也不代表其中每一步都比策略的通常表现更好。可以减去只依赖状态、不依赖当前动作的基线 <code>b(st)</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">∇ log π(at|st) × [Gt - b(st)]</span><br></pre></td></tr></table></figure>
+
+<p>在常见条件下，这不会改变期望梯度，却能显著降低方差。最自然的基线是状态价值 <code>Vπ(st)</code>，此时括号中的量是在估计优势：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Aπ(s, a) = Qπ(s, a) - Vπ(s)</span><br></pre></td></tr></table></figure>
+
+<p>优势为正表示该动作比这个状态下的平均选择更好；为负表示更差。这样，策略更新比较的是相对表现，而不是把所有正回报动作都一律增强。</p>
+<h2 id="6-Actor-Critic：用-Critic-提供学习信号"><a href="#6-Actor-Critic：用-Critic-提供学习信号" class="headerlink" title="6. Actor-Critic：用 Critic 提供学习信号"></a>6. Actor-Critic：用 Critic 提供学习信号</h2><p>当策略网络充当 <strong>Actor</strong>，价值网络充当 <strong>Critic</strong>，就得到 Actor-Critic 框架：</p>
+<ul>
+<li>Actor 决定采取什么动作；</li>
+<li>Critic 估计状态价值或动作价值；</li>
+<li>Critic 的误差为 Actor 提供低方差但可能带偏差的优势估计。</li>
+</ul>
+<p>一步时序差分误差可以写成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">δt = rt + γ V(st+1) - V(st)</span><br></pre></td></tr></table></figure>
+
+<p>它可以作为优势的短期估计。与等到整局结束相比，Actor-Critic 能更早更新；代价是引入自举，Critic 的系统性错误也会误导 Actor。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>策略信号</th>
+<th>是否等待完整轨迹</th>
+<th>方差</th>
+<th>主要风险</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>REINFORCE</td>
+<td>Monte Carlo 回报</td>
+<td>通常是</td>
+<td>高</td>
+<td>样本效率低、更新噪声大</td>
+</tr>
+<tr>
+<td>REINFORCE + baseline</td>
+<td>回报减价值基线</td>
+<td>通常是</td>
+<td>较低</td>
+<td>基线拟合不足</td>
+</tr>
+<tr>
+<td>Actor-Critic</td>
+<td>TD 或多步优势</td>
+<td>不一定</td>
+<td>更低</td>
+<td>自举偏差与双网络耦合</td>
+</tr>
+</tbody></table>
+<h2 id="7-On-policy-意味着什么"><a href="#7-On-policy-意味着什么" class="headerlink" title="7. On-policy 意味着什么"></a>7. On-policy 意味着什么</h2><p>Vanilla Policy Gradient 通常是 on-policy：梯度公式假设数据来自当前策略。更新参数后，旧轨迹由另一个行为分布产生，不能无限次原样复用。</p>
+<p>这会带来三个工程后果：</p>
+<ol>
+<li>每轮更新都需要继续与环境交互；</li>
+<li>学习率过大时，新旧策略差异过大，估计容易失真；</li>
+<li>训练日志必须区分采样策略和评估策略。</li>
+</ol>
+<p>PPO 通过裁剪目标限制新旧策略概率比的变化，但它仍不是“旧数据可以永久重放”的算法。SAC 等 off-policy 方法则用不同机制复用经验回放数据。</p>
+<h2 id="8-探索来自随机策略，但仍可能过早收缩"><a href="#8-探索来自随机策略，但仍可能过早收缩" class="headerlink" title="8. 探索来自随机策略，但仍可能过早收缩"></a>8. 探索来自随机策略，但仍可能过早收缩</h2><p>策略梯度通过当前随机策略采样动作，自然产生探索。然而，一旦某些动作概率过早接近零，后续几乎采不到它们，局部最优就可能被锁定。</p>
+<p>常见做法包括加入熵奖励、限制每次更新幅度、从多个随机种子运行，以及监控动作分布而不只看平均回报。熵很高并不自动等于有效探索：在长时序任务中，随机抖动动作未必能到达真正陌生的状态。</p>
+<h2 id="9-实验与调试清单"><a href="#9-实验与调试清单" class="headerlink" title="9. 实验与调试清单"></a>9. 实验与调试清单</h2><ul>
+<li>同时记录训练回报和关闭采样噪声后的评估回报；</li>
+<li>报告多个随机种子的均值与波动，不只保留最好一次；</li>
+<li>观察策略熵、动作概率和价值损失是否异常；</li>
+<li>检查 <code>terminated</code> 与 <code>truncated</code>，避免错误决定是否自举；</li>
+<li>对优势做标准化时，只使用当前批次并记录实现选择；</li>
+<li>奖励尺度变化后重新检查学习率与价值损失权重；</li>
+<li>连续动作策略要监控标准差是否塌缩或无限增大。</li>
+</ul>
+<h2 id="10-建议学习顺序"><a href="#10-建议学习顺序" class="headerlink" title="10. 建议学习顺序"></a>10. 建议学习顺序</h2><ol>
+<li>先理解 <a href="/esblog/33417.html">强化学习入门</a> 中的回报、价值函数与 Bellman 关系；</li>
+<li>用 <a href="/esblog/86140.html">探索与利用</a> 理解随机策略为什么需要保留不确定性；</li>
+<li>手推两动作 Softmax 策略的 <code>∇ log π</code>；</li>
+<li>实现 REINFORCE，并加入状态价值基线；</li>
+<li>再学习 GAE、PPO 和连续动作分布。</li>
+</ol>
+<p>进一步阅读可参考 <a target="_blank" rel="noopener" href="https://mitpress.mit.edu/9780262039246/reinforcement-learning/">Sutton 与 Barto《Reinforcement Learning: An Introduction》</a> 以及 <a target="_blank" rel="noopener" href="https://spinningup.openai.com/en/latest/algorithms/vpg.html">OpenAI Spinning Up 的 Vanilla Policy Gradient 说明</a>。后者同时给出了策略梯度公式、on-policy 采样流程、优势估计和价值函数拟合步骤。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/90426.html">https://eulersail.com/esblog/90426.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a><a class="post-meta__tags" href="/tags/%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6/">策略梯度</a><a class="post-meta__tags" href="/tags/REINFORCE/">REINFORCE</a><a class="post-meta__tags" href="/tags/Actor-Critic/">Actor-Critic</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/73819.html" title="古典音乐中的节奏与拍号：从脉搏、重拍到切分"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">古典音乐中的节奏与拍号：从脉搏、重拍到切分</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/33417.html" title="强化学习入门：从 MDP、价值函数到 Q-learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">强化学习入门：从 MDP、价值函数到 Q-learning</div></div></a></div><div><a href="/esblog/86140.html" title="强化学习中的探索与利用：从 ε-greedy 到 UCB"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="title">强化学习中的探索与利用：从 ε-greedy 到 UCB</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%8E%E5%8A%A8%E4%BD%9C%E4%BB%B7%E5%80%BC%E8%BD%AC%E5%90%91%E5%8F%82%E6%95%B0%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-text">1. 从动作价值转向参数化策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%87%BA%E7%8E%B0-log-%CF%80"><span class="toc-text">2. 为什么出现 log π</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-REINFORCE%EF%BC%9A%E7%94%A8%E5%AE%8C%E6%95%B4%E5%9B%9E%E6%8A%A5%E5%8A%A0%E6%9D%83%E5%8A%A8%E4%BD%9C"><span class="toc-text">3. REINFORCE：用完整回报加权动作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%B8%80%E4%B8%AA%E6%9C%80%E5%B0%8F%E5%8F%AF%E8%BF%90%E8%A1%8C%E5%AE%9E%E9%AA%8C"><span class="toc-text">4. 一个最小可运行实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%9F%BA%E7%BA%BF%E4%B8%BA%E4%BB%80%E4%B9%88%E8%83%BD%E9%99%8D%E6%96%B9%E5%B7%AE"><span class="toc-text">5. 基线为什么能降方差</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Actor-Critic%EF%BC%9A%E7%94%A8-Critic-%E6%8F%90%E4%BE%9B%E5%AD%A6%E4%B9%A0%E4%BF%A1%E5%8F%B7"><span class="toc-text">6. Actor-Critic：用 Critic 提供学习信号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-On-policy-%E6%84%8F%E5%91%B3%E7%9D%80%E4%BB%80%E4%B9%88"><span class="toc-text">7. On-policy 意味着什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%8E%A2%E7%B4%A2%E6%9D%A5%E8%87%AA%E9%9A%8F%E6%9C%BA%E7%AD%96%E7%95%A5%EF%BC%8C%E4%BD%86%E4%BB%8D%E5%8F%AF%E8%83%BD%E8%BF%87%E6%97%A9%E6%94%B6%E7%BC%A9"><span class="toc-text">8. 探索来自随机策略，但仍可能过早收缩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E5%AE%9E%E9%AA%8C%E4%B8%8E%E8%B0%83%E8%AF%95%E6%B8%85%E5%8D%95"><span class="toc-text">9. 实验与调试清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E5%BB%BA%E8%AE%AE%E5%AD%A6%E4%B9%A0%E9%A1%BA%E5%BA%8F"><span class="toc-text">10. 建议学习顺序</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/90426.html" title="策略梯度入门：从 REINFORCE 到 Actor-Critic">策略梯度入门：从 REINFORCE 到 Actor-Critic</a><time datetime="2026-09-04T02:40:00.000Z" title="发表于 2026-09-04 10:40:00">2026-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73819.html" title="古典音乐中的节奏与拍号：从脉搏、重拍到切分">古典音乐中的节奏与拍号：从脉搏、重拍到切分</a><time datetime="2026-09-04T02:20:00.000Z" title="发表于 2026-09-04 10:20:00">2026-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界">Codeforces 二分答案三题：可行性、边界与上界</a><time datetime="2026-09-04T02:00:00.000Z" title="发表于 2026-09-04 10:00:00">2026-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86140.html" title="强化学习中的探索与利用：从 ε-greedy 到 UCB">强化学习中的探索与利用：从 ε-greedy 到 UCB</a><time datetime="2026-09-03T02:40:00.000Z" title="发表于 2026-09-03 10:40:00">2026-09-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72436.html" title="古典音乐曲式入门：从乐句到回旋与奏鸣">古典音乐曲式入门：从乐句到回旋与奏鸣</a><time datetime="2026-09-03T02:20:00.000Z" title="发表于 2026-09-03 10:20:00">2026-09-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
