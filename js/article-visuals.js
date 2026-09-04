@@ -239,11 +239,204 @@
     select('missing');
   }
 
+  function initializeTcpLab(root) {
+    const packets = Array.from(root.querySelectorAll('[data-tcp-step]'));
+    const status = root.querySelector('[data-tcp-status]');
+    const nextButton = root.querySelector('[data-tcp-next]');
+    const resetButton = root.querySelector('[data-tcp-reset]');
+    const states = [
+      '起点：客户端与服务器都还没有建立这条连接。',
+      '第 1 步：客户端进入 SYN_SENT，服务器收到客户端的初始序列号 x。',
+      '第 2 步：服务器进入 SYN_RCVD；客户端确认服务器可达，并收到序列号 y。',
+      '第 3 步：最后一个 ACK 到达，双方进入 ESTABLISHED，可以传输应用数据。'
+    ];
+    let step = 0;
+
+    function render() {
+      packets.forEach((packet, index) => {
+        packet.classList.toggle('is-complete', index < step);
+        packet.classList.toggle('is-current', index === step - 1);
+      });
+      status.textContent = states[step];
+      nextButton.disabled = step === packets.length;
+      nextButton.textContent = step === packets.length ? '连接已建立' : '发送下一报文';
+    }
+
+    nextButton.addEventListener('click', () => {
+      if (step < packets.length) step += 1;
+      render();
+    });
+    resetButton.addEventListener('click', () => {
+      step = 0;
+      render();
+    });
+    render();
+  }
+
+  function initializeBroadcastLab(root) {
+    const firstSelect = root.querySelector('[data-broadcast-a]');
+    const secondSelect = root.querySelector('[data-broadcast-b]');
+    const firstDimensions = root.querySelector('[data-broadcast-a-dimensions]');
+    const secondDimensions = root.querySelector('[data-broadcast-b-dimensions]');
+    const result = root.querySelector('[data-broadcast-result]');
+
+    const parseShape = value => value.split(',').map(Number);
+
+    function createDimension(value, state, missing) {
+      const dimension = document.createElement('span');
+      dimension.className = `broadcast-dimension is-${state}`;
+      dimension.textContent = missing ? `1（补齐）` : String(value);
+      return dimension;
+    }
+
+    function render() {
+      const first = parseShape(firstSelect.value);
+      const second = parseShape(secondSelect.value);
+      const size = Math.max(first.length, second.length);
+      const paddedFirst = Array(size - first.length).fill(1).concat(first);
+      const paddedSecond = Array(size - second.length).fill(1).concat(second);
+      const output = [];
+      let compatible = true;
+
+      firstDimensions.replaceChildren();
+      secondDimensions.replaceChildren();
+
+      for (let index = 0; index < size; index += 1) {
+        const a = paddedFirst[index];
+        const b = paddedSecond[index];
+        const valid = a === b || a === 1 || b === 1;
+        const expanded = valid && a !== b;
+        const state = valid ? (expanded ? 'expanded' : 'matched') : 'conflict';
+        compatible = compatible && valid;
+        output.push(Math.max(a, b));
+        firstDimensions.appendChild(createDimension(a, state, index < size - first.length));
+        secondDimensions.appendChild(createDimension(b, state, index < size - second.length));
+      }
+
+      result.classList.toggle('is-error', !compatible);
+      result.textContent = compatible
+        ? `可以广播，输出形状为 (${output.join(', ')})。绿色维度相等，蓝色维度会从 1 扩展。`
+        : '不能广播：红色位置既不相等，也没有任何一方为 1。请从最右侧逐维检查。';
+    }
+
+    firstSelect.addEventListener('change', render);
+    secondSelect.addEventListener('change', render);
+    render();
+  }
+
+  function initializeChartChoiceLab(root) {
+    const options = Array.from(root.querySelectorAll('[data-chart-choice]'));
+    const shapes = Array.from(root.querySelectorAll('[data-chart-shape]'));
+    const preview = root.querySelector('[data-chart-preview]');
+    const result = root.querySelector('[data-chart-result]');
+    const recommendations = {
+      line: ['折线图', '时间或顺序是结构的一部分，用连线强调连续变化；不要连接没有自然顺序的类别。'],
+      bar: ['柱状图', '共享零基线便于比较类别大小；类别名称较长时可以改用横向条形图。'],
+      scatter: ['散点图', '每个点代表一组 x、y 观测，适合观察相关、分群和异常点。'],
+      histogram: ['直方图', '把连续数值放入区间，观察分布形状；应尝试多个分箱宽度。'],
+      box: ['箱线图', '用中位数、四分位距和离群点压缩比较多组分布，但不能替代原始数据。']
+    };
+
+    function select(kind) {
+      const recommendation = recommendations[kind];
+      if (!recommendation) return;
+      options.forEach(option => option.setAttribute('aria-pressed', String(option.dataset.chartChoice === kind)));
+      shapes.forEach(shape => shape.classList.toggle('is-active', shape.dataset.chartShape === kind));
+      preview.setAttribute('aria-label', `${recommendation[0]}示意图`);
+      result.innerHTML = `<strong>${recommendation[0]}</strong><span>${recommendation[1]}</span>`;
+    }
+
+    options.forEach(option => option.addEventListener('click', () => select(option.dataset.chartChoice)));
+    select('line');
+  }
+
+  function initializeMotifLab(root) {
+    const options = Array.from(root.querySelectorAll('[data-motif-option]'));
+    const notes = Array.from(root.querySelectorAll('[data-motif-note]'));
+    const explanation = root.querySelector('[data-motif-explanation]');
+    const playButton = root.querySelector('[data-motif-play]');
+    const status = root.querySelector('[data-motif-status]');
+    const transformations = {
+      original: { pitches: [60, 63, 62, 67], duration: 0.28, text: '原形：保留四个音的音高、方向与均匀时值。' },
+      inversion: { pitches: [60, 57, 58, 53], duration: 0.28, text: '倒影：以第一个音为轴，上行三度变成下行三度，方向翻转。' },
+      retrograde: { pitches: [67, 62, 63, 60], duration: 0.28, text: '逆行：音高材料不变，但出现顺序完全反转。' },
+      augmentation: { pitches: [60, 63, 62, 67], duration: 0.52, text: '增值：音高不变，每个音的时值加长，步伐更宽缓。' }
+    };
+    const noteNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    let selected = 'original';
+    let releaseTimer = null;
+
+    function labelForPitch(pitch) {
+      return `${noteNames[pitch % 12]}${Math.floor(pitch / 12) - 1}`;
+    }
+
+    function render() {
+      const transformation = transformations[selected];
+      const minimum = 52;
+      options.forEach(option => option.setAttribute('aria-pressed', String(option.dataset.motifOption === selected)));
+      notes.forEach((note, index) => {
+        const pitch = transformation.pitches[index];
+        note.style.setProperty('--note-level', String(pitch - minimum));
+        note.querySelector('span').textContent = labelForPitch(pitch);
+      });
+      explanation.textContent = transformation.text;
+    }
+
+    function play() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) {
+        status.textContent = '当前浏览器不支持 Web Audio API。';
+        return;
+      }
+      const context = new AudioContextClass();
+      const transformation = transformations[selected];
+      const start = context.currentTime + 0.03;
+      playButton.disabled = true;
+      status.textContent = `正在播放${playButton.dataset[selected]}。`;
+
+      transformation.pitches.forEach((pitch, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const noteStart = start + index * transformation.duration;
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440 * (2 ** ((pitch - 69) / 12)), noteStart);
+        gain.gain.setValueAtTime(0.0001, noteStart);
+        gain.gain.exponentialRampToValueAtTime(0.1, noteStart + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + transformation.duration * 0.82);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(noteStart);
+        oscillator.stop(noteStart + transformation.duration);
+      });
+
+      const totalMilliseconds = transformation.pitches.length * transformation.duration * 1000 + 160;
+      releaseTimer = window.setTimeout(() => {
+        playButton.disabled = false;
+        status.textContent = '播放完成，可切换变形继续比较。';
+        context.close().catch(() => {});
+        releaseTimer = null;
+      }, totalMilliseconds);
+    }
+
+    options.forEach(option => option.addEventListener('click', () => {
+      if (releaseTimer) return;
+      selected = option.dataset.motifOption;
+      status.textContent = `${option.textContent.trim()}已选中。`;
+      render();
+    }));
+    playButton.addEventListener('click', play);
+    render();
+  }
+
   function initializeArticleVisuals() {
     document.querySelectorAll('[data-binary-lab]').forEach(initializeBinarySearchLab);
     document.querySelectorAll('[data-epsilon-lab]').forEach(initializeEpsilonLab);
     document.querySelectorAll('[data-meter-lab]').forEach(initializeMeterLab);
     document.querySelectorAll('[data-rag-diagnostic]').forEach(initializeRagDiagnostic);
+    document.querySelectorAll('[data-tcp-lab]').forEach(initializeTcpLab);
+    document.querySelectorAll('[data-broadcast-lab]').forEach(initializeBroadcastLab);
+    document.querySelectorAll('[data-chart-choice-lab]').forEach(initializeChartChoiceLab);
+    document.querySelectorAll('[data-motif-lab]').forEach(initializeMotifLab);
   }
 
   if (document.readyState === 'loading') {
