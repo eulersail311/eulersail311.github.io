@@ -1180,6 +1180,10 @@
   transform: rotate(-14deg);
 }
 
+.motif-note.is-playing b {
+  animation: motif-note-pulse 0.26s ease-out;
+}
+
 .motif-note b::after {
   position: absolute;
   right: 1px;
@@ -1197,6 +1201,12 @@
   background: var(--sail-surface-strong);
   font-size: 0.7rem;
   font-weight: 680;
+}
+
+@keyframes motif-note-pulse {
+  0% { transform: rotate(-14deg) scale(1); }
+  45% { transform: rotate(-14deg) scale(1.42); }
+  100% { transform: rotate(-14deg) scale(1); }
 }
 
 @media (max-width: 768px) {
@@ -1371,6 +1381,10 @@
   }
 
   .music-track-visual i {
+    animation: none;
+  }
+
+  .motif-note.is-playing b {
     animation: none;
   }
 }

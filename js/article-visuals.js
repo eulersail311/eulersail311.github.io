@@ -351,6 +351,8 @@
   }
 
   function initializeMotifLab(root) {
+    if (root.dataset.motifInitialized === 'true') return;
+    root.dataset.motifInitialized = 'true';
     const options = Array.from(root.querySelectorAll('[data-motif-option]'));
     const notes = Array.from(root.querySelectorAll('[data-motif-note]'));
     const explanation = root.querySelector('[data-motif-explanation]');
@@ -364,7 +366,12 @@
     };
     const noteNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
     let selected = 'original';
-    let releaseTimer = null;
+    let audioContext = null;
+    let activeSources = [];
+    let visualTimers = [];
+    let completionTimer = null;
+    let playbackToken = 0;
+    let isPlaying = false;
 
     function labelForPitch(pitch) {
       return `${noteNames[pitch % 12]}${Math.floor(pitch / 12) - 1}`;
@@ -382,49 +389,126 @@
       explanation.textContent = transformation.text;
     }
 
-    function play() {
+    function clearPlaybackResources() {
+      visualTimers.forEach(timer => window.clearTimeout(timer));
+      visualTimers = [];
+      if (completionTimer) window.clearTimeout(completionTimer);
+      completionTimer = null;
+      activeSources.forEach(source => {
+        try {
+          source.stop();
+          source.disconnect();
+        } catch (_) {
+          // The source may already have ended; either state is safe to discard.
+        }
+      });
+      activeSources = [];
+      notes.forEach(note => note.classList.remove('is-playing'));
+    }
+
+    function finishPlayback(message) {
+      playbackToken += 1;
+      clearPlaybackResources();
+      isPlaying = false;
+      playButton.disabled = false;
+      playButton.setAttribute('aria-pressed', 'false');
+      playButton.textContent = '播放当前动机';
+      status.textContent = message;
+    }
+
+    async function ensureAudioContext() {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) {
-        status.textContent = '当前浏览器不支持 Web Audio API。';
+        throw new Error('unsupported');
+      }
+
+      if (!audioContext || audioContext.state === 'closed') {
+        audioContext = new AudioContextClass();
+      }
+      if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
+        await audioContext.resume();
+      }
+      if (audioContext.state !== 'running') {
+        throw new Error('not-running');
+      }
+      return audioContext;
+    }
+
+    async function play() {
+      if (isPlaying) {
+        finishPlayback('已停止，可切换变形继续比较。');
         return;
       }
-      const context = new AudioContextClass();
+
+      const token = playbackToken + 1;
+      playbackToken = token;
+      isPlaying = true;
+      playButton.disabled = false;
+      playButton.setAttribute('aria-pressed', 'true');
+      playButton.textContent = '停止播放';
+      status.textContent = '正在准备音频…';
+
+      let context;
+      try {
+        context = await ensureAudioContext();
+      } catch (_) {
+        finishPlayback('播放未启动：请确认浏览器允许本站播放声音，然后再次点击。');
+        return;
+      }
+      if (!isPlaying || token !== playbackToken) return;
+
       const transformation = transformations[selected];
       const start = context.currentTime + 0.03;
-      playButton.disabled = true;
       status.textContent = `正在播放${playButton.dataset[selected]}。`;
 
-      transformation.pitches.forEach((pitch, index) => {
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        const noteStart = start + index * transformation.duration;
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(440 * (2 ** ((pitch - 69) / 12)), noteStart);
-        gain.gain.setValueAtTime(0.0001, noteStart);
-        gain.gain.exponentialRampToValueAtTime(0.1, noteStart + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + transformation.duration * 0.82);
-        oscillator.connect(gain);
-        gain.connect(context.destination);
-        oscillator.start(noteStart);
-        oscillator.stop(noteStart + transformation.duration);
-      });
+      try {
+        transformation.pitches.forEach((pitch, index) => {
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          const noteStart = start + index * transformation.duration;
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(440 * (2 ** ((pitch - 69) / 12)), noteStart);
+          gain.gain.setValueAtTime(0.0001, noteStart);
+          gain.gain.exponentialRampToValueAtTime(0.1, noteStart + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + transformation.duration * 0.82);
+          oscillator.connect(gain);
+          gain.connect(context.destination);
+          activeSources.push(oscillator);
+          oscillator.start(noteStart);
+          oscillator.stop(noteStart + transformation.duration);
+
+          visualTimers.push(window.setTimeout(() => {
+            if (token !== playbackToken) return;
+            notes.forEach(note => note.classList.remove('is-playing'));
+            notes[index].classList.add('is-playing');
+          }, index * transformation.duration * 1000));
+        });
+      } catch (_) {
+        finishPlayback('播放遇到异常，控件已自动复位，可以再次尝试。');
+        return;
+      }
 
       const totalMilliseconds = transformation.pitches.length * transformation.duration * 1000 + 160;
-      releaseTimer = window.setTimeout(() => {
-        playButton.disabled = false;
-        status.textContent = '播放完成，可切换变形继续比较。';
-        context.close().catch(() => {});
-        releaseTimer = null;
+      completionTimer = window.setTimeout(() => {
+        if (token === playbackToken) finishPlayback('播放完成，可切换变形继续比较。');
       }, totalMilliseconds);
     }
 
     options.forEach(option => option.addEventListener('click', () => {
-      if (releaseTimer) return;
+      if (isPlaying) finishPlayback('已停止上一段播放。');
       selected = option.dataset.motifOption;
       status.textContent = `${option.textContent.trim()}已选中。`;
       render();
     }));
     playButton.addEventListener('click', play);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isPlaying) finishPlayback('页面切换，播放已停止。');
+    });
+    window.addEventListener('pagehide', () => {
+      clearPlaybackResources();
+      if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
+      audioContext = null;
+    });
     render();
   }
 
