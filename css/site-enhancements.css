@@ -138,6 +138,41 @@
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
 }
 
+/* Hexo highlight uses an internal table for line numbers and code. Keep the
+   prose-table decoration from turning that table into a white, content-width box. */
+#article-container figure.highlight > table {
+  display: table;
+  width: 100%;
+  overflow: visible;
+  border: 0;
+  border-collapse: collapse;
+  border-radius: 0;
+  background: var(--hl-bg);
+  box-shadow: none;
+}
+
+#article-container figure.highlight > table .code {
+  width: 100%;
+}
+
+#article-container figure.highlight > table pre {
+  min-width: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#article-container figure.highlight > table tr:hover td {
+  background: transparent;
+}
+
+#article-container figure.highlight > table .gutter pre {
+  background: var(--hlnumber-bg);
+}
+
+#article-container figure.highlight > table .code pre {
+  background: var(--hl-bg);
+}
+
 #article-container table {
   width: 100%;
   border: 1px solid var(--sail-border);
