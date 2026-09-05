@@ -1,0 +1,439 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 动态规划两题：状态、转移与不可达 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从 189A Cut Ribbon 与 455A Boredom 出发，通过贪心反例、状态表、正确性证明和 C++17 实现理解一维动态规划。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 动态规划两题：状态、转移与不可达">
+<meta property="og:url" content="https://eulersail.com/esblog/68219.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从 189A Cut Ribbon 与 455A Boredom 出发，通过贪心反例、状态表、正确性证明和 C++17 实现理解一维动态规划。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-05T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-05T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="动态规划">
+<meta property="article:tag" content="状态设计">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/68219.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 动态规划两题：状态、转移与不可达',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-05 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 动态规划两题：状态、转移与不可达</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-05T02:00:00.000Z" title="发表于 2026-09-05 10:00:00">2026-09-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-05T02:00:00.000Z" title="更新于 2026-09-05 10:00:00">2026-09-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 动态规划两题：状态、转移与不可达"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>写动态规划时，最容易卡住的地方往往不是循环，而是这句话：<code>dp[i]</code> 究竟表示什么？如果状态只写成“到 i 的最优解”，那么“恰好到达”和“不超过 i”就可能混在一起，初始化也会跟着出错。</p>
+<p>本文用两道题练习两个不同的状态轴：一题按<strong>已使用的长度</strong>递推，另一题按<strong>数值大小</strong>递推。建议先独立画出状态表，再看代码。</p>
+<span id="more"></span>
+
+<h2 id="1-两道题，两个关键问题"><a href="#1-两道题，两个关键问题" class="headerlink" title="1. 两道题，两个关键问题"></a>1. 两道题，两个关键问题</h2><table>
+<thead>
+<tr>
+<th>题目</th>
+<th>官方难度</th>
+<th>官方标签</th>
+<th>本文训练重点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/189/A">189A · Cut Ribbon</a></td>
+<td>1300</td>
+<td>brute force、dp</td>
+<td>恰好填满与不可达状态</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/455/A">455A · Boredom</a></td>
+<td>1500</td>
+<td>dp</td>
+<td>按值聚合与相邻冲突</td>
+</tr>
+</tbody></table>
+<p>名称、难度和标签于 2026-09-05 通过 <a target="_blank" rel="noopener" href="https://codeforces.com/apiHelp/methods#problemset.problems">Codeforces 官方 API</a> 核对。下文是原创建模与解法说明，不是题面翻译；所有推演表均使用自拟例子。</p>
+<p>读过 <a href="/esblog/60521.html">贪心三题</a> 后，可以把这篇当作下一步：当一个局部选择无法保证未来仍然最优时，保留不同状态的最优结果，之后再比较。</p>
+<h2 id="2-Cut-Ribbon：为什么不能一直选最短的一段"><a href="#2-Cut-Ribbon：为什么不能一直选最短的一段" class="headerlink" title="2. Cut Ribbon：为什么不能一直选最短的一段"></a>2. Cut Ribbon：为什么不能一直选最短的一段</h2><p>给定总长度 <code>n</code>，每段只能取 <code>a、b、c</code> 三种正整数长度，目标是在<strong>不剩余材料</strong>的前提下，让段数最多。题目保证有解，四个输入数均不超过 4000。</p>
+<p>先看反例：总长度为 7，允许长度为 2、3、5。连续取最短的 2，会留下无法处理的 1；合法最优方案却是 <code>2 + 2 + 3</code>，共 3 段。</p>
+<p>“短段更有利”只是方向感。能否恰好填满剩余长度，必须进入状态。</p>
+<h3 id="定义状态与初始化"><a href="#定义状态与初始化" class="headerlink" title="定义状态与初始化"></a>定义状态与初始化</h3><p>定义 <code>dp[len]</code> 为：<strong>恰好拼出长度 len 时，最多可以使用多少段</strong>。</p>
+<ul>
+<li><code>dp[0] = 0</code>：空方案恰好拼出 0，使用 0 段。</li>
+<li>其余位置初始化为 <code>-1</code>：暂时没有合法方案。</li>
+<li>因为合法段数必定非负，这里的 <code>-1</code> 可以明确代表不可达。</li>
+</ul>
+<p>不能把整个数组初始化为 0。例如允许长度 2、3、5 时，长度 1 不可达，不能在这个“假方案”后再接一段。</p>
+<h3 id="从最后一段反推转移"><a href="#从最后一段反推转移" class="headerlink" title="从最后一段反推转移"></a>从最后一段反推转移</h3><p>假设最后一段长度为 <code>piece</code>，去掉它后，前面的段必须恰好拼出 <code>len - piece</code>。只有前驱可达时，才考虑候选值 <code>dp[len - piece] + 1</code>。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[目标长度 len] --&gt; B[枚举最后一段 piece]
+    B --&gt; C{len 足够且前驱可达}
+    C --&gt;|是| D[候选段数为前驱最优值加一]
+    C --&gt;|否| E[跳过这条转移]
+    D --&gt; F[保留最大候选值]
+    E --&gt; F
+  </pre></div>
+
+<p>仍用 <code>n=7，长度集合=&#123;2,3,5&#125;</code> 手算：</p>
+<table>
+<thead>
+<tr>
+<th>len</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dp[len]</td>
+<td>0</td>
+<td>不可达</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>一种最优拆法</td>
+<td>空</td>
+<td>—</td>
+<td>2</td>
+<td>3</td>
+<td>2+2</td>
+<td>2+3</td>
+<td>2+2+2</td>
+<td>2+2+3</td>
+</tr>
+</tbody></table>
+<p>注意长度 5 可以直接取一段 5，也可以拆成两段 2 和 3；状态保存的是“最多段数”，因此取 2。</p>
+<h3 id="C-17-实现"><a href="#C-17-实现" class="headerlink" title="C++17 实现"></a>C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n, a, b, c;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; a &gt;&gt; b &gt;&gt; c;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">dp</span><span class="params">(n + <span class="number">1</span>, <span class="number">-1</span>)</span></span>;</span><br><span class="line">    dp[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> len = <span class="number">1</span>; len &lt;= n; ++len) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> piece : &#123;a, b, c&#125;) &#123;</span><br><span class="line">            <span class="keyword">if</span> (len &gt;= piece &amp;&amp; dp[len - piece] != <span class="number">-1</span>) &#123;</span><br><span class="line">                dp[len] = <span class="built_in">max</span>(dp[len], dp[len - piece] + <span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; dp[n] &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="为什么这个转移不会漏掉最优解"><a href="#为什么这个转移不会漏掉最优解" class="headerlink" title="为什么这个转移不会漏掉最优解"></a>为什么这个转移不会漏掉最优解</h3><p>任何合法方案都有最后一段，它必然属于三种允许长度之一。去掉最后一段后，如果剩余方案不是对应前驱的最优方案，就可以替换成更优方案，使总段数进一步增加。因此，只需比较三种最后一段所对应的最优前驱。</p>
+<p>所有长度为正，前驱下标一定小于当前下标；从小到大计算时，依赖都已完成。每个长度只检查三次，时间为 <code>O(n)</code>，空间为 <code>O(n)</code>。允许长度重复也不影响答案，只会重复检查同一候选。</p>
+<h2 id="3-Boredom：状态轴为什么不是数组下标"><a href="#3-Boredom：状态轴为什么不是数组下标" class="headerlink" title="3. Boredom：状态轴为什么不是数组下标"></a>3. Boredom：状态轴为什么不是数组下标</h2><p>每次选一个数值 <code>x</code> 获得 <code>x</code> 分，并删除所有值为 <code>x-1</code> 和 <code>x+1</code> 的元素。相同数值的其他元素仍然存在。输入最多有十万个数，每个值介于 1 和十万之间。</p>
+<p>冲突取决于<strong>数值相差一</strong>，与两个元素在原数组里是否挨着无关。因此，应该先统计 <code>count[x]</code>，把每个值的总收益记为 <code>gain[x] = x * count[x]</code>。</p>
+<p>一旦决定选择值 <code>x</code>，它的所有副本都可以依次选走：继续选同值不会引入新的冲突，而且收益为正。原问题就变成：从数轴上选择一些互不相邻的位置，让总权重最大。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[原数组] --&gt; B[按数值统计频次]
+    B --&gt; C[每个值的权重为值乘频次]
+    C --&gt; D[相邻数值不能同时选择]
+    D --&gt; E[比较选当前值与跳过当前值]
+  </pre></div>
+
+<h3 id="收益最大的值也不能盲目先拿"><a href="#收益最大的值也不能盲目先拿" class="headerlink" title="收益最大的值也不能盲目先拿"></a>收益最大的值也不能盲目先拿</h3><p>考虑数组 <code>[2, 2, 3, 3, 3, 4, 4]</code>。各值的总收益为 <code>4、9、8</code>。优先拿收益最大的 3，只能得到 9；选择 2 和 4 则能得到 12。</p>
+<p>局部最大收益会同时排斥左右两侧，失去的机会可能更大。</p>
+<h3 id="定义状态，拆成互斥的两类"><a href="#定义状态，拆成互斥的两类" class="headerlink" title="定义状态，拆成互斥的两类"></a>定义状态，拆成互斥的两类</h3><p>令 <code>dp[v]</code> 表示：只允许使用数值 <code>1…v</code> 时，最多能得多少分。</p>
+<table>
+<thead>
+<tr>
+<th>对值 v 的选择</th>
+<th>前面还能选择的范围</th>
+<th>候选收益</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>不选 v</td>
+<td>1…v-1</td>
+<td><code>dp[v-1]</code></td>
+</tr>
+<tr>
+<td>选择所有 v</td>
+<td>1…v-2</td>
+<td><code>dp[v-2] + gain[v]</code></td>
+</tr>
+</tbody></table>
+<p>所以 <code>dp[v] = max(dp[v-1], dp[v-2] + gain[v])</code>，边界为 <code>dp[0]=0</code>、<code>dp[1]=gain[1]</code>。</p>
+<p>用上面的例子逐步计算：</p>
+<table>
+<thead>
+<tr>
+<th>v</th>
+<th>gain[v]</th>
+<th>跳过 v</th>
+<th>选择 v</th>
+<th>dp[v]</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4</td>
+<td>0</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>9</td>
+<td>4</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>4</td>
+<td>8</td>
+<td>9</td>
+<td>4+8</td>
+<td>12</td>
+</tr>
+</tbody></table>
+<p>这里的 0 不是“不可达”。即使一个值都不选，也能合法得到 0 分；它与上一题的初始化语义完全不同。</p>
+<h3 id="C-17-实现-1"><a href="#C-17-实现-1" class="headerlink" title="C++17 实现"></a>C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">gain</span><span class="params">(<span class="number">100001</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="type">int</span> maximum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> x;</span><br><span class="line">        cin &gt;&gt; x;</span><br><span class="line">        gain[x] += x;</span><br><span class="line">        maximum = <span class="built_in">max</span>(maximum, x);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">dp</span><span class="params">(maximum + <span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    dp[<span class="number">1</span>] = gain[<span class="number">1</span>];  <span class="comment">// 题目保证至少一个数，且所有数为正</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">2</span>; v &lt;= maximum; ++v) &#123;</span><br><span class="line">        dp[v] = <span class="built_in">max</span>(dp[v - <span class="number">1</span>], dp[v - <span class="number">2</span>] + gain[v]);</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; dp[maximum] &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个最优方案要么不选 <code>v</code>，要么选择 <code>v</code> 并排除 <code>v-1</code>；两类互斥且覆盖所有方案。对两个前驱应用同样结论，就得到归纳证明。</p>
+<p>设值域上限为 <code>V=100000</code>，统计和初始化加递推的时间为 <code>O(n+V)</code>，空间为 <code>O(V)</code>。总收益可能达到 <code>10^10</code>，必须使用 <code>long long</code>。后续可以用两个变量压缩 DP 数组，但先保留完整状态更利于调试。</p>
+<h2 id="4-把状态写成一句能被检查的话"><a href="#4-把状态写成一句能被检查的话" class="headerlink" title="4. 把状态写成一句能被检查的话"></a>4. 把状态写成一句能被检查的话</h2><table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>Cut Ribbon</th>
+<th>Boredom</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>状态轴</td>
+<td>已拼出的精确长度</td>
+<td>允许使用的数值上界</td>
+</tr>
+<tr>
+<td>最后一个决策</td>
+<td>最后一段取哪种长度</td>
+<td>当前值选还是不选</td>
+</tr>
+<tr>
+<td>空方案是否合法</td>
+<td>仅长度 0 合法</td>
+<td>任意前缀均可不选</td>
+</tr>
+<tr>
+<td>不可达如何表示</td>
+<td>-1，且必须检查前驱</td>
+<td>不需要单独标记</td>
+</tr>
+<tr>
+<td>计算顺序</td>
+<td>长度从小到大</td>
+<td>数值从小到大</td>
+</tr>
+</tbody></table>
+<p>遇到新题时，先补全“在什么限制下，记录什么最优值”。然后检查不同历史是否真的能合并：如果未来还依赖一个没有记录的条件，当前状态就不够用。</p>
+<h2 id="5-自测与继续练习"><a href="#5-自测与继续练习" class="headerlink" title="5. 自测与继续练习"></a>5. 自测与继续练习</h2><p>可以用下面几组输入主动检查边界：</p>
+<ul>
+<li>Cut Ribbon：<code>1 1 1 1</code> 应得 1；<code>7 2 3 5</code> 应得 3；<code>7 2 4 7</code> 应得 1，检查算法是否错误接受剩余长度。</li>
+<li>Boredom：只有一个 7，应得 7；<code>[1,1,2,2,3,3]</code> 应得 8；十万个 100000 应得 <code>10000000000</code>，检查溢出。</li>
+</ul>
+<p>更可靠的本地方法是小规模对拍：剪绳题枚举三种段的数量；删数题枚举不同数值的所有子集，排除包含相邻数值的子集，再与 DP 比较。这样的穷举检查与快速算法采用不同思路，更容易发现共同样例之外的问题。</p>
+<p>拓展练习：让 Cut Ribbon 同时输出一组切法。每次改善 <code>dp[len]</code> 时记录最后一段长度，最后从 <code>n</code> 向 0 回溯。再思考：如果改问“不同切法有多少种”，顺序是否算不同方案？状态含义一变，循环顺序和去重方法也可能要变。</p>
+<p>回到 <a href="/algorithms/">算法练习路径</a> 可以对照贪心和二分；如果对 AI 中“多找几个候选再验证”感兴趣，可以继续读 <a href="/esblog/95731.html">大模型推理时计算</a>，比较精确算法证明与统计验证的差别。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/68219.html">https://eulersail.com/esblog/68219.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">动态规划</a><a class="post-meta__tags" href="/tags/%E7%8A%B6%E6%80%81%E8%AE%BE%E8%AE%A1/">状态设计</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/95731.html" title="大模型推理时计算：多想一会儿，为什么不一定更可靠"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">大模型推理时计算：多想一会儿，为什么不一定更可靠</div></div></a></div><div class="next-post pull-right"><a href="/esblog/90426.html" title="策略梯度入门：从 REINFORCE 到 Actor-Critic"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">策略梯度入门：从 REINFORCE 到 Actor-Critic</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div><div><a href="/esblog/60521.html" title="Codeforces 贪心三题：排序、交换论证与局部最优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="title">Codeforces 贪心三题：排序、交换论证与局部最优</div></div></a></div><div><a href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-04</div><div class="title">Codeforces 二分答案三题：可行性、边界与上界</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%A4%E9%81%93%E9%A2%98%EF%BC%8C%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E9%97%AE%E9%A2%98"><span class="toc-text">1. 两道题，两个关键问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Cut-Ribbon%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E4%B8%80%E7%9B%B4%E9%80%89%E6%9C%80%E7%9F%AD%E7%9A%84%E4%B8%80%E6%AE%B5"><span class="toc-text">2. Cut Ribbon：为什么不能一直选最短的一段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E7%8A%B6%E6%80%81%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">定义状态与初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E6%9C%80%E5%90%8E%E4%B8%80%E6%AE%B5%E5%8F%8D%E6%8E%A8%E8%BD%AC%E7%A7%BB"><span class="toc-text">从最后一段反推转移</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">C++17 实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B8%AA%E8%BD%AC%E7%A7%BB%E4%B8%8D%E4%BC%9A%E6%BC%8F%E6%8E%89%E6%9C%80%E4%BC%98%E8%A7%A3"><span class="toc-text">为什么这个转移不会漏掉最优解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Boredom%EF%BC%9A%E7%8A%B6%E6%80%81%E8%BD%B4%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%98%AF%E6%95%B0%E7%BB%84%E4%B8%8B%E6%A0%87"><span class="toc-text">3. Boredom：状态轴为什么不是数组下标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B6%E7%9B%8A%E6%9C%80%E5%A4%A7%E7%9A%84%E5%80%BC%E4%B9%9F%E4%B8%8D%E8%83%BD%E7%9B%B2%E7%9B%AE%E5%85%88%E6%8B%BF"><span class="toc-text">收益最大的值也不能盲目先拿</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E7%8A%B6%E6%80%81%EF%BC%8C%E6%8B%86%E6%88%90%E4%BA%92%E6%96%A5%E7%9A%84%E4%B8%A4%E7%B1%BB"><span class="toc-text">定义状态，拆成互斥的两类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-17-%E5%AE%9E%E7%8E%B0-1"><span class="toc-text">C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%8A%8A%E7%8A%B6%E6%80%81%E5%86%99%E6%88%90%E4%B8%80%E5%8F%A5%E8%83%BD%E8%A2%AB%E6%A3%80%E6%9F%A5%E7%9A%84%E8%AF%9D"><span class="toc-text">4. 把状态写成一句能被检查的话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E8%87%AA%E6%B5%8B%E4%B8%8E%E7%BB%A7%E7%BB%AD%E7%BB%83%E4%B9%A0"><span class="toc-text">5. 自测与继续练习</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/95731.html" title="大模型推理时计算：多想一会儿，为什么不一定更可靠">大模型推理时计算：多想一会儿，为什么不一定更可靠</a><time datetime="2026-09-05T02:10:00.000Z" title="发表于 2026-09-05 10:10:00">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/68219.html" title="Codeforces 动态规划两题：状态、转移与不可达">Codeforces 动态规划两题：状态、转移与不可达</a><time datetime="2026-09-05T02:00:00.000Z" title="发表于 2026-09-05 10:00:00">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/90426.html" title="策略梯度入门：从 REINFORCE 到 Actor-Critic">策略梯度入门：从 REINFORCE 到 Actor-Critic</a><time datetime="2026-09-04T02:40:00.000Z" title="发表于 2026-09-04 10:40:00">2026-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73819.html" title="古典音乐中的节奏与拍号：从脉搏、重拍到切分">古典音乐中的节奏与拍号：从脉搏、重拍到切分</a><time datetime="2026-09-04T02:20:00.000Z" title="发表于 2026-09-04 10:20:00">2026-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界">Codeforces 二分答案三题：可行性、边界与上界</a><time datetime="2026-09-04T02:00:00.000Z" title="发表于 2026-09-04 10:00:00">2026-09-04</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
