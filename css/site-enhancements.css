@@ -1363,6 +1363,13 @@
   }
 }
 
+/* Keep the decorative mascot from covering article text and player controls. */
+@media (max-width: 768px) {
+  #live2d-widget {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #recent-posts > .recent-post-item,
   .tag-cloud-list a,
