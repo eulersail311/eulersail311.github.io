@@ -1,0 +1,470 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="把建电站转化为连接虚拟源点，证明任意供电方案都对应一棵生成树，再用 Kruskal、并查集和 64 位整数构造最小成本电网。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树">
+<meta property="og:url" content="https://eulersail.com/esblog/94673.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="把建电站转化为连接虚拟源点，证明任意供电方案都对应一棵生成树，再用 Kruskal、并查集和 64 位整数构造最小成本电网。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-10T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-10T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="图论">
+<meta property="article:tag" content="并查集">
+<meta property="article:tag" content="最小生成树">
+<meta property="article:tag" content="Kruskal">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/94673.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-10 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">33</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">62</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-10T02:00:00.000Z" title="发表于 2026-09-10 10:00:00">2026-09-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-10T02:00:00.000Z" title="更新于 2026-09-10 10:00:00">2026-09-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/82541.html">25D</a> 用并查集从无权图中选出一片生成森林，但任意森林都可以，因为边没有成本。1245D 增加了真正的取舍：一座城市可以自己建电站，也可以铺电线接入另一座已经供电的城市；我们要同时决定电站位置和电线，令总费用最小。</p>
+<p>表面上这是两类操作。关键建模是增加一个虚拟顶点 0，把“在城市 i 建电站”也变成一条普通边。两类选择进入同一张图之后，问题就成为最小生成树。</p>
+<span id="more"></span>
+
+<h2 id="1-官方信息与约束"><a href="#1-官方信息与约束" class="headerlink" title="1. 官方信息与约束"></a>1. 官方信息与约束</h2><p><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1245/D">1245D · Shichikuji and Power Grid 官方题目</a> 于 2026-09-10 核对：难度 <strong>1900</strong>，官方标签为 <code>dsu</code>、<code>graphs</code>、<code>greedy</code>、<code>shortest paths</code>、<code>trees</code>，时间限制 2 秒，内存限制 256 MB。</p>
+<p>题目给出 n 座城市的坐标。城市 i 自建电站费用为 <code>cᵢ</code>；城市 i、j 之间铺线的费用为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(|xᵢ-xⱼ| + |yᵢ-yⱼ|) × (kᵢ+kⱼ)</span><br></pre></td></tr></table></figure>
+
+<p>输出最小总费用、建站城市和所选城市连线。</p>
+<table>
+<thead>
+<tr>
+<th>官方约束</th>
+<th>对实现的影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>1 ≤ n ≤ 2000</code></td>
+<td>完全图约有两百万条城市边，可以显式生成并排序</td>
+</tr>
+<tr>
+<td>坐标 <code>1…10⁶</code></td>
+<td>曼哈顿距离最大约 <code>2×10⁶</code></td>
+</tr>
+<tr>
+<td><code>cᵢ,kᵢ ≤ 10⁹</code></td>
+<td>单条电线费用可达约 <code>4×10¹⁵</code></td>
+</tr>
+<tr>
+<td>不同城市坐标可以相同</td>
+<td>城市间可能存在费用为 0 的电线</td>
+</tr>
+<tr>
+<td>输出任意一个最优方案</td>
+<td>验证应检查费用和供电性，而非固定答案顺序</td>
+</tr>
+</tbody></table>
+<p>总成本也可能超过 32 位整数，距离、边权和答案都必须使用 <code>long long</code>。先转为 64 位再做减法、绝对值和乘法，可以避免中间结果在 <code>int</code> 中溢出。</p>
+<h2 id="2-为什么逐城选择便宜方案会失败"><a href="#2-为什么逐城选择便宜方案会失败" class="headerlink" title="2. 为什么逐城选择便宜方案会失败"></a>2. 为什么逐城选择便宜方案会失败</h2><p>一种直觉是：对每座城市，比较“自建电站”与“接到某个城市”的最低费用，选择较小者。但局部最便宜的电线未必把它接到一个最终有电的区域；多座城市还可能互相选择，形成没有电站的环。</p>
+<p>例如三座城市的建站费用都为 10，三条城市连线费用都为 1。逐城都更愿意选电线，但只选电线的三角形没有电源。正确最优方案是建一座电站，再选两条电线，总费用 12。</p>
+<p>另一个极端是先决定所有建站点，再对其余城市找连接。这样需要枚举 <code>2ⁿ</code> 个建站集合。问题缺少的不是更聪明的局部比较，而是把“建站”与“连线”放进同一种连通结构。</p>
+<h2 id="3-虚拟源点：把建站也画成边"><a href="#3-虚拟源点：把建站也画成边" class="headerlink" title="3. 虚拟源点：把建站也画成边"></a>3. 虚拟源点：把建站也画成边</h2><p>新增顶点 0，代表一个抽象的电力来源：</p>
+<ul>
+<li>对每座城市 i，加入边 <code>(0,i)</code>，权重为 <code>cᵢ</code>；选中它表示在 i 建电站。</li>
+<li>对每对城市 i、j，加入边 <code>(i,j)</code>，权重为铺线费用；选中它表示修建这条电线。</li>
+</ul>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  graph TD
+    P((虚拟电源 0)) ---|建站费用 c1| A[城市 1]
+    P ---|建站费用 c2| B[城市 2]
+    P ---|建站费用 c3| C[城市 3]
+    A ---|铺线费用 w12| B
+    A ---|铺线费用 w13| C
+    B ---|铺线费用 w23| C
+  </pre></div>
+
+<p>在扩展图中，所有城市有电等价于所有城市都能走到 0：路径上遇到的第一条 <code>0—i</code> 边就是某座电站，后面的城市通过所选电线接入它。</p>
+<h2 id="4-为什么最优方案一定可以是一棵树"><a href="#4-为什么最优方案一定可以是一棵树" class="headerlink" title="4. 为什么最优方案一定可以是一棵树"></a>4. 为什么最优方案一定可以是一棵树</h2><p>先证明两个方向，避免只凭图像宣布“这是 MST”。</p>
+<p><strong>从供电方案到连通子图。</strong> 给定任意可行方案，把每座电站替换为一条 <code>0—i</code> 边，把每条电线保留为城市边。每座城市都能沿供电关系到达某座电站，因此扩展图中的所有顶点与 0 连通。</p>
+<p><strong>从连通子图到供电方案。</strong> 反过来，扩展图若连通，删除虚拟顶点的外壳含义，把与 0 相连的边解释为电站，其余边解释为电线。每座城市都有一条到 0 的路径，因此都能从路径上的某座电站获得电力。</p>
+<p>所有费用非负。任何连通子图若有环，删掉环上一条边仍然连通，成本不会增加。持续删环后得到一棵覆盖 <code>0…n</code> 的生成树。因此至少存在一个最优供电方案对应扩展图的最小生成树。</p>
+<p>这也解释了为什么一座城市可以通过多级电线获得电力：树上的路径本来就允许多个中间顶点。</p>
+<h2 id="5-Kruskal：从最便宜的边开始，但必须有证明"><a href="#5-Kruskal：从最便宜的边开始，但必须有证明" class="headerlink" title="5. Kruskal：从最便宜的边开始，但必须有证明"></a>5. Kruskal：从最便宜的边开始，但必须有证明</h2><p>将全部边按权重升序排列。扫描边 <code>(u,v)</code>：</p>
+<ul>
+<li>若 u、v 属于不同集合，选择该边并合并集合；</li>
+<li>若已经连通，跳过该边，避免成环；</li>
+<li>选满 n 条边后停止，因为扩展图有 n+1 个顶点。</li>
+</ul>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[生成虚拟边与所有城市边] --&gt; B[按费用升序排序]
+    B --&gt; C{端点当前连通吗}
+    C --&gt;|是| D[跳过，避免成环]
+    C --&gt;|否| E[选择边并合并集合]
+    E --&gt; F{已选 n 条边吗}
+    D --&gt; F
+    F --&gt;|否| C
+    F --&gt;|是| G[按是否接虚拟点拆分输出]
+  </pre></div>
+
+<p><strong>割性质证明。</strong> 在某次选择前，并查集的每个集合是当前森林的一个连通块。Kruskal 选择的是跨越这些块的全局最轻边 e。取任意包含此前已选边的最小生成树 T：若 T 已含 e，无需改变；否则把 e 加入 T 会形成一个环。环上必有另一条边 f 跨越 e 所连接的两个当前块，而且 <code>w(e)≤w(f)</code>。用 e 替换 f 后仍是生成树，成本不增，并包含更多 Kruskal 已选边。归纳可知所有选择都能扩展为某棵 MST。</p>
+<p>相同权重的边可以任意排序，交换论证仍成立，所以不同正确程序可能输出不同方案。</p>
+<h2 id="6-手工演算"><a href="#6-手工演算" class="headerlink" title="6. 手工演算"></a>6. 手工演算</h2><p>取三个城市，坐标、建站费用与系数如下：</p>
+<table>
+<thead>
+<tr>
+<th>城市</th>
+<th>坐标</th>
+<th>建站费用 c</th>
+<th>系数 k</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>(1,1)</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>(2,1)</td>
+<td>8</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>(5,1)</td>
+<td>4</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>扩展图的边权为：</p>
+<table>
+<thead>
+<tr>
+<th>边</th>
+<th>含义</th>
+<th>费用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0—1</td>
+<td>城市 1 建站</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0—2</td>
+<td>城市 2 建站</td>
+<td>8</td>
+</tr>
+<tr>
+<td>0—3</td>
+<td>城市 3 建站</td>
+<td>4</td>
+</tr>
+<tr>
+<td>1—2</td>
+<td>距离 1，系数和 2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>1—3</td>
+<td>距离 4，系数和 2</td>
+<td>8</td>
+</tr>
+<tr>
+<td>2—3</td>
+<td>距离 3，系数和 2</td>
+<td>6</td>
+</tr>
+</tbody></table>
+<p>按费用扫描：</p>
+<table>
+<thead>
+<tr>
+<th>顺序</th>
+<th>边</th>
+<th>决策</th>
+<th>已选总费用</th>
+<th>连通块</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1—2，2</td>
+<td>选择</td>
+<td>2</td>
+<td><code>&#123;1,2&#125;</code>、<code>&#123;0&#125;</code>、<code>&#123;3&#125;</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>0—1，3</td>
+<td>选择，城市 1 建站</td>
+<td>5</td>
+<td><code>&#123;0,1,2&#125;</code>、<code>&#123;3&#125;</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>0—3，4</td>
+<td>选择，城市 3 建站</td>
+<td>9</td>
+<td>全部连通</td>
+</tr>
+</tbody></table>
+<p>最终在城市 1、3 建站，并铺设 1—2，费用 9。若只建城市 1 的电站再铺 1—2、2—3，费用为 11；“电站越少越好”并不是目标。</p>
+<h2 id="7-完整-C-17-实现"><a href="#7-完整-C-17-实现" class="headerlink" title="7. 完整 C++17 实现"></a>7. 完整 C++17 实现</h2><p>边结构中将权重放在前面只是为了排序方便。输出时，虚拟边与城市边分开保存。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;numeric&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdlib&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> int64 = <span class="type">long</span> <span class="type">long</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">DSU</span> &#123;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; parent, size;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">DSU</span><span class="params">(<span class="type">int</span> n)</span> : parent(n), size(n, <span class="number">1</span>) &#123;</span></span><br><span class="line">        <span class="built_in">iota</span>(parent.<span class="built_in">begin</span>(), parent.<span class="built_in">end</span>(), <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">find</span><span class="params">(<span class="type">int</span> v)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (parent[v] != v) parent[v] = <span class="built_in">find</span>(parent[v]);</span><br><span class="line">        <span class="keyword">return</span> parent[v];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">unite</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123;</span><br><span class="line">        a = <span class="built_in">find</span>(a);</span><br><span class="line">        b = <span class="built_in">find</span>(b);</span><br><span class="line">        <span class="keyword">if</span> (a == b) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (size[a] &lt; size[b]) <span class="built_in">swap</span>(a, b);</span><br><span class="line">        parent[b] = a;</span><br><span class="line">        size[a] += size[b];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Edge</span> &#123;</span><br><span class="line">    int64 cost;</span><br><span class="line">    <span class="type">int</span> u, v;</span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>&lt;(<span class="type">const</span> Edge&amp; other) <span class="type">const</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> cost &lt; other.cost;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    <span class="function">vector&lt;int64&gt; <span class="title">x</span><span class="params">(n + <span class="number">1</span>)</span>, <span class="title">y</span><span class="params">(n + <span class="number">1</span>)</span>, <span class="title">c</span><span class="params">(n + <span class="number">1</span>)</span>, <span class="title">k</span><span class="params">(n + <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) cin &gt;&gt; x[i] &gt;&gt; y[i];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) cin &gt;&gt; c[i];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) cin &gt;&gt; k[i];</span><br><span class="line"></span><br><span class="line">    vector&lt;Edge&gt; edges;</span><br><span class="line">    edges.<span class="built_in">reserve</span>(<span class="built_in">static_cast</span>&lt;<span class="type">size_t</span>&gt;(n) * (n + <span class="number">1</span>) / <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) edges.<span class="built_in">push_back</span>(&#123;c[i], <span class="number">0</span>, i&#125;);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = i + <span class="number">1</span>; j &lt;= n; ++j) &#123;</span><br><span class="line">            <span class="type">const</span> int64 distance = <span class="built_in">llabs</span>(x[i] - x[j]) + <span class="built_in">llabs</span>(y[i] - y[j]);</span><br><span class="line">            edges.<span class="built_in">push_back</span>(&#123;distance * (k[i] + k[j]), i, j&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">sort</span>(edges.<span class="built_in">begin</span>(), edges.<span class="built_in">end</span>());</span><br><span class="line"></span><br><span class="line">    <span class="function">DSU <span class="title">dsu</span><span class="params">(n + <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="type">int</span> selected = <span class="number">0</span>;</span><br><span class="line">    int64 total = <span class="number">0</span>;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; stations;</span><br><span class="line">    vector&lt;pair&lt;<span class="type">int</span>, <span class="type">int</span>&gt;&gt; wires;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">const</span> Edge&amp; edge : edges) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!dsu.<span class="built_in">unite</span>(edge.u, edge.v)) <span class="keyword">continue</span>;</span><br><span class="line">        total += edge.cost;</span><br><span class="line">        ++selected;</span><br><span class="line">        <span class="keyword">if</span> (edge.u == <span class="number">0</span>) stations.<span class="built_in">push_back</span>(edge.v);</span><br><span class="line">        <span class="keyword">else</span> wires.<span class="built_in">emplace_back</span>(edge.u, edge.v);</span><br><span class="line">        <span class="keyword">if</span> (selected == n) <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    cout &lt;&lt; total &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    cout &lt;&lt; stations.<span class="built_in">size</span>() &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> city : stations) cout &lt;&lt; city &lt;&lt; <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">    cout &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    cout &lt;&lt; wires.<span class="built_in">size</span>() &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> [u, v] : wires) cout &lt;&lt; u &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; v &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-复杂度与内存估算"><a href="#8-复杂度与内存估算" class="headerlink" title="8. 复杂度与内存估算"></a>8. 复杂度与内存估算</h2><p>扩展图有 <code>E=n+n(n−1)/2=n(n+1)/2</code> 条边。生成边为 <code>O(n²)</code>，排序为 <code>O(n² log n)</code>，并查集扫描为 <code>O(n² α(n))</code>；总时间由排序主导。边数组占 <code>O(n²)</code> 空间。</p>
+<p>当 n&#x3D;2000 时共有 2,001,000 条边。上述 <code>Edge</code> 通常占 16 字节，约需 32 MB；再加排序、坐标和并查集数组，低于 256 MB。不过结构体实际大小由实现与对齐决定，内存估算不应只数逻辑字段。</p>
+<p>这道题还可用 <code>O(n²)</code> 的 Prim，不必保存完整边集。本文使用 Kruskal，是为了承接 25D 的并查集路线；若约束进一步增大，显式完全图会先在内存和排序上成为瓶颈。</p>
+<h2 id="9-边界与错误清单"><a href="#9-边界与错误清单" class="headerlink" title="9. 边界与错误清单"></a>9. 边界与错误清单</h2><table>
+<thead>
+<tr>
+<th>易错点</th>
+<th>后果</th>
+<th>检查方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>把“建站”单独贪心决定</td>
+<td>无法统一比较电站与连线</td>
+<td>加虚拟顶点 0</td>
+</tr>
+<tr>
+<td>只让电站城市彼此连通</td>
+<td>其他城市可能没有到电站的路径</td>
+<td>检查扩展图全部 n+1 个点连通</td>
+</tr>
+<tr>
+<td>城市边费用漏乘系数和</td>
+<td>权重模型错误</td>
+<td>手算一条曼哈顿距离边</td>
+</tr>
+<tr>
+<td>用 <code>int</code> 计算乘法</td>
+<td>单边即可能溢出</td>
+<td>坐标和系数读入 <code>long long</code></td>
+</tr>
+<tr>
+<td>认为坐标相同就是同一城市</td>
+<td>会漏掉合法的 0 费用边</td>
+<td>城市编号仍然不同</td>
+</tr>
+<tr>
+<td>选中 <code>0—i</code> 后输出为电线</td>
+<td>输出格式错误</td>
+<td>虚拟边归入 stations</td>
+</tr>
+<tr>
+<td>只选 n−1 条边</td>
+<td>扩展图有 n+1 个点</td>
+<td>MST 恰好选择 n 条边</td>
+</tr>
+<tr>
+<td>忘记 n&#x3D;1</td>
+<td>仍需建一个电站</td>
+<td>扩展图选择唯一的 <code>0—1</code> 边</td>
+</tr>
+</tbody></table>
+<h2 id="10-独立验证"><a href="#10-独立验证" class="headerlink" title="10. 独立验证"></a>10. 独立验证</h2><p>验证脚本 <code>tests/verify-power-grid-article.cjs</code> 直接提取本文 C++17 代码，无警告编译。它会解析输出并逐项检查：电站不重复、连线端点有效、所报成本与方案成本一致、所有城市最终连到某个电站。</p>
+<p>最优值由独立的 <code>O(n²)</code> Prim 计算，不复用文章的边排序或并查集。测试包含 n&#x3D;1、相同坐标、极大费用、手工例子、固定种子随机数据，以及 n&#x3D;2000 的规模测试。不同 MST 的输出可能不同，所以只比较可行性与最优总费用。</p>
+<p>完成后回到 <a href="/algorithms/">算法练习路径</a>：25D 训练“合并不同集合”，1245D 在此基础上加入边权顺序和割性质。下一步可以学习树上 DFS，分析一棵已经选出的树；也可以进入更难的 MST 边分类问题。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/94673.html">https://eulersail.com/esblog/94673.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E8%AE%BA/">图论</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E6%9F%A5%E9%9B%86/">并查集</a><a class="post-meta__tags" href="/tags/%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91/">最小生成树</a><a class="post-meta__tags" href="/tags/Kruskal/">Kruskal</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/88412.html" title="勃拉姆斯《D 大调第二交响曲》：田园表面下的暗流"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">勃拉姆斯《D 大调第二交响曲》：田园表面下的暗流</div></div></a></div><div class="next-post pull-right"><a href="/esblog/93826.html" title="贝多芬《第六交响曲“田园”》：从溪流、风暴到感恩"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">贝多芬《第六交响曲“田园”》：从溪流、风暴到感恩</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/82541.html" title="Codeforces 25D：并查集、生成森林与最少改路方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 25D：并查集、生成森林与最少改路方案</div></div></a></div><div><a href="/esblog/77420.html" title="Codeforces 20C Dijkstra：加权最短路与路径还原"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-08</div><div class="title">Codeforces 20C Dijkstra：加权最短路与路径还原</div></div></a></div><div><a href="/esblog/80632.html" title="Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">33</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">62</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%98%E6%96%B9%E4%BF%A1%E6%81%AF%E4%B8%8E%E7%BA%A6%E6%9D%9F"><span class="toc-text">1. 官方信息与约束</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%90%E5%9F%8E%E9%80%89%E6%8B%A9%E4%BE%BF%E5%AE%9C%E6%96%B9%E6%A1%88%E4%BC%9A%E5%A4%B1%E8%B4%A5"><span class="toc-text">2. 为什么逐城选择便宜方案会失败</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%99%9A%E6%8B%9F%E6%BA%90%E7%82%B9%EF%BC%9A%E6%8A%8A%E5%BB%BA%E7%AB%99%E4%B9%9F%E7%94%BB%E6%88%90%E8%BE%B9"><span class="toc-text">3. 虚拟源点：把建站也画成边</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%80%E4%BC%98%E6%96%B9%E6%A1%88%E4%B8%80%E5%AE%9A%E5%8F%AF%E4%BB%A5%E6%98%AF%E4%B8%80%E6%A3%B5%E6%A0%91"><span class="toc-text">4. 为什么最优方案一定可以是一棵树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Kruskal%EF%BC%9A%E4%BB%8E%E6%9C%80%E4%BE%BF%E5%AE%9C%E7%9A%84%E8%BE%B9%E5%BC%80%E5%A7%8B%EF%BC%8C%E4%BD%86%E5%BF%85%E9%A1%BB%E6%9C%89%E8%AF%81%E6%98%8E"><span class="toc-text">5. Kruskal：从最便宜的边开始，但必须有证明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">6. 手工演算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">7. 完整 C++17 实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%B8%8E%E5%86%85%E5%AD%98%E4%BC%B0%E7%AE%97"><span class="toc-text">8. 复杂度与内存估算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E8%BE%B9%E7%95%8C%E4%B8%8E%E9%94%99%E8%AF%AF%E6%B8%85%E5%8D%95"><span class="toc-text">9. 边界与错误清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81"><span class="toc-text">10. 独立验证</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/88412.html" title="勃拉姆斯《D 大调第二交响曲》：田园表面下的暗流">勃拉姆斯《D 大调第二交响曲》：田园表面下的暗流</a><time datetime="2026-09-10T02:10:00.000Z" title="发表于 2026-09-10 10:10:00">2026-09-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/94673.html" title="Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树">Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树</a><time datetime="2026-09-10T02:00:00.000Z" title="发表于 2026-09-10 10:00:00">2026-09-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/93826.html" title="贝多芬《第六交响曲“田园”》：从溪流、风暴到感恩">贝多芬《第六交响曲“田园”》：从溪流、风暴到感恩</a><time datetime="2026-09-09T07:10:00.000Z" title="发表于 2026-09-09 15:10:00">2026-09-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/82541.html" title="Codeforces 25D：并查集、生成森林与最少改路方案">Codeforces 25D：并查集、生成森林与最少改路方案</a><time datetime="2026-09-09T07:00:00.000Z" title="发表于 2026-09-09 15:00:00">2026-09-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/82649.html" title="德沃夏克《G 大调第八交响曲》：从歌唱、舞步到终曲变奏">德沃夏克《G 大调第八交响曲》：从歌唱、舞步到终曲变奏</a><time datetime="2026-09-09T02:10:00.000Z" title="发表于 2026-09-09 10:10:00">2026-09-09</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
