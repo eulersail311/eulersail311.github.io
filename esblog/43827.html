@@ -1,0 +1,583 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 树上 DFS 三题：深度、路径状态与子树贡献 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用 115A、580C 与 1336A 三道递进题练习树上 DFS：从最大深度、根到叶路径状态，走到子树大小与可证明的贪心贡献。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 树上 DFS 三题：深度、路径状态与子树贡献">
+<meta property="og:url" content="https://eulersail.com/esblog/43827.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用 115A、580C 与 1336A 三道递进题练习树上 DFS：从最大深度、根到叶路径状态，走到子树大小与可证明的贪心贡献。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-14T12:20:00.000Z">
+<meta property="article:modified_time" content="2026-09-14T12:20:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="贪心">
+<meta property="article:tag" content="图论">
+<meta property="article:tag" content="树">
+<meta property="article:tag" content="深度优先搜索">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/43827.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 树上 DFS 三题：深度、路径状态与子树贡献',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-14 20:20:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">78</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 树上 DFS 三题：深度、路径状态与子树贡献</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-14T12:20:00.000Z" title="发表于 2026-09-14 20:20:00">2026-09-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-14T12:20:00.000Z" title="更新于 2026-09-14 20:20:00">2026-09-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 树上 DFS 三题：深度、路径状态与子树贡献"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/70146.html">1006E Military Problem</a> 展示了怎样用一次 DFS 把子树拍平成连续区间。本文把镜头拉回 DFS 本身，用三道题逐层增加状态：115A 只需要知道节点深度，580C 要把“当前连续有猫数”沿路径传下去，1336A 则要在返回阶段汇总子树大小，再把统计量交给贪心。</p>
+<p>三题放在一起的意义，是看清 DFS 并不等于一段固定模板。真正需要设计的是：<strong>进入节点时已经知道什么，离开节点时要带回什么，以及哪些信息只属于当前路径。</strong></p>
+<span id="more"></span>
+
+<h2 id="1-三道题的官方信息"><a href="#1-三道题的官方信息" class="headerlink" title="1. 三道题的官方信息"></a>1. 三道题的官方信息</h2><p>以下元数据于 2026-09-14 通过 Codeforces 官方题目页核对。</p>
+<table>
+<thead>
+<tr>
+<th>题目</th>
+<th align="right">难度</th>
+<th>官方标签</th>
+<th>约束</th>
+<th>本文训练点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/115/A">115A · Party</a></td>
+<td align="right">900</td>
+<td><code>dfs and similar</code>、<code>graphs</code>、<code>trees</code></td>
+<td><code>1≤n≤2000</code>，管理关系无环</td>
+<td>深度与森林</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/580/C">580C · Kefa and Park</a></td>
+<td align="right">1500</td>
+<td><code>dfs and similar</code>、<code>graphs</code>、<code>trees</code></td>
+<td><code>2≤n≤10^5</code>，<code>1≤m≤n</code></td>
+<td>路径状态与剪枝</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1336/A">1336A · Linova and Kingdom</a></td>
+<td align="right">1600</td>
+<td><code>dfs and similar</code>、<code>dp</code>、<code>greedy</code>、<code>sortings</code>、<code>trees</code></td>
+<td><code>2≤n≤2×10^5</code>，<code>1≤k&lt;n</code></td>
+<td>深度、子树大小与贪心</td>
+</tr>
+</tbody></table>
+<p>题目规模逐步增大，第三题达到二十万个节点。后两题的完整实现都使用显式栈，避免一条长链把 C++ 调用栈压满。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[115A&lt;br&gt;只问节点在第几层] --&gt; B[580C&lt;br&gt;把路径状态传给孩子]
+    B --&gt; C[1336A&lt;br&gt;返回时汇总子树大小]
+    C --&gt; D[把 DFS 统计量&lt;br&gt;转化为贪心贡献]
+  </pre></div>
+
+<h2 id="2-第一题：115A-Party，把分组数变成最大深度"><a href="#2-第一题：115A-Party，把分组数变成最大深度" class="headerlink" title="2. 第一题：115A Party，把分组数变成最大深度"></a>2. 第一题：115A Party，把分组数变成最大深度</h2><h3 id="2-1-题目到底在限制什么"><a href="#2-1-题目到底在限制什么" class="headerlink" title="2.1 题目到底在限制什么"></a>2.1 题目到底在限制什么</h3><p>公司有 <code>n</code> 名员工。每人没有直属上司，或恰有一名直属上司；管理关系保证无环，所以整体是一片有根森林。要把所有人分组，同组中不能出现“某人是另一人的直接或间接上司”，求最少组数。</p>
+<p>朴素想法可能是从第一名员工开始，逐个寻找当前能放的组。但“放进哪个组”会受先前选择影响，模拟过程掩盖了真正的不变量：上下级冲突只发生在同一条祖先链上。</p>
+<p>定义根员工的深度为 1，其他员工的深度为直属上司深度加 1。答案就是整片森林的最大深度 <code>H</code>。</p>
+<h3 id="2-2-为什么答案恰好是-H"><a href="#2-2-为什么答案恰好是-H" class="headerlink" title="2.2 为什么答案恰好是 H"></a>2.2 为什么答案恰好是 <code>H</code></h3><p>先看下界。取一条长度为 <code>H</code> 的最长管理链，链上任意两人都有上下级关系，因此这 <code>H</code> 人必须分到不同组，答案不可能少于 <code>H</code>。</p>
+<p>再看上界。把所有深度相同的人放进同一组。若一个人是另一个人的上司，他一定更接近树根，深度严格更小；所以同深度的两人绝不会构成上下级。用深度 1 到 <code>H</code> 建立 <code>H</code> 组一定合法。</p>
+<p>上下界相等，最少组数就是最大深度。这比尝试构造各种分组顺序更直接。</p>
+<h3 id="2-3-手工演算"><a href="#2-3-手工演算" class="headerlink" title="2.3 手工演算"></a>2.3 手工演算</h3><p>官方样例的直属上司依次是 <code>-1, 1, 2, 1, -1</code>：</p>
+<table>
+<thead>
+<tr>
+<th align="right">员工</th>
+<th align="right">直属上司</th>
+<th align="right">深度</th>
+<th align="right">可放入的组</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td align="right">无</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">无</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+</tbody></table>
+<p>最长链是 <code>1→2→3</code>，需要 3 组；员工 2 与 4 深度相同，可以同组，员工 1 与 5 也可以同组。</p>
+<h3 id="2-4-完整-C-17-实现"><a href="#2-4-完整-C-17-实现" class="headerlink" title="2.4 完整 C++17 实现"></a>2.4 完整 C++17 实现</h3><p>这里用带记忆化的 <code>depthOf</code> 沿父指针向上计算深度。每个节点的深度只会真正求一次。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">parent</span><span class="params">(n + <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> employee = <span class="number">1</span>; employee &lt;= n; ++employee) &#123;</span><br><span class="line">        cin &gt;&gt; parent[employee];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">depth</span><span class="params">(n + <span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    function&lt;<span class="type">int</span>(<span class="type">int</span>)&gt; depthOf = [&amp;](<span class="type">int</span> employee) -&gt; <span class="type">int</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (depth[employee] != <span class="number">0</span>) <span class="keyword">return</span> depth[employee];</span><br><span class="line">        <span class="keyword">if</span> (parent[employee] == <span class="number">-1</span>) <span class="keyword">return</span> depth[employee] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> depth[employee] = <span class="built_in">depthOf</span>(parent[employee]) + <span class="number">1</span>;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> answer = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> employee = <span class="number">1</span>; employee &lt;= n; ++employee) &#123;</span><br><span class="line">        answer = <span class="built_in">max</span>(answer, <span class="built_in">depthOf</span>(employee));</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间复杂度为 <code>O(n)</code>，空间复杂度为 <code>O(n)</code>。本题深度上限只有 2000，递归记忆化足够安全；若约束扩大到二十万，可以改成显式栈或按入度从根向下遍历。</p>
+<h2 id="3-第二题：580C-Kefa-and-Park，把状态带在当前路径上"><a href="#3-第二题：580C-Kefa-and-Park，把状态带在当前路径上" class="headerlink" title="3. 第二题：580C Kefa and Park，把状态带在当前路径上"></a>3. 第二题：580C Kefa and Park，把状态带在当前路径上</h2><h3 id="3-1-“有几只猫”为什么不够"><a href="#3-1-“有几只猫”为什么不够" class="headerlink" title="3.1 “有几只猫”为什么不够"></a>3.1 “有几只猫”为什么不够</h3><p>公园是一棵以 1 为根的树，叶子上有餐厅。每个节点标记是否有猫；若从根到餐厅的路径上出现超过 <code>m</code> 个<strong>连续</strong>有猫节点，这家餐厅就不能去。目标是统计可达餐厅数。</p>
+<p>总猫数不是有效状态。例如两条长度相同的路径都经过三只有猫节点：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 1 1 0    最长连续段是 3</span><br><span class="line">1 0 1 1    最长连续段是 2</span><br></pre></td></tr></table></figure>
+
+<p>当 <code>m=2</code> 时，前者非法，后者合法。到达节点 <code>u</code> 时，未来真正关心的是“以 <code>u</code> 结尾的连续有猫段有多长”，记为 <code>consecutive[u]</code>。</p>
+<h3 id="3-2-状态转移与剪枝"><a href="#3-2-状态转移与剪枝" class="headerlink" title="3.2 状态转移与剪枝"></a>3.2 状态转移与剪枝</h3><p>从父节点 <code>u</code> 走到孩子 <code>v</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">若 v 有猫：next = consecutive[u] + 1</span><br><span class="line">若 v 没猫：next = 0</span><br></pre></td></tr></table></figure>
+
+<p>若 <code>next&gt;m</code>，可以直接剪掉 <code>v</code> 的整棵子树。原因不是“后面不可能再遇到无猫节点”，而是当前根到 <code>v</code> 的路径已经包含一个过长连续段；后面即使清零，也无法抹掉已经发生的违规片段。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[到达节点 u&lt;br&gt;已知连续计数 c] --&gt; B{u 是否有猫}
+    B -- 是 --&gt; C[c 加 1]
+    B -- 否 --&gt; D[c 变为 0]
+    C --&gt; E{c 是否大于 m}
+    D --&gt; E
+    E -- 是 --&gt; F[剪掉整棵子树]
+    E -- 否 --&gt; G{u 是否没有孩子}
+    G -- 是 --&gt; H[合法餐厅加 1]
+    G -- 否 --&gt; I[把状态传给每个孩子]
+  </pre></div>
+
+<h3 id="3-3-手工演算"><a href="#3-3-手工演算" class="headerlink" title="3.3 手工演算"></a>3.3 手工演算</h3><p>考虑路径 <code>1→2→4→7</code>，猫标记为 <code>1,1,0,1</code>，限制 <code>m=2</code>：</p>
+<table>
+<thead>
+<tr>
+<th align="right">到达节点</th>
+<th align="right">是否有猫</th>
+<th align="right">更新前连续数</th>
+<th align="right">更新后连续数</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td>继续</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td>继续，仍等于上限</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td>清零</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td>若为叶子，计入答案</td>
+</tr>
+</tbody></table>
+<p>若节点 4 也有猫，到达它时连续数会变为 3，整条分支立即被剪掉。</p>
+<h3 id="3-4-正确性证明"><a href="#3-4-正确性证明" class="headerlink" title="3.4 正确性证明"></a>3.4 正确性证明</h3><p><strong>路径状态不变量：</strong> 栈中状态 <code>(u,parent,c)</code> 被处理时，<code>c</code> 等于根到 <code>u</code> 路径末尾的连续有猫节点数。根节点由 0 按自身标记更新，结论成立；从父到子时，有猫便在末尾追加 1，无猫便让末尾连续段归零，所以不变量归纳成立。</p>
+<p>若 <code>c&gt;m</code>，根到 <code>u</code> 已经存在非法连续段，任何到 <code>u</code> 后代的路径都以这段前缀开头，因此剪枝不会漏掉合法餐厅。若未被剪枝且 <code>u</code> 没有除父节点外的邻居，<code>u</code> 正是有根树的叶子；依据不变量，它的完整路径满足限制，应且只应计数一次。</p>
+<h3 id="3-5-完整-C-17-实现"><a href="#3-5-完整-C-17-实现" class="headerlink" title="3.5 完整 C++17 实现"></a>3.5 完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tuple&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n, m;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; m;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">hasCat</span><span class="params">(n + <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> node = <span class="number">1</span>; node &lt;= n; ++node) cin &gt;&gt; hasCat[node];</span><br><span class="line"></span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> edge = <span class="number">1</span>; edge &lt; n; ++edge) &#123;</span><br><span class="line">        <span class="type">int</span> u, v;</span><br><span class="line">        cin &gt;&gt; u &gt;&gt; v;</span><br><span class="line">        graph[u].<span class="built_in">push_back</span>(v);</span><br><span class="line">        graph[v].<span class="built_in">push_back</span>(u);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vector&lt;tuple&lt;<span class="type">int</span>, <span class="type">int</span>, <span class="type">int</span>&gt;&gt; stack;</span><br><span class="line">    stack.<span class="built_in">emplace_back</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="type">int</span> answer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (!stack.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">        <span class="keyword">auto</span> [node, parent, previous] = stack.<span class="built_in">back</span>();</span><br><span class="line">        stack.<span class="built_in">pop_back</span>();</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> consecutive = hasCat[node] ? previous + <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (consecutive &gt; m) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        <span class="type">bool</span> isLeaf = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> next : graph[node]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (next == parent) <span class="keyword">continue</span>;</span><br><span class="line">            isLeaf = <span class="literal">false</span>;</span><br><span class="line">            stack.<span class="built_in">emplace_back</span>(next, node, consecutive);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (isLeaf) ++answer;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个节点与每条边只处理常数次，时间复杂度 <code>O(n)</code>，邻接表和显式栈占 <code>O(n)</code> 空间。</p>
+<h2 id="4-第三题：1336A-Linova-and-Kingdom，让子树统计进入贪心"><a href="#4-第三题：1336A-Linova-and-Kingdom，让子树统计进入贪心" class="headerlink" title="4. 第三题：1336A Linova and Kingdom，让子树统计进入贪心"></a>4. 第三题：1336A Linova and Kingdom，让子树统计进入贪心</h2><h3 id="4-1-题目中的两种角色"><a href="#4-1-题目中的两种角色" class="headerlink" title="4.1 题目中的两种角色"></a>4.1 题目中的两种角色</h3><p>王国是一棵以 1 为首都的树。恰好选择 <code>k</code> 个工业城市，其余城市发展旅游；每个工业城市派使者沿唯一路径前往首都，使者经过多少个旅游城市，就获得多少幸福值。求所有使者幸福值之和的最大值。</p>
+<p>只按深度选最深的 <code>k</code> 个点似乎合理，因为起点越深，路径越长。但若把一个靠近根、拥有大量后代的城市设为工业城市，它会从许多后代使者的旅游路径中消失。深度描述“自己能走多远”，子树大小描述“自己会影响多少后代”，两者必须同时计算。</p>
+<h3 id="4-2-先证明旅游城市向根闭合"><a href="#4-2-先证明旅游城市向根闭合" class="headerlink" title="4.2 先证明旅游城市向根闭合"></a>4.2 先证明旅游城市向根闭合</h3><p>存在一种最优方案满足：若非根节点 <code>u</code> 是旅游城市，它的父节点也一定是旅游城市。</p>
+<p>若 <code>u</code> 是旅游城市而父节点 <code>p</code> 是工业城市，交换两者角色：</p>
+<ul>
+<li>原来从 <code>p</code> 出发的使者取消；</li>
+<li>新增从 <code>u</code> 出发的使者，它会先经过现在变成旅游城市的 <code>p</code>；</li>
+<li>其他工业后代原本经过旅游城市 <code>u</code>，交换后改为经过旅游城市 <code>p</code>，数量不减少；</li>
+<li>树外路径不受影响。</li>
+</ul>
+<p>因此交换不会让总幸福值变小。重复交换后，旅游城市集合可以整理成“选择一个节点，就同时选择它的所有祖先”的形状。</p>
+<h3 id="4-3-每个旅游城市的固定贡献"><a href="#4-3-每个旅游城市的固定贡献" class="headerlink" title="4.3 每个旅游城市的固定贡献"></a>4.3 每个旅游城市的固定贡献</h3><p>设：</p>
+<ul>
+<li><code>depth[u]</code> 是根到 <code>u</code> 的边数，根深度为 0；</li>
+<li><code>subtreeSize[u]</code> 是包含 <code>u</code> 的子树节点数。</li>
+</ul>
+<p>若暂时统计每个旅游城市 <code>u</code> 对幸福值的贡献，它能服务子树中的 <code>subtreeSize[u]-1</code> 个真后代。这里还把旅游后代也算进去了；由于旅游集合向根闭合，每个旅游后代 <code>v</code> 的所有 <code>depth[v]</code> 个祖先也都是旅游城市。把这些“没有使者的旅游后代”造成的多算，按后代逐一扣回，得到恒等式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">总幸福值 = Σ[(subtreeSize[u] - 1) - depth[u]]，其中 u 遍历旅游城市</span><br></pre></td></tr></table></figure>
+
+<p>所以旅游贡献为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gain[u] = (subtreeSize[u] - 1) - depth[u]</span><br></pre></td></tr></table></figure>
+
+<p>选择最大的 <code>n-k</code> 个贡献即可。这个排序还会自动满足向根闭合：对父子边 <code>p→u</code>，有</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gain[p] - gain[u] = subtreeSize[p] - subtreeSize[u] + 1 &gt; 0</span><br></pre></td></tr></table></figure>
+
+<p>父节点贡献严格大于孩子，因此只要孩子进入前 <code>n-k</code> 名，父节点一定更早进入。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[一次向下遍历] --&gt; B[得到 parent 与 depth]
+    B --&gt; C[逆序处理节点]
+    C --&gt; D[得到 subtreeSize]
+    D --&gt; E[计算 gain &#x3D; size - 1 - depth]
+    E --&gt; F[从大到小排序]
+    F --&gt; G[取前 n-k 个旅游城市贡献]
+  </pre></div>
+
+<h3 id="4-4-官方第一组样例的贡献表"><a href="#4-4-官方第一组样例的贡献表" class="headerlink" title="4.4 官方第一组样例的贡献表"></a>4.4 官方第一组样例的贡献表</h3><p>样例中 <code>n=7,k=4</code>，所以选择 3 个旅游城市。树边为 <code>1-2,1-3,1-4,3-5,3-6,4-7</code>。</p>
+<table>
+<thead>
+<tr>
+<th align="right">城市</th>
+<th align="right">深度</th>
+<th align="right">子树大小</th>
+<th align="right">旅游贡献 <code>size-1-depth</code></th>
+<th>排序结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">7</td>
+<td align="right">6</td>
+<td>选旅游</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">-1</td>
+<td>选工业</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td>选旅游</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td>选旅游</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">-2</td>
+<td>选工业</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">-2</td>
+<td>选工业</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">-2</td>
+<td>选工业</td>
+</tr>
+</tbody></table>
+<p>前三个贡献之和为 <code>6+1+0=7</code>。对应工业城市可以是 <code>2,5,6,7</code>，四名使者的幸福值分别为 <code>1,2,2,2</code>，总和正好为 7。</p>
+<h3 id="4-5-完整-C-17-实现"><a href="#4-5-完整-C-17-实现" class="headerlink" title="4.5 完整 C++17 实现"></a>4.5 完整 C++17 实现</h3><p>先用显式栈生成父节点在孩子之前的 <code>order</code>，再逆序累加子树大小。<code>gain</code> 及答案使用 <code>long long</code>：链上深度之和可达到约 <code>2×10^10</code>。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n, k;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; k;</span><br><span class="line"></span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> edge = <span class="number">1</span>; edge &lt; n; ++edge) &#123;</span><br><span class="line">        <span class="type">int</span> u, v;</span><br><span class="line">        cin &gt;&gt; u &gt;&gt; v;</span><br><span class="line">        graph[u].<span class="built_in">push_back</span>(v);</span><br><span class="line">        graph[v].<span class="built_in">push_back</span>(u);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">parent</span><span class="params">(n + <span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">depth</span><span class="params">(n + <span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; order;</span><br><span class="line">    order.<span class="built_in">reserve</span>(n);</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; stack&#123;<span class="number">1</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (!stack.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">        <span class="type">int</span> node = stack.<span class="built_in">back</span>();</span><br><span class="line">        stack.<span class="built_in">pop_back</span>();</span><br><span class="line">        order.<span class="built_in">push_back</span>(node);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> next : graph[node]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (next == parent[node]) <span class="keyword">continue</span>;</span><br><span class="line">            parent[next] = node;</span><br><span class="line">            depth[next] = depth[node] + <span class="number">1</span>;</span><br><span class="line">            stack.<span class="built_in">push_back</span>(next);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">subtreeSize</span><span class="params">(n + <span class="number">1</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> index = n - <span class="number">1</span>; index &gt; <span class="number">0</span>; --index) &#123;</span><br><span class="line">        <span class="type">int</span> node = order[index];</span><br><span class="line">        subtreeSize[parent[node]] += subtreeSize[node];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; gain;</span><br><span class="line">    gain.<span class="built_in">reserve</span>(n);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> node = <span class="number">1</span>; node &lt;= n; ++node) &#123;</span><br><span class="line">        gain.<span class="built_in">push_back</span>(<span class="built_in">static_cast</span>&lt;<span class="type">long</span> <span class="type">long</span>&gt;(subtreeSize[node] - <span class="number">1</span>) - depth[node]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">sort</span>(gain.<span class="built_in">rbegin</span>(), gain.<span class="built_in">rend</span>());</span><br><span class="line"></span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> answer = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> index = <span class="number">0</span>; index &lt; n - k; ++index) &#123;</span><br><span class="line">        answer += gain[index];</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>两次遍历为 <code>O(n)</code>，排序为 <code>O(n log n)</code>，总空间复杂度 <code>O(n)</code>。</p>
+<h3 id="4-6-正确性证明"><a href="#4-6-正确性证明" class="headerlink" title="4.6 正确性证明"></a>4.6 正确性证明</h3><p><strong>引理一：</strong> 存在旅游集合向根闭合的最优方案。上面的父子角色交换不减少任一相关使者的幸福值，反复交换即可得到这种方案。</p>
+<p><strong>引理二：</strong> 对任一向根闭合的旅游集合，总幸福值等于所有旅游城市 <code>gain[u]</code> 之和。<code>subtreeSize[u]-1</code> 先计算旅游城市 <code>u</code> 对全部真后代的潜在服务；每个旅游后代 <code>v</code> 没有使者，却会在其 <code>depth[v]</code> 个旅游祖先处各被多算一次，扣除全部 <code>depth[v]</code> 后恰好只保留工业后代与旅游祖先之间的配对。</p>
+<p><strong>引理三：</strong> 贡献最大的任意前 <code>n-k</code> 个节点向根闭合。每条父子边上父亲贡献严格大于孩子，所以孩子入选时其全部祖先必已入选。</p>
+<p><strong>定理：</strong> 排序取前 <code>n-k</code> 个贡献得到最大幸福值。由引理三，这个集合是合法的根闭合旅游集合；在所有大小为 <code>n-k</code> 的节点集合中，前 <code>n-k</code> 个数之和最大。结合引理一与引理二，它至少达到某个最优合法集合的贡献和，因此就是全局最优值。</p>
+<h2 id="5-三题放在一起复盘"><a href="#5-三题放在一起复盘" class="headerlink" title="5. 三题放在一起复盘"></a>5. 三题放在一起复盘</h2><table>
+<thead>
+<tr>
+<th>题目</th>
+<th>进入节点时携带</th>
+<th>离开节点时汇总</th>
+<th>决策发生在哪里</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>115A</td>
+<td>父节点深度</td>
+<td>无</td>
+<td>取全局最大深度</td>
+</tr>
+<tr>
+<td>580C</td>
+<td>当前路径末尾的连续猫数</td>
+<td>无</td>
+<td>超限剪枝、叶子计数</td>
+</tr>
+<tr>
+<td>1336A</td>
+<td>父节点与深度</td>
+<td>子树大小</td>
+<td>对固定贡献排序</td>
+</tr>
+</tbody></table>
+<h3 id="常见错误清单"><a href="#常见错误清单" class="headerlink" title="常见错误清单"></a>常见错误清单</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>错误做法</th>
+<th>正确检查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>115A 有多个根</td>
+<td>只从一个根出发</td>
+<td>把输入看成森林，对每个节点求深度</td>
+</tr>
+<tr>
+<td>115A 分组</td>
+<td>直接贪心塞组</td>
+<td>先证明答案等于最大深度</td>
+</tr>
+<tr>
+<td>580C 遇到无猫点</td>
+<td>连续数保持不变</td>
+<td>必须清零</td>
+</tr>
+<tr>
+<td>580C 判断叶子</td>
+<td>无向图中只看“未访问”标记</td>
+<td>判断是否存在除父节点外的孩子</td>
+</tr>
+<tr>
+<td>580C 已经超限</td>
+<td>等后面无猫点再恢复</td>
+<td>当前非法前缀会保留在所有后代路径中</td>
+</tr>
+<tr>
+<td>1336A 只看深度</td>
+<td>忽略节点对后代路径的影响</td>
+<td>同时计算 <code>depth</code> 与 <code>subtreeSize</code></td>
+</tr>
+<tr>
+<td>1336A 把 <code>k</code> 用反</td>
+<td>取 <code>k</code> 个旅游城市</td>
+<td>题目规定 <code>k</code> 个工业城市，因此旅游数是 <code>n-k</code></td>
+</tr>
+<tr>
+<td>1336A 使用 <code>int</code> 累加</td>
+<td>长链上溢出</td>
+<td>贡献与答案使用 <code>long long</code></td>
+</tr>
+</tbody></table>
+<h2 id="6-独立验证怎样做"><a href="#6-独立验证怎样做" class="headerlink" title="6. 独立验证怎样做"></a>6. 独立验证怎样做</h2><p><code>tests/verify-tree-dfs-three-article.cjs</code> 会分别提取三段 C++17 程序，以 <code>-Wall -Wextra -pedantic</code> 编译并要求零警告。验证器没有复用文章公式：</p>
+<ul>
+<li>115A 沿每个节点的父指针直接数祖先链长度；</li>
+<li>580C 枚举每个叶子的完整根路径，再扫描最长连续有猫段；</li>
+<li>1336A 在小树上枚举所有恰含 <code>k</code> 个工业城市的集合，逐名使者走到首都计算幸福值。</li>
+</ul>
+<p>测试还覆盖官方样例、随机森林、随机树、根有猫、连续段恰等于上限、链与星形树，以及十万至二十万个节点的大输入。第三题的枚举对拍尤其重要，因为它能同时发现“<code>k</code> 的角色用反”“深度差一”和贡献符号写反三类问题。</p>
+<p>学完这组三题，再回看 <a href="/esblog/70146.html">1006E 的 DFS 序与子树区间</a>，会更容易分辨树上信息的三个方向：沿根到点的路径向下传、从子树向上收，以及把访问过程保存为数组供后续查询。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/43827.html">https://eulersail.com/esblog/43827.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E8%B4%AA%E5%BF%83/">贪心</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E8%AE%BA/">图论</a><a class="post-meta__tags" href="/tags/%E6%A0%91/">树</a><a class="post-meta__tags" href="/tags/%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/">深度优先搜索</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/76015.html" title="拉赫玛尼诺夫《E 小调第二交响曲》：长旋律怎样保存全曲记忆"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">拉赫玛尼诺夫《E 小调第二交响曲》：长旋律怎样保存全曲记忆</div></div></a></div><div class="next-post pull-right"><a href="/esblog/91504.html" title="马勒《D 大调第一交响曲》：远景声响怎样扩展到终曲"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">马勒《D 大调第一交响曲》：远景声响怎样扩展到终曲</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/70146.html" title="Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-12</div><div class="title">Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div><div><a href="/esblog/60521.html" title="Codeforces 贪心三题：排序、交换论证与局部最优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="title">Codeforces 贪心三题：排序、交换论证与局部最优</div></div></a></div><div><a href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-04</div><div class="title">Codeforces 二分答案三题：可行性、边界与上界</div></div></a></div><div><a href="/esblog/73148.html" title="Codeforces 520B Two Buttons：从状态图到逆向贪心"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-07</div><div class="title">Codeforces 520B Two Buttons：从状态图到逆向贪心</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">78</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%89%E9%81%93%E9%A2%98%E7%9A%84%E5%AE%98%E6%96%B9%E4%BF%A1%E6%81%AF"><span class="toc-text">1. 三道题的官方信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%AC%AC%E4%B8%80%E9%A2%98%EF%BC%9A115A-Party%EF%BC%8C%E6%8A%8A%E5%88%86%E7%BB%84%E6%95%B0%E5%8F%98%E6%88%90%E6%9C%80%E5%A4%A7%E6%B7%B1%E5%BA%A6"><span class="toc-text">2. 第一题：115A Party，把分组数变成最大深度</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%A2%98%E7%9B%AE%E5%88%B0%E5%BA%95%E5%9C%A8%E9%99%90%E5%88%B6%E4%BB%80%E4%B9%88"><span class="toc-text">2.1 题目到底在限制什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%AD%94%E6%A1%88%E6%81%B0%E5%A5%BD%E6%98%AF-H"><span class="toc-text">2.2 为什么答案恰好是 H</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">2.3 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">2.4 完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%AC%AC%E4%BA%8C%E9%A2%98%EF%BC%9A580C-Kefa-and-Park%EF%BC%8C%E6%8A%8A%E7%8A%B6%E6%80%81%E5%B8%A6%E5%9C%A8%E5%BD%93%E5%89%8D%E8%B7%AF%E5%BE%84%E4%B8%8A"><span class="toc-text">3. 第二题：580C Kefa and Park，把状态带在当前路径上</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E2%80%9C%E6%9C%89%E5%87%A0%E5%8F%AA%E7%8C%AB%E2%80%9D%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E5%A4%9F"><span class="toc-text">3.1 “有几只猫”为什么不够</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E4%B8%8E%E5%89%AA%E6%9E%9D"><span class="toc-text">3.2 状态转移与剪枝</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">3.3 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">3.4 正确性证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">3.5 完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AC%AC%E4%B8%89%E9%A2%98%EF%BC%9A1336A-Linova-and-Kingdom%EF%BC%8C%E8%AE%A9%E5%AD%90%E6%A0%91%E7%BB%9F%E8%AE%A1%E8%BF%9B%E5%85%A5%E8%B4%AA%E5%BF%83"><span class="toc-text">4. 第三题：1336A Linova and Kingdom，让子树统计进入贪心</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E9%A2%98%E7%9B%AE%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E8%A7%92%E8%89%B2"><span class="toc-text">4.1 题目中的两种角色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%85%88%E8%AF%81%E6%98%8E%E6%97%85%E6%B8%B8%E5%9F%8E%E5%B8%82%E5%90%91%E6%A0%B9%E9%97%AD%E5%90%88"><span class="toc-text">4.2 先证明旅游城市向根闭合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%AF%8F%E4%B8%AA%E6%97%85%E6%B8%B8%E5%9F%8E%E5%B8%82%E7%9A%84%E5%9B%BA%E5%AE%9A%E8%B4%A1%E7%8C%AE"><span class="toc-text">4.3 每个旅游城市的固定贡献</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%AE%98%E6%96%B9%E7%AC%AC%E4%B8%80%E7%BB%84%E6%A0%B7%E4%BE%8B%E7%9A%84%E8%B4%A1%E7%8C%AE%E8%A1%A8"><span class="toc-text">4.4 官方第一组样例的贡献表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">4.5 完整 C++17 实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">4.6 正确性证明</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%B8%89%E9%A2%98%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7%E5%A4%8D%E7%9B%98"><span class="toc-text">5. 三题放在一起复盘</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF%E6%B8%85%E5%8D%95"><span class="toc-text">常见错误清单</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E6%80%8E%E6%A0%B7%E5%81%9A"><span class="toc-text">6. 独立验证怎样做</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/76015.html" title="拉赫玛尼诺夫《E 小调第二交响曲》：长旋律怎样保存全曲记忆">拉赫玛尼诺夫《E 小调第二交响曲》：长旋律怎样保存全曲记忆</a><time datetime="2026-09-14T12:25:00.000Z" title="发表于 2026-09-14 20:25:00">2026-09-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/43827.html" title="Codeforces 树上 DFS 三题：深度、路径状态与子树贡献">Codeforces 树上 DFS 三题：深度、路径状态与子树贡献</a><time datetime="2026-09-14T12:20:00.000Z" title="发表于 2026-09-14 20:20:00">2026-09-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/91504.html" title="马勒《D 大调第一交响曲》：远景声响怎样扩展到终曲">马勒《D 大调第一交响曲》：远景声响怎样扩展到终曲</a><time datetime="2026-09-14T03:05:00.000Z" title="发表于 2026-09-14 11:05:00">2026-09-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/28416.html" title="Codeforces 339D Xenia and Bit Operations：交替 OR/XOR 线段树">Codeforces 339D Xenia and Bit Operations：交替 OR/XOR 线段树</a><time datetime="2026-09-14T03:00:00.000Z" title="发表于 2026-09-14 11:00:00">2026-09-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/67284.html" title="西贝柳斯《D 大调第二交响曲》：碎片怎样生长为终曲">西贝柳斯《D 大调第二交响曲》：碎片怎样生长为终曲</a><time datetime="2026-09-14T02:25:00.000Z" title="发表于 2026-09-14 10:25:00">2026-09-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
