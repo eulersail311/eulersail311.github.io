@@ -1,0 +1,625 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 拓扑排序三题：定向、分层与最少调用 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用 1385E、1572A 与 909E 比较三种拓扑排序变体：按拓扑位置给边定向、在依赖图上计算最少轮数，以及通过分批处理最小化协处理器调用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 拓扑排序三题：定向、分层与最少调用">
+<meta property="og:url" content="https://eulersail.com/esblog/73461.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用 1385E、1572A 与 909E 比较三种拓扑排序变体：按拓扑位置给边定向、在依赖图上计算最少轮数，以及通过分批处理最小化协处理器调用。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-16T03:20:00.000Z">
+<meta property="article:modified_time" content="2026-09-16T03:20:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="贪心">
+<meta property="article:tag" content="动态规划">
+<meta property="article:tag" content="图论">
+<meta property="article:tag" content="拓扑排序">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/73461.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 拓扑排序三题：定向、分层与最少调用',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-16 11:20:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">49</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">85</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 拓扑排序三题：定向、分层与最少调用</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-16T03:20:00.000Z" title="发表于 2026-09-16 11:20:00">2026-09-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-16T03:20:00.000Z" title="更新于 2026-09-16 11:20:00">2026-09-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>17分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 拓扑排序三题：定向、分层与最少调用"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/81937.html">510C Fox And Names</a> 展示了拓扑排序最直接的用途：把局部先后约束合成一个全局顺序。但在更多题目里，拓扑序只是骨架，答案还取决于我们在这个顺序上保存什么信息。</p>
+<p>本文连续分析三道题：1385E 用拓扑位置完成构造，1572A 在拓扑边上做最长路式动态规划，909E 则把入度为零的点按执行设备分成批次。它们共享“只有前置任务完成，后继才会释放”的过程，却不能共用同一个答案变量。</p>
+<span id="more"></span>
+
+<h2 id="1-官方信息与训练顺序"><a href="#1-官方信息与训练顺序" class="headerlink" title="1. 官方信息与训练顺序"></a>1. 官方信息与训练顺序</h2><p>以下题名、难度、标签和约束于 2026-09-16 通过 Codeforces 官方题目页核对。</p>
+<table>
+<thead>
+<tr>
+<th>题目</th>
+<th align="right">难度</th>
+<th>官方标签</th>
+<th>规模</th>
+<th>本文训练点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1385/E">1385E · Directing Edges</a></td>
+<td align="right">2000</td>
+<td><code>constructive algorithms</code>、<code>dfs and similar</code>、<code>graphs</code></td>
+<td>单组 <code>n,m≤2×10^5</code>，总和均不超过 <code>2×10^5</code></td>
+<td>用固定边的拓扑序决定其余边方向</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1572/A">1572A · Book</a></td>
+<td align="right">1800</td>
+<td><code>binary search</code>、<code>brute force</code>、<code>data structures</code>、<code>dp</code>、<code>graphs</code>、<code>implementation</code>、<code>sortings</code></td>
+<td>所有测试的章节数与依赖数总和不超过 <code>2×10^5</code></td>
+<td>拓扑 DP 计算最少扫描轮数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/909/E">909E · Coprocessor</a></td>
+<td align="right">1900</td>
+<td><code>dfs and similar</code>、<code>dp</code>、<code>graphs</code>、<code>greedy</code></td>
+<td><code>n,m≤10^5</code>，输入保证依赖图无环</td>
+<td>两类零入度点的贪心分批</td>
+</tr>
+</tbody></table>
+<p>建议按表中顺序练习。第一题先回答“拓扑序能否指导构造”，第二题再加入数值状态，第三题最后处理“同一批内可以继续释放任务”的操作语义。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[510C&lt;br&#x2F;&gt;构造任意拓扑序] --&gt; B[1385E&lt;br&#x2F;&gt;用位置给边定向]
+    B --&gt; C[1572A&lt;br&#x2F;&gt;在边上累积轮数]
+    C --&gt; D[909E&lt;br&#x2F;&gt;按设备形成最少批次]
+  </pre></div>
+
+<h2 id="2-共同骨架：入度何时变成零"><a href="#2-共同骨架：入度何时变成零" class="headerlink" title="2. 共同骨架：入度何时变成零"></a>2. 共同骨架：入度何时变成零</h2><p>对一条边 <code>u → v</code>，含义是 <code>u</code> 必须先完成。Kahn 算法维护每个点尚未完成的前驱数 <code>indegree[v]</code>：</p>
+<ol>
+<li>先把所有零入度点放入容器；</li>
+<li>取出一个可执行点 <code>u</code>；</li>
+<li>删除它的所有出边，即令每个后继的入度减一；</li>
+<li>某个后继第一次降到零时，它才成为新的可执行点。</li>
+</ol>
+<p>如果最终处理的点少于 <code>n</code>，未处理部分一定含有有向环。反过来，DAG 必然至少存在一个零入度点，所以这个过程能处理全部顶点。</p>
+<p>三题真正的差别在于“零入度之后怎么办”：</p>
+<table>
+<thead>
+<tr>
+<th>题目</th>
+<th>零入度点的用途</th>
+<th>额外状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1385E</td>
+<td>记录它在一个合法拓扑序中的位置</td>
+<td><code>position[u]</code></td>
+</tr>
+<tr>
+<td>1572A</td>
+<td>用它向后继传播最少扫描轮数</td>
+<td><code>round[u]</code></td>
+</tr>
+<tr>
+<td>909E</td>
+<td>按主处理器或协处理器放入不同队列</td>
+<td>两个就绪队列与调用次数</td>
+</tr>
+</tbody></table>
+<h2 id="3-第一题：1385E-Directing-Edges"><a href="#3-第一题：1385E-Directing-Edges" class="headerlink" title="3. 第一题：1385E Directing Edges"></a>3. 第一题：1385E Directing Edges</h2><h3 id="3-1-题意压缩"><a href="#3-1-题意压缩" class="headerlink" title="3.1 题意压缩"></a>3.1 题意压缩</h3><p>图中有两类边：</p>
+<ul>
+<li>已经定向的边不能改变；</li>
+<li>无向边必须选择一个方向。</li>
+</ul>
+<p>目标是让最终所有边组成 DAG。朴素地逐条尝试两个方向会产生 <code>2^k</code> 种方案，其中 <code>k</code> 是无向边数，显然无法承受。</p>
+<p>关键问题不是“每条无向边选哪边”，而是“能否先找出一个所有边都愿意服从的全局次序”。</p>
+<h3 id="3-2-只检查固定的有向边"><a href="#3-2-只检查固定的有向边" class="headerlink" title="3.2 只检查固定的有向边"></a>3.2 只检查固定的有向边</h3><p>先忽略全部无向边，只对固定有向边建图。</p>
+<ul>
+<li>如果固定边已经形成环，无论怎样定向其他边，这个环都会保留，答案必为 <code>NO</code>；</li>
+<li>如果固定边是 DAG，就取它的任意拓扑序，并记录每个顶点的位置。</li>
+</ul>
+<p>对于无向边 <code>&#123;u,v&#125;</code>，让拓扑位置较小的端点指向位置较大的端点。这样固定边和新定向的边都会沿同一个顺序向前。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[只加入固定有向边] --&gt; B{能处理全部 n 个点吗}
+    B --&gt;|否| C[固定边已有环&lt;br&#x2F;&gt;输出 NO]
+    B --&gt;|是| D[记录拓扑位置 pos]
+    D --&gt; E{无向边两端谁更靠前}
+    E --&gt; F[从较小 pos 指向较大 pos]
+    F --&gt; G[输出全部有向边]
+  </pre></div>
+
+<h3 id="3-3-手工演算"><a href="#3-3-手工演算" class="headerlink" title="3.3 手工演算"></a>3.3 手工演算</h3><p>设固定边为 <code>1→4</code>、<code>3→4</code>，另有无向边 <code>&#123;1,2&#125;</code>、<code>&#123;2,3&#125;</code>。固定子图的一种拓扑序是：</p>
+<table>
+<thead>
+<tr>
+<th>顶点</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pos</code></td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+</tbody></table>
+<p>于是两条无向边分别定向为 <code>1→2</code>、<code>2→3</code>。最终每条边都让 <code>pos</code> 严格增加，因此不可能绕一圈回到起点。</p>
+<h3 id="3-4-正确性证明"><a href="#3-4-正确性证明" class="headerlink" title="3.4 正确性证明"></a>3.4 正确性证明</h3><p><strong>必要性。</strong> 如果固定有向边存在环，这些边的方向不可修改，任何完整定向仍包含该环，所以无解。</p>
+<p><strong>充分性。</strong> 假设固定有向边是 DAG。取其拓扑序 <code>order</code>。固定边按照拓扑序定义都从较早位置指向较晚位置；每条无向边也被我们按同一规则定向。因此最终图的每条边 <code>u→v</code> 都满足 <code>pos[u] &lt; pos[v]</code>。若存在有向环，沿环走一圈会得到位置严格递增后又回到原位置的矛盾，所以最终图无环。</p>
+<p>这也说明构造不需要动态维护环：只要先固定一个拓扑序，所有剩余选择一次完成。</p>
+<h3 id="3-5-完整-C-17-实现"><a href="#3-5-完整-C-17-实现" class="headerlink" title="3.5 完整 C++17 实现"></a>3.5 完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Edge</span> &#123;</span><br><span class="line">    <span class="type">int</span> type;</span><br><span class="line">    <span class="type">int</span> from;</span><br><span class="line">    <span class="type">int</span> to;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> testCases;</span><br><span class="line">    cin &gt;&gt; testCases;</span><br><span class="line">    <span class="keyword">while</span> (testCases--) &#123;</span><br><span class="line">        <span class="type">int</span> n, m;</span><br><span class="line">        cin &gt;&gt; n &gt;&gt; m;</span><br><span class="line"></span><br><span class="line">        vector&lt;Edge&gt; edges;</span><br><span class="line">        edges.<span class="built_in">reserve</span>(m);</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n);</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">indegree</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; m; ++i) &#123;</span><br><span class="line">            <span class="type">int</span> type, x, y;</span><br><span class="line">            cin &gt;&gt; type &gt;&gt; x &gt;&gt; y;</span><br><span class="line">            --x;</span><br><span class="line">            --y;</span><br><span class="line">            edges.<span class="built_in">push_back</span>(&#123;type, x, y&#125;);</span><br><span class="line">            <span class="keyword">if</span> (type == <span class="number">1</span>) &#123;</span><br><span class="line">                graph[x].<span class="built_in">push_back</span>(y);</span><br><span class="line">                ++indegree[y];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        queue&lt;<span class="type">int</span>&gt; ready;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> vertex = <span class="number">0</span>; vertex &lt; n; ++vertex) &#123;</span><br><span class="line">            <span class="keyword">if</span> (indegree[vertex] == <span class="number">0</span>) ready.<span class="built_in">push</span>(vertex);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; order;</span><br><span class="line">        order.<span class="built_in">reserve</span>(n);</span><br><span class="line">        <span class="keyword">while</span> (!ready.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">            <span class="type">int</span> vertex = ready.<span class="built_in">front</span>();</span><br><span class="line">            ready.<span class="built_in">pop</span>();</span><br><span class="line">            order.<span class="built_in">push_back</span>(vertex);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> next : graph[vertex]) &#123;</span><br><span class="line">                --indegree[next];</span><br><span class="line">                <span class="keyword">if</span> (indegree[next] == <span class="number">0</span>) ready.<span class="built_in">push</span>(next);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(order.<span class="built_in">size</span>()) != n) &#123;</span><br><span class="line">            cout &lt;&lt; <span class="string">&quot;NO\n&quot;</span>;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">position</span><span class="params">(n)</span></span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) position[order[i]] = i;</span><br><span class="line"></span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;YES\n&quot;</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">const</span> Edge&amp; edge : edges) &#123;</span><br><span class="line">            <span class="keyword">if</span> (edge.type == <span class="number">1</span> || position[edge.from] &lt; position[edge.to]) &#123;</span><br><span class="line">                cout &lt;&lt; edge.from + <span class="number">1</span> &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; edge.to + <span class="number">1</span> &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cout &lt;&lt; edge.to + <span class="number">1</span> &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; edge.from + <span class="number">1</span> &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间复杂度 <code>O(n+m)</code>，空间复杂度 <code>O(n+m)</code>。</p>
+<h2 id="4-第二题：1572A-Book"><a href="#4-第二题：1572A-Book" class="headerlink" title="4. 第二题：1572A Book"></a>4. 第二题：1572A Book</h2><h3 id="4-1-为什么普通拓扑层数不够"><a href="#4-1-为什么普通拓扑层数不够" class="headerlink" title="4.1 为什么普通拓扑层数不够"></a>4.1 为什么普通拓扑层数不够</h3><p>第 <code>i</code> 章列出若干前置章节。我们反复从第 1 章读到第 <code>n</code> 章：读到某章时，如果全部前置章节已经理解，就立刻理解它；否则这一轮不会回头，只能等下一次从头开始。</p>
+<p>若只按拓扑层数分组，会漏掉章节编号带来的先后差异。例如依赖边 <code>2→4</code> 可以在同一轮完成，因为先读第 2 章再到第 4 章；边 <code>4→2</code> 则至少跨一轮，因为理解第 4 章时，这一轮的第 2 章已经错过。</p>
+<h3 id="4-2-状态与转移"><a href="#4-2-状态与转移" class="headerlink" title="4.2 状态与转移"></a>4.2 状态与转移</h3><p>令 <code>round[v]</code> 表示理解章节 <code>v</code> 最早需要读到第几轮。所有无前置章节的初值都是 1。</p>
+<p>对依赖边 <code>u→v</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">round[v] = max(round[v], round[u] + (u &gt; v ? 1 : 0))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>若 <code>u &lt; v</code>，同一轮先理解 <code>u</code>，之后还能读到 <code>v</code>，不增加轮数；</li>
+<li>若 <code>u &gt; v</code>，本轮到达 <code>u</code> 时已经越过 <code>v</code>，必须等下一轮，增加 1。</li>
+</ul>
+<p>一个章节必须等待所有前驱，因此取所有前驱贡献的最大值。Kahn 算法在 <code>v</code> 入度降到零时，已经收齐它的全部前驱贡献。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[前置章 u 已理解] --&gt; B{u 的编号小于 v 吗}
+    B --&gt;|是| C[同一轮稍后读到 v&lt;br&#x2F;&gt;候选 round u]
+    B --&gt;|否| D[本轮已经错过 v&lt;br&#x2F;&gt;候选 round u + 1]
+    C --&gt; E[对所有前驱取最大值]
+    D --&gt; E
+  </pre></div>
+
+<h3 id="4-3-手工演算"><a href="#4-3-手工演算" class="headerlink" title="4.3 手工演算"></a>4.3 手工演算</h3><p>设依赖为 <code>2→4</code>、<code>4→1</code>、<code>1→3</code>。</p>
+<table>
+<thead>
+<tr>
+<th>边</th>
+<th>编号关系</th>
+<th>轮数变化</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>2→4</code></td>
+<td><code>2&lt;4</code></td>
+<td>不加轮</td>
+<td><code>round[4]=1</code></td>
+</tr>
+<tr>
+<td><code>4→1</code></td>
+<td><code>4&gt;1</code></td>
+<td>加一轮</td>
+<td><code>round[1]=2</code></td>
+</tr>
+<tr>
+<td><code>1→3</code></td>
+<td><code>1&lt;3</code></td>
+<td>不加轮</td>
+<td><code>round[3]=2</code></td>
+</tr>
+</tbody></table>
+<p>第一轮可以理解 2、4；第二轮理解 1、3，答案为 2。这个结果与逐轮模拟一致，但动态规划只沿每条边处理一次。</p>
+<h3 id="4-4-正确性证明"><a href="#4-4-正确性证明" class="headerlink" title="4.4 正确性证明"></a>4.4 正确性证明</h3><p>按任意拓扑序处理顶点。对无前驱顶点，一轮即可理解，初值 1 正确。</p>
+<p>假设所有前驱 <code>u</code> 的 <code>round[u]</code> 都已是最早轮数。章节 <code>v</code> 不可能早于任何前驱完成：若 <code>u&lt;v</code>，最早可在 <code>round[u]</code> 的同一轮到达 <code>v</code>；若 <code>u&gt;v</code>，那一轮已经越过 <code>v</code>，最早只能在 <code>round[u]+1</code>。因此所有转移给出的最大值是必要下界。</p>
+<p>另一方面，到这个最大轮数时，每个前驱都已在本轮较早位置或此前轮次完成，所以 <code>v</code> 确实可以被理解。状态既不低估也不高估。若处理数不足 <code>n</code>，依赖图含环，环中没有章节能率先被理解，应输出 <code>-1</code>。</p>
+<h3 id="4-5-完整-C-17-实现"><a href="#4-5-完整-C-17-实现" class="headerlink" title="4.5 完整 C++17 实现"></a>4.5 完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> testCases;</span><br><span class="line">    cin &gt;&gt; testCases;</span><br><span class="line">    <span class="keyword">while</span> (testCases--) &#123;</span><br><span class="line">        <span class="type">int</span> n;</span><br><span class="line">        cin &gt;&gt; n;</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n);</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">indegree</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> chapter = <span class="number">0</span>; chapter &lt; n; ++chapter) &#123;</span><br><span class="line">            <span class="type">int</span> count;</span><br><span class="line">            cin &gt;&gt; count;</span><br><span class="line">            indegree[chapter] = count;</span><br><span class="line">            <span class="keyword">while</span> (count--) &#123;</span><br><span class="line">                <span class="type">int</span> prerequisite;</span><br><span class="line">                cin &gt;&gt; prerequisite;</span><br><span class="line">                --prerequisite;</span><br><span class="line">                graph[prerequisite].<span class="built_in">push_back</span>(chapter);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        queue&lt;<span class="type">int</span>&gt; ready;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">round</span><span class="params">(n, <span class="number">1</span>)</span></span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> chapter = <span class="number">0</span>; chapter &lt; n; ++chapter) &#123;</span><br><span class="line">            <span class="keyword">if</span> (indegree[chapter] == <span class="number">0</span>) ready.<span class="built_in">push</span>(chapter);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> processed = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> answer = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (!ready.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">            <span class="type">int</span> chapter = ready.<span class="built_in">front</span>();</span><br><span class="line">            ready.<span class="built_in">pop</span>();</span><br><span class="line">            ++processed;</span><br><span class="line">            answer = <span class="built_in">max</span>(answer, round[chapter]);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> next : graph[chapter]) &#123;</span><br><span class="line">                <span class="type">int</span> extraRound = chapter &gt; next ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">                round[next] = <span class="built_in">max</span>(round[next], round[chapter] + extraRound);</span><br><span class="line">                --indegree[next];</span><br><span class="line">                <span class="keyword">if</span> (indegree[next] == <span class="number">0</span>) ready.<span class="built_in">push</span>(next);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        cout &lt;&lt; (processed == n ? answer : <span class="number">-1</span>) &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间复杂度 <code>O(n+m)</code>，空间复杂度 <code>O(n+m)</code>，其中 <code>m</code> 是依赖总数。</p>
+<h2 id="5-第三题：909E-Coprocessor"><a href="#5-第三题：909E-Coprocessor" class="headerlink" title="5. 第三题：909E Coprocessor"></a>5. 第三题：909E Coprocessor</h2><h3 id="5-1-操作语义比拓扑序更重要"><a href="#5-1-操作语义比拓扑序更重要" class="headerlink" title="5.1 操作语义比拓扑序更重要"></a>5.1 操作语义比拓扑序更重要</h3><p>每个任务只能在主处理器或协处理器上执行。主处理器执行不计调用次数；一次协处理器调用可以提交一组任务，并允许这组任务内部存在已经满足方向的依赖。目标是最小化协处理器调用次数。</p>
+<p>输入中的 <code>T1 T2</code> 表示任务 <code>T1</code> 依赖 <code>T2</code>，建图时必须加入 <code>T2→T1</code>。把方向写反会得到另一张仍可能无环的图，是最隐蔽的错误之一。</p>
+<p>普通 FIFO 拓扑队列只保证合法，却不保证调用次数最少。若一个主处理器任务和协处理器任务同时就绪，先免费完成主任务可能释放更多协处理器任务，让它们并入下一次调用；先调用协处理器则可能平白增加一个批次。</p>
+<h3 id="5-2-两个就绪队列"><a href="#5-2-两个就绪队列" class="headerlink" title="5.2 两个就绪队列"></a>5.2 两个就绪队列</h3><p>分别维护：</p>
+<ul>
+<li><code>mainReady</code>：入度为零且只能在主处理器执行；</li>
+<li><code>coprocessorReady</code>：入度为零且只能在协处理器执行。</li>
+</ul>
+<p>每一轮先把 <code>mainReady</code> 完全清空，因为这些操作免费。若仍有协处理器任务，就开始一次调用，并把当前可执行的协处理器任务及其在本批内继续释放的协处理器任务全部完成；新释放的主处理器任务留到本次调用结束后处理。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[清空所有 mainReady&lt;br&#x2F;&gt;费用不增加] --&gt; B{coprocessorReady 为空吗}
+    B --&gt;|是且全部完成| C[输出调用次数]
+    B --&gt;|否| D[调用次数 +1]
+    D --&gt; E[清空协处理器队列&lt;br&#x2F;&gt;同类后继继续进入本批]
+    E --&gt; F[新释放的主任务&lt;br&#x2F;&gt;进入 mainReady]
+    F --&gt; A
+  </pre></div>
+
+<h3 id="5-3-为什么一个调用能包含后续释放的协处理器任务"><a href="#5-3-为什么一个调用能包含后续释放的协处理器任务" class="headerlink" title="5.3 为什么一个调用能包含后续释放的协处理器任务"></a>5.3 为什么一个调用能包含后续释放的协处理器任务</h3><p>假设协处理器任务 <code>a</code> 完成后，任务 <code>b</code> 的入度降为零，而且 <code>b</code> 也属于协处理器。把 <code>a</code> 与 <code>b</code> 放在同一次调用中是合法的：题目允许一个任务的依赖已经完成，或者也包含在同一个提交集合里。由于原图是 DAG，这个集合内部总能按拓扑顺序执行。</p>
+<p>主处理器任务不能塞进这次调用，所以一旦协处理器闭包耗尽，就必须返回主处理器继续执行。</p>
+<h3 id="5-4-手工演算"><a href="#5-4-手工演算" class="headerlink" title="5.4 手工演算"></a>5.4 手工演算</h3><p>设任务类型与依赖如下：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>设备</th>
+<th>前置任务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>主处理器</td>
+<td>无</td>
+</tr>
+<tr>
+<td>1</td>
+<td>协处理器</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>协处理器</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>主处理器</td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>协处理器</td>
+<td>3</td>
+</tr>
+</tbody></table>
+<p>执行过程为：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>完成任务</th>
+<th align="right">累计调用次数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>免费阶段</td>
+<td>0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>第一次协处理器调用</td>
+<td>1、2</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td>免费阶段</td>
+<td>3</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td>第二次协处理器调用</td>
+<td>4</td>
+<td align="right">2</td>
+</tr>
+</tbody></table>
+<p>任务 1 和 2 虽有依赖，仍能放入同一次调用；任务 3 强制把协处理器任务分成两个批次。</p>
+<h3 id="5-5-贪心正确性证明"><a href="#5-5-贪心正确性证明" class="headerlink" title="5.5 贪心正确性证明"></a>5.5 贪心正确性证明</h3><p><strong>引理一：调用协处理器前，完成全部当前可执行的主任务不会使答案变差。</strong> 主任务不消耗调用次数，只可能删除出边、释放更多任务，不会让任何已就绪任务重新变得不可执行。因此任意最优方案都可调整为先完成这些主任务。</p>
+<p><strong>引理二：一次调用中加入所有可由协处理器任务继续释放的协处理器任务不会使答案变差。</strong> 这些任务与它们在本批中的前驱一起构成 DAG，可以在一次调用内部按拓扑序执行。提前完成它们只会继续释放后继，不会制造新依赖。</p>
+<p>根据两个引理，每当免费闭包耗尽而仍有协处理器任务就绪时，任何方案都至少需要一次新调用；算法恰好增加一次，并完成这次调用所能覆盖的最大协处理器闭包。逐批应用即可得到最少调用次数。</p>
+<h3 id="5-6-完整-C-17-实现"><a href="#5-6-完整-C-17-实现" class="headerlink" title="5.6 完整 C++17 实现"></a>5.6 完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n, m;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">device</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; value : device) cin &gt;&gt; value;</span><br><span class="line"></span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n);</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">indegree</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; m; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> task, prerequisite;</span><br><span class="line">        cin &gt;&gt; task &gt;&gt; prerequisite;</span><br><span class="line">        graph[prerequisite].<span class="built_in">push_back</span>(task);</span><br><span class="line">        ++indegree[task];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    queue&lt;<span class="type">int</span>&gt; mainReady;</span><br><span class="line">    queue&lt;<span class="type">int</span>&gt; coprocessorReady;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> task = <span class="number">0</span>; task &lt; n; ++task) &#123;</span><br><span class="line">        <span class="keyword">if</span> (indegree[task] != <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">if</span> (device[task] == <span class="number">0</span>) mainReady.<span class="built_in">push</span>(task);</span><br><span class="line">        <span class="keyword">else</span> coprocessorReady.<span class="built_in">push</span>(task);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> complete = [&amp;](<span class="type">int</span> task) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> next : graph[task]) &#123;</span><br><span class="line">            --indegree[next];</span><br><span class="line">            <span class="keyword">if</span> (indegree[next] != <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (device[next] == <span class="number">0</span>) mainReady.<span class="built_in">push</span>(next);</span><br><span class="line">            <span class="keyword">else</span> coprocessorReady.<span class="built_in">push</span>(next);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> calls = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> completed = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (completed &lt; n) &#123;</span><br><span class="line">        <span class="keyword">while</span> (!mainReady.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">            <span class="type">int</span> task = mainReady.<span class="built_in">front</span>();</span><br><span class="line">            mainReady.<span class="built_in">pop</span>();</span><br><span class="line">            ++completed;</span><br><span class="line">            <span class="built_in">complete</span>(task);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (coprocessorReady.<span class="built_in">empty</span>()) <span class="keyword">break</span>;</span><br><span class="line">        ++calls;</span><br><span class="line">        <span class="keyword">while</span> (!coprocessorReady.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">            <span class="type">int</span> task = coprocessorReady.<span class="built_in">front</span>();</span><br><span class="line">            coprocessorReady.<span class="built_in">pop</span>();</span><br><span class="line">            ++completed;</span><br><span class="line">            <span class="built_in">complete</span>(task);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    cout &lt;&lt; calls &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>题目保证输入为 DAG，因此最终会完成全部任务。时间复杂度 <code>O(n+m)</code>，空间复杂度 <code>O(n+m)</code>。</p>
+<h2 id="6-三题为什么不能只背一个模板"><a href="#6-三题为什么不能只背一个模板" class="headerlink" title="6. 三题为什么不能只背一个模板"></a>6. 三题为什么不能只背一个模板</h2><table>
+<thead>
+<tr>
+<th>比较项</th>
+<th>1385E</th>
+<th>1572A</th>
+<th>909E</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图是否可能有环</td>
+<td>固定边可能有环</td>
+<td>依赖可能有环</td>
+<td>保证无环</td>
+</tr>
+<tr>
+<td>容器</td>
+<td>一个零入度队列</td>
+<td>一个零入度队列</td>
+<td>按设备拆成两个队列</td>
+</tr>
+<tr>
+<td>核心状态</td>
+<td>拓扑位置</td>
+<td>最早轮数</td>
+<td>当前批次与调用次数</td>
+</tr>
+<tr>
+<td>贪心选择</td>
+<td>所有新边沿拓扑序向前</td>
+<td>无，取所有前驱最大值</td>
+<td>免费任务优先，同类协任务成批</td>
+</tr>
+<tr>
+<td>失败条件</td>
+<td>固定边处理不足 <code>n</code></td>
+<td>处理不足 <code>n</code></td>
+<td>题目保证不会失败</td>
+</tr>
+</tbody></table>
+<p>可以把三题压缩成三个问题：</p>
+<ol>
+<li>只要所有边都服从同一拓扑序，能否直接完成构造？</li>
+<li>后继被释放时，还需要从前驱继承什么代价？</li>
+<li>多个零入度点同时存在时，处理顺序是否影响目标函数？</li>
+</ol>
+<h2 id="7-边界与常见错误"><a href="#7-边界与常见错误" class="headerlink" title="7. 边界与常见错误"></a>7. 边界与常见错误</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>正确处理</th>
+<th>常见错误</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1385E 图不连通</td>
+<td>所有分量的零入度点都进入队列</td>
+<td>只从顶点 1 开始 DFS</td>
+</tr>
+<tr>
+<td>1385E 无向边很多</td>
+<td>统一按 <code>position</code> 定向</td>
+<td>每加一条边重新判环</td>
+</tr>
+<tr>
+<td>1572A 无前置章节</td>
+<td><code>round=1</code></td>
+<td>初始化为 0，少算第一轮</td>
+</tr>
+<tr>
+<td>1572A 边 <code>u→v</code></td>
+<td><code>u&gt;v</code> 才加一轮</td>
+<td>把条件写成 <code>u&lt;v</code></td>
+</tr>
+<tr>
+<td>1572A 存在依赖环</td>
+<td>处理数不足时输出 <code>-1</code></td>
+<td>只输出当前最大轮数</td>
+</tr>
+<tr>
+<td>909E 输入 <code>T1 T2</code></td>
+<td>建边 <code>T2→T1</code></td>
+<td>按输入顺序建成 <code>T1→T2</code></td>
+</tr>
+<tr>
+<td>909E 同类协任务形成链</td>
+<td>可放入同一次调用</td>
+<td>每层拓扑都增加调用次数</td>
+</tr>
+<tr>
+<td>909E 主任务与协任务同时就绪</td>
+<td>先清空主任务</td>
+<td>用单个 FIFO 队列随缘处理</td>
+</tr>
+</tbody></table>
+<h2 id="8-独立验证"><a href="#8-独立验证" class="headerlink" title="8. 独立验证"></a>8. 独立验证</h2><p>验证脚本 <code>tests/verify-topological-three-article.cjs</code> 会提取并以 <code>-std=c++17 -Wall -Wextra -pedantic</code> 编译三份代码，并执行三类独立检查：</p>
+<ul>
+<li>对 1385E，独立检测固定有向子图是否有环，并验证输出保留固定方向、覆盖全部边且最终无环；</li>
+<li>对 1572A，在小图上直接逐轮从第 1 章扫描到第 <code>n</code> 章，与拓扑 DP 比较；</li>
+<li>对 909E，在小 DAG 上用状态最短路枚举免费主任务与一次调用可提交的协处理器集合，核对最少调用数。</li>
+</ul>
+<p>测试还包含官方样例、空依赖、长链、反向编号链、全部同类任务和大规模边界。这样可以分别发现“方向写反”“轮数条件反了”和“把同一调用拆成多层”三类错误。</p>
+<h2 id="9-继续学习"><a href="#9-继续学习" class="headerlink" title="9. 继续学习"></a>9. 继续学习</h2><ul>
+<li>回看 <a href="/esblog/81937.html">510C：从字符串约束到拓扑排序</a>，复习前缀矛盾为何发生在建图之前；</li>
+<li>阅读 <a href="/esblog/43827.html">树上 DFS 三题</a>，比较树的天然父子顺序与一般 DAG 的多前驱关系；</li>
+<li>阅读 <a href="/esblog/41763.html">数位 DP 三题</a>，比较线性位序上的状态传播与拓扑序上的状态传播。</li>
+</ul>
+<p>拓扑排序题的重点通常不在“会不会把入度减一”，而在于解释：顶点进入零入度集合之后，题目允许我们立刻做什么，以及不同的可执行顺序是否会改变答案。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/73461.html">https://eulersail.com/esblog/73461.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E8%B4%AA%E5%BF%83/">贪心</a><a class="post-meta__tags" href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">动态规划</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E8%AE%BA/">图论</a><a class="post-meta__tags" href="/tags/%E6%8B%93%E6%89%91%E6%8E%92%E5%BA%8F/">拓扑排序</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/34726.html" title="德沃夏克《E 小调第九交响曲“自新大陆”》：乡愁、主题回忆与共同终点"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">德沃夏克《E 小调第九交响曲“自新大陆”》：乡愁、主题回忆与共同终点</div></div></a></div><div class="next-post pull-right"><a href="/esblog/59028.html" title="莫扎特《C 大调第四十一交响曲“朱庇特”》：对比怎样汇入复调终曲"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">莫扎特《C 大调第四十一交响曲“朱庇特”》：对比怎样汇入复调终曲</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/81937.html" title="Codeforces 510C Fox And Names：从字典序约束到拓扑排序"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-11</div><div class="title">Codeforces 510C Fox And Names：从字典序约束到拓扑排序</div></div></a></div><div><a href="/esblog/43827.html" title="Codeforces 树上 DFS 三题：深度、路径状态与子树贡献"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-14</div><div class="title">Codeforces 树上 DFS 三题：深度、路径状态与子树贡献</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div><div><a href="/esblog/60521.html" title="Codeforces 贪心三题：排序、交换论证与局部最优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="title">Codeforces 贪心三题：排序、交换论证与局部最优</div></div></a></div><div><a href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-04</div><div class="title">Codeforces 二分答案三题：可行性、边界与上界</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">49</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">85</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%98%E6%96%B9%E4%BF%A1%E6%81%AF%E4%B8%8E%E8%AE%AD%E7%BB%83%E9%A1%BA%E5%BA%8F"><span class="toc-text">1. 官方信息与训练顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%85%B1%E5%90%8C%E9%AA%A8%E6%9E%B6%EF%BC%9A%E5%85%A5%E5%BA%A6%E4%BD%95%E6%97%B6%E5%8F%98%E6%88%90%E9%9B%B6"><span class="toc-text">2. 共同骨架：入度何时变成零</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%AC%AC%E4%B8%80%E9%A2%98%EF%BC%9A1385E-Directing-Edges"><span class="toc-text">3. 第一题：1385E Directing Edges</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%A2%98%E6%84%8F%E5%8E%8B%E7%BC%A9"><span class="toc-text">3.1 题意压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8F%AA%E6%A3%80%E6%9F%A5%E5%9B%BA%E5%AE%9A%E7%9A%84%E6%9C%89%E5%90%91%E8%BE%B9"><span class="toc-text">3.2 只检查固定的有向边</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">3.3 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">3.4 正确性证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">3.5 完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AC%AC%E4%BA%8C%E9%A2%98%EF%BC%9A1572A-Book"><span class="toc-text">4. 第二题：1572A Book</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%99%AE%E9%80%9A%E6%8B%93%E6%89%91%E5%B1%82%E6%95%B0%E4%B8%8D%E5%A4%9F"><span class="toc-text">4.1 为什么普通拓扑层数不够</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%8A%B6%E6%80%81%E4%B8%8E%E8%BD%AC%E7%A7%BB"><span class="toc-text">4.2 状态与转移</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">4.3 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">4.4 正确性证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">4.5 完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E7%AC%AC%E4%B8%89%E9%A2%98%EF%BC%9A909E-Coprocessor"><span class="toc-text">5. 第三题：909E Coprocessor</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%93%8D%E4%BD%9C%E8%AF%AD%E4%B9%89%E6%AF%94%E6%8B%93%E6%89%91%E5%BA%8F%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="toc-text">5.1 操作语义比拓扑序更重要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%B8%A4%E4%B8%AA%E5%B0%B1%E7%BB%AA%E9%98%9F%E5%88%97"><span class="toc-text">5.2 两个就绪队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E4%B8%AA%E8%B0%83%E7%94%A8%E8%83%BD%E5%8C%85%E5%90%AB%E5%90%8E%E7%BB%AD%E9%87%8A%E6%94%BE%E7%9A%84%E5%8D%8F%E5%A4%84%E7%90%86%E5%99%A8%E4%BB%BB%E5%8A%A1"><span class="toc-text">5.3 为什么一个调用能包含后续释放的协处理器任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">5.4 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E8%B4%AA%E5%BF%83%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">5.5 贪心正确性证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">5.6 完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E4%B8%89%E9%A2%98%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8F%AA%E8%83%8C%E4%B8%80%E4%B8%AA%E6%A8%A1%E6%9D%BF"><span class="toc-text">6. 三题为什么不能只背一个模板</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF"><span class="toc-text">7. 边界与常见错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81"><span class="toc-text">8. 独立验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E7%BB%A7%E7%BB%AD%E5%AD%A6%E4%B9%A0"><span class="toc-text">9. 继续学习</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/34726.html" title="德沃夏克《E 小调第九交响曲“自新大陆”》：乡愁、主题回忆与共同终点">德沃夏克《E 小调第九交响曲“自新大陆”》：乡愁、主题回忆与共同终点</a><time datetime="2026-09-16T03:30:00.000Z" title="发表于 2026-09-16 11:30:00">2026-09-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73461.html" title="Codeforces 拓扑排序三题：定向、分层与最少调用">Codeforces 拓扑排序三题：定向、分层与最少调用</a><time datetime="2026-09-16T03:20:00.000Z" title="发表于 2026-09-16 11:20:00">2026-09-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/59028.html" title="莫扎特《C 大调第四十一交响曲“朱庇特”》：对比怎样汇入复调终曲">莫扎特《C 大调第四十一交响曲“朱庇特”》：对比怎样汇入复调终曲</a><time datetime="2026-09-15T03:30:00.000Z" title="发表于 2026-09-15 11:30:00">2026-09-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/41763.html" title="Codeforces 数位 DP 三题：tight、位置限制与 LCM 状态">Codeforces 数位 DP 三题：tight、位置限制与 LCM 状态</a><time datetime="2026-09-15T03:20:00.000Z" title="发表于 2026-09-15 11:20:00">2026-09-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/32894.html" title="布鲁克纳《降 E 大调第四交响曲“浪漫”》：圆号怎样搭起声音建筑">布鲁克纳《降 E 大调第四交响曲“浪漫”》：圆号怎样搭起声音建筑</a><time datetime="2026-09-14T13:45:00.000Z" title="发表于 2026-09-14 21:45:00">2026-09-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
