@@ -93,6 +93,18 @@
   letter-spacing: 0.008em;
 }
 
+#article-container[data-reading-size='small'] {
+  font-size: 15px;
+}
+
+#article-container[data-reading-size='large'] {
+  font-size: 17.25px;
+}
+
+#article-container[data-reading-size='x-large'] {
+  font-size: 18.5px;
+}
+
 #article-container h2 {
   margin-top: 2.3em;
   padding: 0.48em 0.72em;
@@ -1290,6 +1302,160 @@
   opacity: 0.78;
 }
 
+.reading-tools,
+.reading-chapters {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--sail-border);
+}
+
+.reading-tools,
+.reading-tools-label,
+.reading-font-controls,
+.reading-chapters-header,
+.reading-chapters-header > span {
+  display: flex;
+  align-items: center;
+}
+
+.reading-tools {
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.reading-tools-label,
+.reading-chapters-header > span {
+  gap: 0.48rem;
+  color: var(--font-color);
+  font-size: 0.82rem;
+}
+
+.reading-tools-label i,
+.reading-chapters-header i {
+  color: var(--sail-accent);
+}
+
+.reading-font-controls {
+  gap: 0.38rem;
+}
+
+.reading-font-controls button,
+.reading-chapters-toggle {
+  min-height: 36px;
+  border: 1px solid var(--sail-border);
+  border-radius: 9px;
+  color: var(--font-color);
+  background: var(--sail-surface);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 720;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.reading-font-controls button:hover:not(:disabled),
+.reading-font-controls button:focus-visible,
+.reading-chapters-toggle:hover,
+.reading-chapters-toggle:focus-visible {
+  border-color: var(--sail-accent);
+  color: var(--sail-accent);
+  background: var(--sail-accent-soft);
+}
+
+.reading-font-controls button:active:not(:disabled),
+.reading-chapters-toggle:active {
+  transform: translateY(1px);
+}
+
+.reading-font-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.reading-font-step {
+  min-width: 42px;
+  padding: 0.42rem 0.58rem;
+}
+
+.reading-font-reset {
+  padding: 0.42rem 0.7rem;
+}
+
+.reading-font-status {
+  min-width: 3.5rem;
+  color: var(--sail-accent);
+  font-size: 0.76rem;
+  font-weight: 780;
+  text-align: center;
+}
+
+.reading-chapters-header {
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.reading-chapters-header small {
+  color: var(--font-color);
+  font-size: 0.7rem;
+  opacity: 0.62;
+}
+
+.reading-chapter-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0.7rem 0 0;
+  padding: 0;
+  gap: 0.48rem;
+  list-style: none;
+}
+
+.reading-chapter-list a {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  min-height: 42px;
+  padding: 0.48rem 0.58rem;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--font-color);
+  background: color-mix(in srgb, var(--font-color) 3%, transparent);
+  font-size: 0.73rem;
+  line-height: 1.35;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.reading-chapter-list a:hover,
+.reading-chapter-list a:focus-visible,
+.reading-chapter-list a[aria-current='location'] {
+  border-color: var(--sail-border);
+  color: var(--sail-accent);
+  background: var(--sail-accent-soft);
+}
+
+.reading-chapter-list a > span {
+  color: var(--sail-accent);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.reading-chapter-list a > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reading-chapters-toggle {
+  width: 100%;
+  margin-top: 0.55rem;
+}
+
+#article-container h2 {
+  scroll-margin-top: 88px;
+}
+
 .sail-reading-progress {
   --reading-progress: 0;
   position: fixed;
@@ -1372,6 +1538,18 @@
     line-height: 1.8;
   }
 
+  #article-container[data-reading-size='small'] {
+    font-size: 14.5px;
+  }
+
+  #article-container[data-reading-size='large'] {
+    font-size: 16.5px;
+  }
+
+  #article-container[data-reading-size='x-large'] {
+    font-size: 17.5px;
+  }
+
   #article-container h2 {
     font-size: 1.34em;
   }
@@ -1427,6 +1605,23 @@
 
   .reading-overview-metric {
     padding: 0.58rem 0.7rem;
+  }
+
+  .reading-tools {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reading-font-controls {
+    width: 100%;
+  }
+
+  .reading-font-controls button {
+    flex: 1;
+  }
+
+  .reading-chapter-list {
+    grid-template-columns: 1fr;
   }
 
   .meter-pulses {
@@ -1545,7 +1740,10 @@
   }
 
   .sail-path-list a,
-  .sail-reading-progress span {
+  .sail-reading-progress span,
+  .reading-font-controls button,
+  .reading-chapters-toggle,
+  .reading-chapter-list a {
     transition: none;
   }
 
