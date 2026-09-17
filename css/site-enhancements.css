@@ -949,6 +949,74 @@
   font-size: 0.88rem;
 }
 
+.attention-query-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.attention-query-options button {
+  min-width: 64px;
+}
+
+.attention-weight-chart {
+  display: grid;
+  margin-top: 1rem;
+  gap: 0.65rem;
+}
+
+.attention-weight-row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(90px, 1fr) 4.3rem;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--font-color);
+  font-size: 0.82rem;
+}
+
+.attention-weight-row strong {
+  text-align: center;
+}
+
+.attention-weight-row output {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.attention-weight-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--font-color) 9%, transparent);
+}
+
+.attention-weight-track i {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sail-cyan), var(--sail-accent));
+  transition: width 0.24s ease;
+}
+
+.attention-weight-row.is-masked {
+  opacity: 0.48;
+}
+
+.attention-weight-row.is-masked .attention-weight-track {
+  background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--font-color) 12%, transparent) 6px 9px);
+}
+
+.attention-result {
+  margin: 1rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--sail-accent);
+  color: var(--font-color);
+  background: var(--sail-accent-soft);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
 .tcp-peers {
   display: flex;
   margin: 0.25rem 0 0.65rem;
@@ -1652,6 +1720,10 @@
   .binary-readout,
   .rag-options {
     grid-template-columns: 1fr;
+  }
+
+  .attention-weight-chart {
+    padding-right: 1.8rem;
   }
 
   .epsilon-control {

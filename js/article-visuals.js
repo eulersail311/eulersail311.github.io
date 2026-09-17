@@ -95,6 +95,57 @@
     render();
   }
 
+  function initializeAttentionLab(root) {
+    const queryButtons = Array.from(root.querySelectorAll('[data-attention-query]'));
+    const causalButton = root.querySelector('[data-attention-causal]');
+    const rows = Array.from(root.querySelectorAll('[data-attention-row]'));
+    const result = root.querySelector('[data-attention-result]');
+    const tokens = queryButtons.map(button => button.textContent.trim());
+    const scores = [
+      [2.4, 0.8, 1.2],
+      [1.2, 2.0, 0.4],
+      [0.7, 1.4, 2.3]
+    ];
+    let queryIndex = 1;
+    let causal = true;
+
+    function softmax(values, allowed) {
+      const available = values.filter((_, index) => allowed[index]);
+      const largest = Math.max(...available);
+      const numerators = values.map((value, index) => allowed[index] ? Math.exp(value - largest) : 0);
+      const denominator = numerators.reduce((sum, value) => sum + value, 0);
+      return numerators.map(value => value / denominator);
+    }
+
+    function render() {
+      const allowed = scores[queryIndex].map((_, keyIndex) => !causal || keyIndex <= queryIndex);
+      const weights = softmax(scores[queryIndex], allowed);
+      queryButtons.forEach((button, index) => {
+        button.setAttribute('aria-pressed', String(index === queryIndex));
+      });
+      causalButton.setAttribute('aria-pressed', String(causal));
+      causalButton.textContent = `因果遮罩：${causal ? '开启' : '关闭'}`;
+      rows.forEach((row, index) => {
+        const masked = !allowed[index];
+        row.classList.toggle('is-masked', masked);
+        row.querySelector('[data-attention-fill]').style.width = clampPercent(weights[index] * 100);
+        row.querySelector('[data-attention-value]').textContent = masked ? '已遮罩' : `${(weights[index] * 100).toFixed(1)}%`;
+      });
+      const visibleTokens = tokens.filter((_, index) => allowed[index]).join('、');
+      result.textContent = `查询“${tokens[queryIndex]}”当前可以读取：${visibleTokens}。可见位置的权重已重新归一化为 100%。`;
+    }
+
+    queryButtons.forEach(button => button.addEventListener('click', () => {
+      queryIndex = Number(button.dataset.attentionQuery);
+      render();
+    }));
+    causalButton.addEventListener('click', () => {
+      causal = !causal;
+      render();
+    });
+    render();
+  }
+
   function initializeMeterLab(root) {
     const modeButtons = Array.from(root.querySelectorAll('[data-meter-mode]'));
     const pulses = Array.from(root.querySelectorAll('[data-meter-pulse]'));
@@ -515,6 +566,7 @@
   function initializeArticleVisuals() {
     document.querySelectorAll('[data-binary-lab]').forEach(initializeBinarySearchLab);
     document.querySelectorAll('[data-epsilon-lab]').forEach(initializeEpsilonLab);
+    document.querySelectorAll('[data-attention-lab]').forEach(initializeAttentionLab);
     document.querySelectorAll('[data-meter-lab]').forEach(initializeMeterLab);
     document.querySelectorAll('[data-rag-diagnostic]').forEach(initializeRagDiagnostic);
     document.querySelectorAll('[data-tcp-lab]').forEach(initializeTcpLab);
