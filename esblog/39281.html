@@ -353,10 +353,10 @@
 <h3 id="4-3-为什么弹出更高元素时不会丢答案"><a href="#4-3-为什么弹出更高元素时不会丢答案" class="headerlink" title="4.3 为什么弹出更高元素时不会丢答案"></a>4.3 为什么弹出更高元素时不会丢答案</h3><p>假设栈顶高度大于新高度 <code>m[i]</code>。对任何未来位置，如果它想向左寻找不高于自己的有效边界，这个更高栈顶已经被更靠右且更低的 <code>i</code> 遮住；若未来高度更低，它会连 <code>i</code> 一起弹出。旧栈顶不会再成为最近的有效边界，可以永久删除。</p>
 <div class="mermaid-wrap"><pre class="mermaid-src" hidden>
   flowchart LR
-    A[扫描新高度 m[i]] --&gt; B[弹出所有更高栈顶]
+    A[&quot;扫描新高度 m[i]&quot;] --&gt; B[弹出所有更高栈顶]
     B --&gt; C{栈是否为空}
-    C --&gt;|是| D[整个前缀由 m[i] 控制]
-    C --&gt;|否| E[复用最近较矮位置 j 的 left[j]]
+    C --&gt;|是| D[&quot;整个前缀由 m[i] 控制&quot;]
+    C --&gt;|否| E[&quot;复用最近较矮位置 j 的 left[j]&quot;]
     D --&gt; F[把 i 入栈]
     E --&gt; F
   </pre></div>
@@ -426,10 +426,10 @@
 <h3 id="5-3-相等高度为什么要去重"><a href="#5-3-相等高度为什么要去重" class="headerlink" title="5.3 相等高度为什么要去重"></a>5.3 相等高度为什么要去重</h3><p>若栈顶与 <code>h[i]</code> 相等，保留更右的 <code>i</code> 即可。对未来位置，旧位置和新位置高度相同，新位置更近；任何需要旧位置作为单调边界的跳跃，都可以先考虑不劣的更近位置。弹掉旧相等高度还能防止同一平台在栈中积累大量冗余候选。</p>
 <div class="mermaid-wrap"><pre class="mermaid-src" hidden>
   flowchart TD
-    A[dp[i] 先由相邻 i-1 转移] --&gt; B[递减栈弹出所有更低位置]
-    B --&gt; C[被弹位置与剩余栈顶尝试更新 dp[i]]
+    A[&quot;dp[i] 先由相邻 i-1 转移&quot;] --&gt; B[递减栈弹出所有更低位置]
+    B --&gt; C[&quot;被弹位置与剩余栈顶尝试更新 dp[i]&quot;]
     C --&gt; D[递增栈弹出所有更高位置]
-    D --&gt; E[被弹位置与剩余栈顶尝试更新 dp[i]]
+    D --&gt; E[&quot;被弹位置与剩余栈顶尝试更新 dp[i]&quot;]
     E --&gt; F[相等高度去重后把 i 压入两栈]
   </pre></div>
 
