@@ -1,0 +1,534 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从一次固定根的子树统计出发，推导换根跨过一条边时的增减量，解决 1092F 距离加权和、1187E Tree Painting 与 1324F Maximum White Subtree。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树">
+<meta property="og:url" content="https://eulersail.com/esblog/58631.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从一次固定根的子树统计出发，推导换根跨过一条边时的增减量，解决 1092F 距离加权和、1187E Tree Painting 与 1324F Maximum White Subtree。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-24T06:20:00.000Z">
+<meta property="article:modified_time" content="2026-09-24T06:20:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="图论">
+<meta property="article:tag" content="深度优先搜索">
+<meta property="article:tag" content="树形 DP">
+<meta property="article:tag" content="换根 DP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/58631.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-24 14:20:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">100</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-24T06:20:00.000Z" title="发表于 2026-09-24 14:20:00">2026-09-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-24T06:20:00.000Z" title="更新于 2026-09-24 14:20:00">2026-09-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>普通树形 DP 常问“根固定为 1 时，某个子树的答案是什么”；换根 DP 再追问一步：如果把根从父节点移到相邻孩子，哪些贡献改变了？在树上删掉这条边后，全部顶点只分成孩子侧与其余侧，所以重新计算通常可以压缩成一次加、一次减。</p>
+<p>本文用三题建立一条递进路线：先处理可以写成总和的距离代价，再识别 Tree Painting 隐藏的深度和，最后处理不能用单个全局总量概括、需要传递“父侧最优贡献”的最大连通子图。</p>
+<span id="more"></span>
+
+<h2 id="1-官方资料与学习目标"><a href="#1-官方资料与学习目标" class="headerlink" title="1. 官方资料与学习目标"></a>1. 官方资料与学习目标</h2><table>
+<thead>
+<tr>
+<th>题目</th>
+<th align="right">官方评分</th>
+<th>官方标签</th>
+<th>约束</th>
+<th>本文核心</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1092/F">1092F Tree with Maximum Cost</a></td>
+<td align="right">1900</td>
+<td>dfs and similar、dp、trees</td>
+<td><code>n≤2×10^5</code>，<code>a_i≤2×10^5</code></td>
+<td>加权距离和的换根公式</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1187/E">1187E Tree Painting</a></td>
+<td align="right">2100</td>
+<td>dfs and similar、dp、trees</td>
+<td><code>n≤2×10^5</code></td>
+<td>把游戏得分改写成深度和</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1324/F">1324F Maximum White Subtree</a></td>
+<td align="right">1800</td>
+<td>dfs and similar、dp、graphs、trees</td>
+<td><code>n≤2×10^5</code></td>
+<td>从子树最优扩展到父侧最优</td>
+</tr>
+</tbody></table>
+<p>三题都能在线性时间内完成。真正需要掌握的不是“写两遍 DFS”，而是下面这条推导链：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[&quot;先任选根 1&quot;] --&gt; B[&quot;自底向上统计子树信息&quot;]
+    B --&gt; C[&quot;分析父子边被切开后的两侧&quot;]
+    C --&gt; D[&quot;从父答案 O(1) 推出孩子答案&quot;]
+    D --&gt; E[&quot;沿树传播到所有根&quot;]
+  </pre></div>
+
+<p>代码全部使用父节点数组与遍历序列，避免在 <code>n=2×10^5</code> 的链上递归过深。</p>
+<h2 id="2-换根为什么只需要看一条边"><a href="#2-换根为什么只需要看一条边" class="headerlink" title="2. 换根为什么只需要看一条边"></a>2. 换根为什么只需要看一条边</h2><p>先以 1 为根，考虑父节点 <code>u</code> 与孩子 <code>v</code>。删掉边 <code>u-v</code> 后：</p>
+<ul>
+<li><code>v</code> 的原子树在一侧；</li>
+<li>剩余所有点在另一侧；</li>
+<li>从根 <code>u</code> 移到 <code>v</code> 时，第一侧的距离全部减 1，第二侧的距离全部加 1。</li>
+</ul>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    L[&quot;v 的原子树：距离全部减 1&quot;] --- E[&quot;边 u-v&quot;]
+    E --- R[&quot;其余部分：距离全部加 1&quot;]
+  </pre></div>
+
+<p>因此，只要自底向上预先算出 <code>v</code> 这一侧的总量，就不必为每个新根重新遍历整棵树。</p>
+<h2 id="3-第一题：1092F-Tree-with-Maximum-Cost"><a href="#3-第一题：1092F-Tree-with-Maximum-Cost" class="headerlink" title="3. 第一题：1092F Tree with Maximum Cost"></a>3. 第一题：1092F Tree with Maximum Cost</h2><h3 id="3-1-目标与朴素方法"><a href="#3-1-目标与朴素方法" class="headerlink" title="3.1 目标与朴素方法"></a>3.1 目标与朴素方法</h3><p>每个点 <code>i</code> 有正权 <code>a_i</code>。选择根 <code>r</code> 后，代价为：</p>
+<p>$$F(r)&#x3D;\sum_i a_i\cdot dist(i,r).$$</p>
+<p>需要输出最大的 <code>F(r)</code>。如果对每个根分别 BFS&#x2F;DFS，复杂度是 <code>O(n^2)</code>，链形树在最大规模下无法运行。</p>
+<h3 id="3-2-固定根时要保存什么"><a href="#3-2-固定根时要保存什么" class="headerlink" title="3.2 固定根时要保存什么"></a>3.2 固定根时要保存什么</h3><p>先以 1 为根，定义：</p>
+<ul>
+<li><code>sub[v]</code>：<code>v</code> 原子树内的权值总和；</li>
+<li><code>total</code>：全树权值总和；</li>
+<li><code>F(1)</code>：遍历时把 <code>depth[v] * a[v]</code> 累加。</li>
+</ul>
+<p>自底向上有：</p>
+<p>$$sub[u]&#x3D;a_u+\sum_{v\text{ 是 }u\text{ 的孩子}}sub[v].$$</p>
+<h3 id="3-3-换根公式"><a href="#3-3-换根公式" class="headerlink" title="3.3 换根公式"></a>3.3 换根公式</h3><p>根从 <code>u</code> 移到孩子 <code>v</code>：</p>
+<ul>
+<li><code>v</code> 子树内权值共 <code>sub[v]</code>，距离各减 1，贡献减少 <code>sub[v]</code>；</li>
+<li>子树外权值共 <code>total-sub[v]</code>，距离各加 1，贡献增加 <code>total-sub[v]</code>。</li>
+</ul>
+<p>所以：</p>
+<p>$$F(v)&#x3D;F(u)-sub[v]+(total-sub[v])&#x3D;F(u)+total-2sub[v].$$</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th align="right">权值和</th>
+<th align="right">距离变化</th>
+<th align="right">对答案的改变量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>v</code> 子树</td>
+<td align="right"><code>sub[v]</code></td>
+<td align="right"><code>-1</code></td>
+<td align="right"><code>-sub[v]</code></td>
+</tr>
+<tr>
+<td>其余顶点</td>
+<td align="right"><code>total-sub[v]</code></td>
+<td align="right"><code>+1</code></td>
+<td align="right"><code>+total-sub[v]</code></td>
+</tr>
+</tbody></table>
+<h3 id="3-4-手工演算"><a href="#3-4-手工演算" class="headerlink" title="3.4 手工演算"></a>3.4 手工演算</h3><p>链 <code>1-2-3-4</code> 的权值为 <code>[2,1,3,2]</code>，以 1 为根：</p>
+<table>
+<thead>
+<tr>
+<th align="right">根</th>
+<th align="right">加权距离和</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td align="right"><code>0×2+1×1+2×3+3×2=13</code></td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right"><code>13+8-2×6=9</code></td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right"><code>9+8-2×5=7</code></td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right"><code>7+8-2×2=11</code></td>
+</tr>
+</tbody></table>
+<p>最大值是 13。这里 <code>sub[2]=6</code>、<code>sub[3]=5</code>、<code>sub[4]=2</code>，每一步都只用上一个根的答案。</p>
+<h3 id="3-5-C-17-实现"><a href="#3-5-C-17-实现" class="headerlink" title="3.5 C++17 实现"></a>3.5 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">weight</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> total = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">long</span> <span class="type">long</span>&amp; value : weight) &#123;</span><br><span class="line">        cin &gt;&gt; value;</span><br><span class="line">        total += value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> u, v;</span><br><span class="line">        cin &gt;&gt; u &gt;&gt; v;</span><br><span class="line">        --u;</span><br><span class="line">        --v;</span><br><span class="line">        graph[u].<span class="built_in">push_back</span>(v);</span><br><span class="line">        graph[v].<span class="built_in">push_back</span>(u);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">parent</span><span class="params">(n, <span class="number">-2</span>)</span>, <span class="title">depth</span><span class="params">(n, <span class="number">0</span>)</span>, order</span>;</span><br><span class="line">    parent[<span class="number">0</span>] = <span class="number">-1</span>;</span><br><span class="line">    order.<span class="built_in">push_back</span>(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> next : graph[vertex]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (next == parent[vertex]) <span class="keyword">continue</span>;</span><br><span class="line">            parent[next] = vertex;</span><br><span class="line">            depth[next] = depth[vertex] + <span class="number">1</span>;</span><br><span class="line">            order.<span class="built_in">push_back</span>(next);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; subtree = weight;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> rootCost = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> vertex = <span class="number">0</span>; vertex &lt; n; ++vertex) &#123;</span><br><span class="line">        rootCost += weight[vertex] * depth[vertex];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; --i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        subtree[parent[vertex]] += subtree[vertex];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">cost</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line">    cost[<span class="number">0</span>] = rootCost;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> answer = rootCost;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        cost[vertex] = cost[parent[vertex]] + total - <span class="number">2</span> * subtree[vertex];</span><br><span class="line">        answer = <span class="built_in">max</span>(answer, cost[vertex]);</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间 <code>O(n)</code>，空间 <code>O(n)</code>。最大答案可能达到约 <code>8×10^15</code>，必须使用 <code>long long</code>。</p>
+<h2 id="4-第二题：1187E-Tree-Painting"><a href="#4-第二题：1187E-Tree-Painting" class="headerlink" title="4. 第二题：1187E Tree Painting"></a>4. 第二题：1187E Tree Painting</h2><h3 id="4-1-先把游戏翻译成静态量"><a href="#4-1-先把游戏翻译成静态量" class="headerlink" title="4.1 先把游戏翻译成静态量"></a>4.1 先把游戏翻译成静态量</h3><p>开始时全白。第一次任选一个点涂黑，之后每次只能选与黑点相邻的白点；得分是被选点所在白色连通块的大小。</p>
+<p>选定第一个点 <code>r</code> 后，把树看成以 <code>r</code> 为根：一个点只有在父节点已经黑色后才能被选到，而它的后代此时仍是白色。因此选点 <code>v</code> 时，白色连通块恰好是 <code>v</code> 的子树，得分为 <code>size[v]</code>。</p>
+<p>总分为：</p>
+<p>$$S(r)&#x3D;\sum_v size_r[v].$$</p>
+<p>每个点 <code>x</code> 会被自己及所有祖先的子树各统计一次，共 <code>depth_r[x]+1</code> 次，所以又有：</p>
+<p>$$S(r)&#x3D;\sum_x(depth_r[x]+1)&#x3D;n+\sum_x depth_r[x].$$</p>
+<p>原来的操作顺序消失了，问题变成“选择一个根，使所有点深度和最大”。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+    A[&quot;选定第一个黑点 r&quot;] --&gt; B[&quot;合法顺序必然先父后子&quot;]
+    B --&gt; C[&quot;选择 v 时得分等于其子树大小&quot;]
+    C --&gt; D[&quot;总分等于所有子树大小之和&quot;]
+    D --&gt; E[&quot;等于 n 加所有点深度之和&quot;]
+  </pre></div>
+
+<h3 id="4-2-换根公式"><a href="#4-2-换根公式" class="headerlink" title="4.2 换根公式"></a>4.2 换根公式</h3><p>这次每个点权值都是 1。若初始根为 1，先算 <code>size[v]</code> 与：</p>
+<p>$$S(1)&#x3D;n+\sum_v depth[v].$$</p>
+<p>根从 <code>u</code> 移到孩子 <code>v</code> 时，<code>v</code> 子树的 <code>size[v]</code> 个点深度减 1，其余 <code>n-size[v]</code> 个点深度加 1：</p>
+<p>$$S(v)&#x3D;S(u)+n-2size[v].$$</p>
+<p>这正是上一题公式令所有 <code>a_i=1</code> 后的形式，只多了对所有根相同的常数 <code>n</code>。</p>
+<h3 id="4-3-手工演算"><a href="#4-3-手工演算" class="headerlink" title="4.3 手工演算"></a>4.3 手工演算</h3><p>树边为 <code>1-2、1-3、2-4、2-5</code>，以 1 为根：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th align="right">值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>深度</td>
+<td align="right"><code>[0,1,1,2,2]</code></td>
+</tr>
+<tr>
+<td><code>S(1)</code></td>
+<td align="right"><code>5+(0+1+1+2+2)=11</code></td>
+</tr>
+<tr>
+<td><code>size[2]</code></td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td><code>S(2)</code></td>
+<td align="right"><code>11+5-2×3=10</code></td>
+</tr>
+<tr>
+<td><code>size[3]</code></td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td><code>S(3)</code></td>
+<td align="right"><code>11+5-2×1=14</code></td>
+</tr>
+</tbody></table>
+<p>点 3 看似是叶子，却能让大多数点离根更远，因此取得更高总分。</p>
+<h3 id="4-4-C-17-实现"><a href="#4-4-C-17-实现" class="headerlink" title="4.4 C++17 实现"></a>4.4 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> u, v;</span><br><span class="line">        cin &gt;&gt; u &gt;&gt; v;</span><br><span class="line">        --u;</span><br><span class="line">        --v;</span><br><span class="line">        graph[u].<span class="built_in">push_back</span>(v);</span><br><span class="line">        graph[v].<span class="built_in">push_back</span>(u);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">parent</span><span class="params">(n, <span class="number">-2</span>)</span>, <span class="title">depth</span><span class="params">(n, <span class="number">0</span>)</span>, order</span>;</span><br><span class="line">    parent[<span class="number">0</span>] = <span class="number">-1</span>;</span><br><span class="line">    order.<span class="built_in">push_back</span>(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> next : graph[vertex]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (next == parent[vertex]) <span class="keyword">continue</span>;</span><br><span class="line">            parent[next] = vertex;</span><br><span class="line">            depth[next] = depth[vertex] + <span class="number">1</span>;</span><br><span class="line">            order.<span class="built_in">push_back</span>(next);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">size</span><span class="params">(n, <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> rootScore = n;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> value : depth) rootScore += value;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; --i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        size[parent[vertex]] += size[vertex];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">score</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line">    score[<span class="number">0</span>] = rootScore;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> answer = rootScore;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        score[vertex] = score[parent[vertex]] + n - <span class="number">2LL</span> * size[vertex];</span><br><span class="line">        answer = <span class="built_in">max</span>(answer, score[vertex]);</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间 <code>O(n)</code>，空间 <code>O(n)</code>。</p>
+<h2 id="5-第三题：1324F-Maximum-White-Subtree"><a href="#5-第三题：1324F-Maximum-White-Subtree" class="headerlink" title="5. 第三题：1324F Maximum White Subtree"></a>5. 第三题：1324F Maximum White Subtree</h2><h3 id="5-1-把颜色变成权值"><a href="#5-1-把颜色变成权值" class="headerlink" title="5.1 把颜色变成权值"></a>5.1 把颜色变成权值</h3><p>白点记为 <code>+1</code>，黑点记为 <code>-1</code>。对每个点 <code>v</code>，要求一个包含 <code>v</code> 的连通子图，使点权和最大。</p>
+<p>固定根 1，先定义：</p>
+<p>$$down[u]&#x3D;w_u+\sum_{v\text{ 是孩子}}\max(0,down[v]).$$</p>
+<p>如果某个孩子方向的最优贡献为负，就不接入；为正才值得保留。<code>down[u]</code> 只看得到原子树，还不是最终答案。</p>
+<h3 id="5-2-父侧怎样传给孩子"><a href="#5-2-父侧怎样传给孩子" class="headerlink" title="5.2 父侧怎样传给孩子"></a>5.2 父侧怎样传给孩子</h3><p>假设已经知道 <code>answer[u]</code>，要转移到孩子 <code>v</code>：</p>
+<ol>
+<li><code>answer[u]</code> 中可能包含 <code>v</code> 方向的正贡献，先减掉 <code>max(0,down[v])</code>；</li>
+<li>得到从 <code>u</code> 通往树外其余部分的贡献 <code>outside</code>；</li>
+<li>对 <code>v</code> 来说，只有 <code>outside&gt;0</code> 才值得接入。</li>
+</ol>
+<p>于是：</p>
+<p>$$outside&#x3D;answer[u]-\max(0,down[v]),$$</p>
+<p>$$answer[v]&#x3D;down[v]+\max(0,outside).$$</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+    A[&quot;answer[u]：包含 u 的全树最优&quot;] --&gt; B[&quot;减去 v 方向已计入的正贡献&quot;]
+    B --&gt; C[&quot;得到父侧 outside&quot;]
+    C --&gt; D{&quot;outside 是否为正&quot;}
+    D --&gt;|是| E[&quot;接到 down[v] 上&quot;]
+    D --&gt;|否| F[&quot;只保留 down[v]&quot;]
+  </pre></div>
+
+<h3 id="5-3-手工演算"><a href="#5-3-手工演算" class="headerlink" title="5.3 手工演算"></a>5.3 手工演算</h3><p>链 <code>1-2-3-4</code> 颜色为黑、白、白、黑，对应 <code>[-1,+1,+1,-1]</code>，以 1 为根：</p>
+<table>
+<thead>
+<tr>
+<th align="right">点</th>
+<th align="right"><code>down</code></th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">4</td>
+<td align="right">-1</td>
+<td>只有黑点自己</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">1</td>
+<td>不接负贡献的点 4</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">2</td>
+<td>接入点 3</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td align="right">1</td>
+<td>自己 -1，加上点 2 方向的 2</td>
+</tr>
+</tbody></table>
+<p>向下换根后，点 3 可以从父侧接入点 2 的正贡献，所以 <code>answer[3]=2</code>；点 4 也可接入点 2、3，得到 1。最终答案 <code>[1,2,2,1]</code>。</p>
+<h3 id="5-4-C-17-实现"><a href="#5-4-C-17-实现" class="headerlink" title="5.4 C++17 实现"></a>5.4 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">weight</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; value : weight) &#123;</span><br><span class="line">        cin &gt;&gt; value;</span><br><span class="line">        value = value == <span class="number">1</span> ? <span class="number">1</span> : <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> u, v;</span><br><span class="line">        cin &gt;&gt; u &gt;&gt; v;</span><br><span class="line">        --u;</span><br><span class="line">        --v;</span><br><span class="line">        graph[u].<span class="built_in">push_back</span>(v);</span><br><span class="line">        graph[v].<span class="built_in">push_back</span>(u);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">parent</span><span class="params">(n, <span class="number">-2</span>)</span>, order</span>;</span><br><span class="line">    parent[<span class="number">0</span>] = <span class="number">-1</span>;</span><br><span class="line">    order.<span class="built_in">push_back</span>(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> next : graph[vertex]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (next == parent[vertex]) <span class="keyword">continue</span>;</span><br><span class="line">            parent[next] = vertex;</span><br><span class="line">            order.<span class="built_in">push_back</span>(next);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; down = weight;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; --i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        down[parent[vertex]] += <span class="built_in">max</span>(<span class="number">0</span>, down[vertex]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">answer</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line">    answer[<span class="number">0</span>] = down[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> vertex = order[i];</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> outside = answer[parent[vertex]] - <span class="built_in">max</span>(<span class="number">0</span>, down[vertex]);</span><br><span class="line">        answer[vertex] = down[vertex] + <span class="built_in">max</span>(<span class="number">0</span>, outside);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> value : answer) cout &lt;&lt; value &lt;&lt; <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">    cout &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间 <code>O(n)</code>，空间 <code>O(n)</code>。</p>
+<h2 id="6-三题的换根状态有什么区别"><a href="#6-三题的换根状态有什么区别" class="headerlink" title="6. 三题的换根状态有什么区别"></a>6. 三题的换根状态有什么区别</h2><table>
+<thead>
+<tr>
+<th>题目</th>
+<th>第一遍统计</th>
+<th>第二遍传递</th>
+<th>能否只靠一个全局总量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1092F</td>
+<td>子树权值和、根 1 的加权距离和</td>
+<td><code>+total-2×sub[v]</code></td>
+<td>可以</td>
+</tr>
+<tr>
+<td>1187E</td>
+<td>子树大小、根 1 的深度和</td>
+<td><code>+n-2×size[v]</code></td>
+<td>可以</td>
+</tr>
+<tr>
+<td>1324F</td>
+<td>子树内包含当前点的最大贡献</td>
+<td>去掉孩子贡献后传父侧正贡献</td>
+<td>不可以</td>
+</tr>
+</tbody></table>
+<p>前两题的目标对所有点贡献做线性求和，切边后只需知道两侧的“量”；第三题带有“负贡献可以不选”的最优化决策，必须保留方向性状态。</p>
+<h2 id="7-正确性证明"><a href="#7-正确性证明" class="headerlink" title="7. 正确性证明"></a>7. 正确性证明</h2><h3 id="7-1-1092F"><a href="#7-1-1092F" class="headerlink" title="7.1 1092F"></a>7.1 1092F</h3><p>固定边 <code>u-v</code> 且 <code>u</code> 是 <code>v</code> 的父亲。换根到 <code>v</code> 后，<code>v</code> 原子树内每个点距离恰减 1，其余点距离恰加 1。按权值求和得到 <code>F(v)=F(u)+total-2sub[v]</code>。根 1 的值直接计算正确；沿父子边传播覆盖所有点，故每个根的值正确，取最大即为答案。</p>
+<h3 id="7-2-1187E"><a href="#7-2-1187E" class="headerlink" title="7.2 1187E"></a>7.2 1187E</h3><p>选定首个黑点后，树的唯一简单路径保证任何点被选前其父亲必须已黑，而其未选后代仍构成白色连通块，所以该步得分等于当前根下的子树大小。所有子树大小之和等于每点的祖先数之和，即 <code>n+深度和</code>。换根的深度变化与 1092F 全部点权为 1 时相同，因此公式与最大值均正确。</p>
+<h3 id="7-3-1324F"><a href="#7-3-1324F" class="headerlink" title="7.3 1324F"></a>7.3 1324F</h3><p>对固定根，包含 <code>u</code> 且限于其子树的最优连通块，在每个孩子方向可以独立决定接入或舍弃；接入的最优收益为 <code>down[v]</code>，只有为正时有利，因此 <code>down</code> 转移正确。计算孩子 <code>v</code> 时，从 <code>answer[u]</code> 移除其中可能采用的 <code>v</code> 方向，剩余就是父侧可提供的最优连通贡献；同样只在为正时接入。树上各方向被恰好考虑一次，故 <code>answer[v]</code> 是包含 <code>v</code> 的全树最优值。</p>
+<h2 id="8-边界与错误清单"><a href="#8-边界与错误清单" class="headerlink" title="8. 边界与错误清单"></a>8. 边界与错误清单</h2><ol>
+<li><strong>把换根写成每个根重新 DFS。</strong> 复杂度会退化到 <code>O(n^2)</code>。</li>
+<li><strong>1092F 用 <code>int</code>。</strong> 权值、距离与求和相乘后必须用 <code>long long</code>。</li>
+<li><strong>换根时只减子树，不加外部。</strong> 一条边的两侧距离变化方向相反。</li>
+<li><strong>Tree Painting 直接搜索涂色顺序。</strong> 顺序不是状态；固定首点后总分已经由根树确定。</li>
+<li><strong>误写 <code>S(r)=深度和</code>。</strong> 每个点还会被自己的子树统计一次，需要加 <code>n</code>。</li>
+<li><strong>1324F 强行接入负贡献。</strong> 每个方向都应取 <code>max(0, contribution)</code>。</li>
+<li><strong>计算父侧时不移除孩子贡献。</strong> 会把 <code>v</code> 方向重复计入。</li>
+<li><strong>递归 DFS 直接跑 20 万点长链。</strong> C++ 默认栈可能溢出，迭代遍历更稳妥。</li>
+<li><strong>父节点数组只判断 <code>next != parent</code>，却没有建立树。</strong> 应保证每个点只从父亲首次进入；树输入下本文写法成立。</li>
+<li><strong>忘记单点与全黑情况。</strong> 1092F 单点答案为 0；1324F 全黑时每点答案为 -1。</li>
+</ol>
+<h2 id="9-独立验证"><a href="#9-独立验证" class="headerlink" title="9. 独立验证"></a>9. 独立验证</h2><p><code>tests/verify-rerooting-three-article.cjs</code> 会提取并无警告编译三份 C++17 代码，并采用不同思路核验：</p>
+<ul>
+<li>1092F 对小树枚举每个根，用 BFS 直接求所有距离与加权和；</li>
+<li>1187E 对每个候选首点直接计算 <code>n+深度和</code>；</li>
+<li>1324F 枚举所有点集，检查连通性，并为每个必含点寻找最大权值和；</li>
+<li>三题另用 20 万点长链检查迭代遍历、64 位上界与线性复杂度。</li>
+</ul>
+<h2 id="10-下一步"><a href="#10-下一步" class="headerlink" title="10. 下一步"></a>10. 下一步</h2><p>可以先回看<a href="/esblog/43827.html">树上 DFS 三题</a>，确认深度、路径和子树贡献的基本语义；再读本文理解根移动时怎样复用答案。之后可进入树的直径、最近公共祖先或树链剖分：它们同样利用唯一简单路径，但维护的信息不再只沿一条父子边更新。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/58631.html">https://eulersail.com/esblog/58631.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E8%AE%BA/">图论</a><a class="post-meta__tags" href="/tags/%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/">深度优先搜索</a><a class="post-meta__tags" href="/tags/%E6%A0%91%E5%BD%A2-DP/">树形 DP</a><a class="post-meta__tags" href="/tags/%E6%8D%A2%E6%A0%B9-DP/">换根 DP</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/74652.html" title="勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲</div></div></a></div><div class="next-post pull-right"><a href="/esblog/93061.html" title="舒伯特《B 小调“未完成”交响曲》：两乐章怎样构成完整的听觉弧线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">舒伯特《B 小调“未完成”交响曲》：两乐章怎样构成完整的听觉弧线</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/70146.html" title="Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-12</div><div class="title">Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间</div></div></a></div><div><a href="/esblog/43827.html" title="Codeforces 树上 DFS 三题：深度、路径状态与子树贡献"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-14</div><div class="title">Codeforces 树上 DFS 三题：深度、路径状态与子树贡献</div></div></a></div><div><a href="/esblog/77420.html" title="Codeforces 20C Dijkstra：加权最短路与路径还原"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-08</div><div class="title">Codeforces 20C Dijkstra：加权最短路与路径还原</div></div></a></div><div><a href="/esblog/80632.html" title="Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS</div></div></a></div><div><a href="/esblog/82541.html" title="Codeforces 25D：并查集、生成森林与最少改路方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 25D：并查集、生成森林与最少改路方案</div></div></a></div><div><a href="/esblog/94673.html" title="Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-10</div><div class="title">Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">100</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%98%E6%96%B9%E8%B5%84%E6%96%99%E4%B8%8E%E5%AD%A6%E4%B9%A0%E7%9B%AE%E6%A0%87"><span class="toc-text">1. 官方资料与学习目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%8D%A2%E6%A0%B9%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AA%E9%9C%80%E8%A6%81%E7%9C%8B%E4%B8%80%E6%9D%A1%E8%BE%B9"><span class="toc-text">2. 换根为什么只需要看一条边</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%AC%AC%E4%B8%80%E9%A2%98%EF%BC%9A1092F-Tree-with-Maximum-Cost"><span class="toc-text">3. 第一题：1092F Tree with Maximum Cost</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%9B%AE%E6%A0%87%E4%B8%8E%E6%9C%B4%E7%B4%A0%E6%96%B9%E6%B3%95"><span class="toc-text">3.1 目标与朴素方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%9B%BA%E5%AE%9A%E6%A0%B9%E6%97%B6%E8%A6%81%E4%BF%9D%E5%AD%98%E4%BB%80%E4%B9%88"><span class="toc-text">3.2 固定根时要保存什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%8D%A2%E6%A0%B9%E5%85%AC%E5%BC%8F"><span class="toc-text">3.3 换根公式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">3.4 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">3.5 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AC%AC%E4%BA%8C%E9%A2%98%EF%BC%9A1187E-Tree-Painting"><span class="toc-text">4. 第二题：1187E Tree Painting</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%85%88%E6%8A%8A%E6%B8%B8%E6%88%8F%E7%BF%BB%E8%AF%91%E6%88%90%E9%9D%99%E6%80%81%E9%87%8F"><span class="toc-text">4.1 先把游戏翻译成静态量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%8D%A2%E6%A0%B9%E5%85%AC%E5%BC%8F"><span class="toc-text">4.2 换根公式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">4.3 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">4.4 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E7%AC%AC%E4%B8%89%E9%A2%98%EF%BC%9A1324F-Maximum-White-Subtree"><span class="toc-text">5. 第三题：1324F Maximum White Subtree</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%8A%8A%E9%A2%9C%E8%89%B2%E5%8F%98%E6%88%90%E6%9D%83%E5%80%BC"><span class="toc-text">5.1 把颜色变成权值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%88%B6%E4%BE%A7%E6%80%8E%E6%A0%B7%E4%BC%A0%E7%BB%99%E5%AD%A9%E5%AD%90"><span class="toc-text">5.2 父侧怎样传给孩子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%89%8B%E5%B7%A5%E6%BC%94%E7%AE%97"><span class="toc-text">5.3 手工演算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">5.4 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E4%B8%89%E9%A2%98%E7%9A%84%E6%8D%A2%E6%A0%B9%E7%8A%B6%E6%80%81%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="toc-text">6. 三题的换根状态有什么区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">7. 正确性证明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-1092F"><span class="toc-text">7.1 1092F</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-1187E"><span class="toc-text">7.2 1187E</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-1324F"><span class="toc-text">7.3 1324F</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E8%BE%B9%E7%95%8C%E4%B8%8E%E9%94%99%E8%AF%AF%E6%B8%85%E5%8D%95"><span class="toc-text">8. 边界与错误清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81"><span class="toc-text">9. 独立验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="toc-text">10. 下一步</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/74652.html" title="勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲">勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲</a><time datetime="2026-09-24T06:45:00.000Z" title="发表于 2026-09-24 14:45:00">2026-09-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/58631.html" title="Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树">Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树</a><time datetime="2026-09-24T06:20:00.000Z" title="发表于 2026-09-24 14:20:00">2026-09-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/93061.html" title="舒伯特《B 小调“未完成”交响曲》：两乐章怎样构成完整的听觉弧线">舒伯特《B 小调“未完成”交响曲》：两乐章怎样构成完整的听觉弧线</a><time datetime="2026-09-23T08:40:00.000Z" title="发表于 2026-09-23 16:40:00">2026-09-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/27504.html" title="Codeforces 最短路进阶三题：最短路树、冗余列车与多源建模">Codeforces 最短路进阶三题：最短路树、冗余列车与多源建模</a><time datetime="2026-09-23T08:20:00.000Z" title="发表于 2026-09-23 16:20:00">2026-09-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/81467.html" title="贝多芬《A 大调第七交响曲》：节奏怎样成为全曲主角">贝多芬《A 大调第七交响曲》：节奏怎样成为全曲主角</a><time datetime="2026-09-20T10:30:00.000Z" title="发表于 2026-09-20 18:30:00">2026-09-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
