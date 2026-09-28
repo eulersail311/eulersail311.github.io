@@ -1,0 +1,815 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从 459D 前后缀频次、61E 递减三元组到 911D 区间反转，用扫描不变量、树状数组和奇偶性压缩序列计数，附三份完整 C++17 与独立暴力验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶">
+<meta property="og:url" content="https://eulersail.com/esblog/52369.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从 459D 前后缀频次、61E 递减三元组到 911D 区间反转，用扫描不变量、树状数组和奇偶性压缩序列计数，附三份完整 C++17 与独立暴力验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-28T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-28T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="树状数组">
+<meta property="article:tag" content="离散化">
+<meta property="article:tag" content="逆序对">
+<meta property="article:tag" content="计数">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/52369.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-28 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">61</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-28T02:00:00.000Z" title="发表于 2026-09-28 10:00:00">2026-09-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-28T02:00:00.000Z" title="更新于 2026-09-28 10:00:00">2026-09-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>17分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>“有多少对”“有多少组三元组”看起来需要多重循环，但很多位置限制可以由扫描方向自动保证，剩下的只是一个动态前缀计数问题。另一类题甚至不需要维护完整计数：如果只问奇偶性，就应先研究操作如何改变奇偶性。</p>
+<p>这篇从 <a href="/esblog/76834.html">前缀和与差分</a> 接出一条序列计数支线：<strong>扫描保证位置关系，树状数组回答大小关系，不变量决定哪些状态根本不用保存。</strong></p>
+<span id="more"></span>
+
+<h2 id="1-学习路线与官方约束"><a href="#1-学习路线与官方约束" class="headerlink" title="1. 学习路线与官方约束"></a>1. 学习路线与官方约束</h2><p>题名、难度、标签与约束于 2026-09-28 核对 Codeforces 官方题目页。下面的说明是重新组织的题意，不替代原题。</p>
+<table>
+<thead>
+<tr>
+<th>官方题目</th>
+<th>难度</th>
+<th>官方标签</th>
+<th>本文的切入点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/459/D">459D · Pashmak and Parmida’s problem</a></td>
+<td>1800</td>
+<td>data structures, divide and conquer, sortings</td>
+<td>先预处理频次，再扫描频次的分布</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/61/E">61E · Enemy is weak</a></td>
+<td>1900</td>
+<td>data structures, trees</td>
+<td>固定中间位置，把三元组拆成左右选择</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/911/D">911D · Inversion Counting</a></td>
+<td>1800</td>
+<td>brute force, math</td>
+<td>初始计数可以用树状数组，后续只更新奇偶性</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>题目</th>
+<th>数据边界</th>
+<th>时间 &#x2F; 空间限制</th>
+<th>会影响实现的条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>459D</td>
+<td><code>1 ≤ n ≤ 10^6</code>，<code>1 ≤ a[i] ≤ 10^9</code></td>
+<td>3 秒 &#x2F; 256 MB</td>
+<td>数值可以重复，答案可能超过 32 位</td>
+</tr>
+<tr>
+<td>61E</td>
+<td><code>3 ≤ n ≤ 10^6</code>，<code>1 ≤ a[i] ≤ 10^9</code></td>
+<td>5 秒 &#x2F; 256 MB</td>
+<td>所有数值互不相同，三元组数须用 64 位</td>
+</tr>
+<tr>
+<td>911D</td>
+<td><code>1 ≤ n ≤ 1500</code>，<code>1 ≤ m ≤ 2×10^5</code></td>
+<td>2 秒 &#x2F; 256 MB</td>
+<td>初始数组是 <code>1..n</code> 的排列，反转操作依次累积</td>
+</tr>
+</tbody></table>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;枚举位置组合太慢&quot;] --&gt; B[&quot;固定一个端点或中间位置&quot;]
+  B --&gt; C[&quot;用扫描方向保证位置关系&quot;]
+  C --&gt; D[&quot;树状数组维护值域前缀计数&quot;]
+  D --&gt; E[&quot;459D：比较两侧出现次数&quot;]
+  D --&gt; F[&quot;61E：左右选择数相乘&quot;]
+  D --&gt; G[&quot;911D：只求初始逆序奇偶&quot;]
+  G --&gt; H[&quot;反转后仅更新一个奇偶位&quot;]
+  </pre></div>
+
+<p>建议先手算一遍第二节的树状数组，再做 459D；61E 用来练习“枚举中间”，911D 用来提醒自己：有数据结构也不意味着每次操作都需要它。</p>
+<h2 id="2-树状数组：动态维护一个计数前缀"><a href="#2-树状数组：动态维护一个计数前缀" class="headerlink" title="2. 树状数组：动态维护一个计数前缀"></a>2. 树状数组：动态维护一个计数前缀</h2><h3 id="从静态前缀和到动态前缀和"><a href="#从静态前缀和到动态前缀和" class="headerlink" title="从静态前缀和到动态前缀和"></a>从静态前缀和到动态前缀和</h3><p>假设 <code>freq[x]</code> 表示已扫描元素中数值为 <code>x</code> 的数量。查询“小于 x 的元素数”等于 <code>freq[1]+...+freq[x-1]</code>。</p>
+<p>普通前缀和查询很快，但插入一个元素就可能需要修改后面所有前缀。树状数组（Fenwick tree）把前缀拆成若干二进制长度的块：单点增加和前缀求和都只需 <code>O(log n)</code>。</p>
+<p>令 <code>lowbit(x) = x &amp; -x</code>。使用从 1 开始的下标，<code>tree[x]</code> 保存区间 <code>[x-lowbit(x)+1, x]</code> 的总和。</p>
+<table>
+<thead>
+<tr>
+<th>节点 x</th>
+<th>lowbit(x)</th>
+<th>保存的区间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+<td><code>[1,1]</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td><code>[1,4]</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+<td><code>[5,6]</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>1</td>
+<td><code>[7,7]</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>8</td>
+<td><code>[1,8]</code></td>
+</tr>
+</tbody></table>
+<p>查询 <code>sum(7)</code> 时，依次访问 7、6、4，拼出 <code>[7,7] + [5,6] + [1,4]</code>，既不漏项也不重叠。每次减去 lowbit，会清除当前最低的一个二进制 1，因此步数不超过二进制位数。</p>
+<p>在长度 8 的树中给位置 3 加一，依次更新 3、4、8。这些正是沿树状数组祖先链覆盖位置 3 的块；跳转 <code>x += lowbit(x)</code> 越过不包含该位置的块，从而保持每个节点的区间和定义。</p>
+<h3 id="离散化不是改变比较关系"><a href="#离散化不是改变比较关系" class="headerlink" title="离散化不是改变比较关系"></a>离散化不是改变比较关系</h3><p>值域到 <code>10^9</code>，不能直接开这么大的计数数组。把原数组复制、排序、去重，再把每个数替换成从 1 开始的排名：相等仍相等，大小次序不变。比如 <code>[100,7,100,42]</code> 变成 <code>[3,1,3,2]</code>。</p>
+<table>
+<thead>
+<tr>
+<th>想查询什么</th>
+<th>已插入数量为 seen 时的公式</th>
+<th>等号在哪一边</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>严格小于 x</td>
+<td><code>sum(x-1)</code></td>
+<td>不包含 x</td>
+</tr>
+<tr>
+<td>小于等于 x</td>
+<td><code>sum(x)</code></td>
+<td>包含 x</td>
+</tr>
+<tr>
+<td>严格大于 x</td>
+<td><code>seen-sum(x)</code></td>
+<td>扣掉小于等于 x</td>
+</tr>
+<tr>
+<td>大于等于 x</td>
+<td><code>seen-sum(x-1)</code></td>
+<td>只扣掉严格小于 x</td>
+</tr>
+</tbody></table>
+<p><code>sum(0)=0</code> 是合法空前缀；<code>add(0,1)</code> 则会永远停在 0。离散化排名必须加一。三份代码都保留完整的树状数组定义，便于分别提交。</p>
+<h2 id="3-第一题：459D-Pashmak-and-Parmida’s-problem"><a href="#3-第一题：459D-Pashmak-and-Parmida’s-problem" class="headerlink" title="3. 第一题：459D Pashmak and Parmida’s problem"></a>3. 第一题：459D Pashmak and Parmida’s problem</h2><h3 id="把两段频率变成两个数组"><a href="#把两段频率变成两个数组" class="headerlink" title="把两段频率变成两个数组"></a>把两段频率变成两个数组</h3><p>定义 <code>L[i]</code> 为 <code>a[i]</code> 在 <code>[1,i]</code> 中的出现次数，<code>R[i]</code> 为 <code>a[i]</code> 在 <code>[i,n]</code> 中的出现次数。目标是统计 <code>i&lt;j</code> 且 <code>L[i]&gt;R[j]</code> 的点对。</p>
+<p>直接枚举所有 <code>(i,j)</code> 即使预处理了 L、R，仍需 <code>O(n²)</code>。注意第二个条件比较的是<strong>出现次数</strong>，不是 <code>a[i]</code> 与 <code>a[j]</code> 的大小。原数值只负责确定哪些位置属于同一种值。</p>
+<p>用数组 <code>[1,2,1,1,2,2,1]</code> 手算：</p>
+<table>
+<thead>
+<tr>
+<th>位置（1 起）</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>L</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr>
+<td>R</td>
+<td>4</td>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<h3 id="从右向左，让位置条件自动成立"><a href="#从右向左，让位置条件自动成立" class="headerlink" title="从右向左，让位置条件自动成立"></a>从右向左，让位置条件自动成立</h3><p>处理 i 之前，树状数组只存所有 <code>j&gt;i</code> 的 <code>R[j]</code>。因此当前贡献就是 <code>sum(L[i]-1)</code>；查询之后才加入 <code>R[i]</code>。</p>
+<table>
+<thead>
+<tr>
+<th>扫描 i</th>
+<th>右侧已插入的 R（按位置列出）</th>
+<th>小于 L[i] 的数量</th>
+<th>累计答案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>7</td>
+<td>空</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1,1</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2,1,1</td>
+<td>3</td>
+<td>6</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2,2,1,1</td>
+<td>2</td>
+<td>8</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3,2,2,1,1</td>
+<td>0</td>
+<td>8</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3,3,2,2,1,1</td>
+<td>0</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[&quot;离散化原数值&quot;] --&gt; B[&quot;正向求 L，反向求 R&quot;]
+  B --&gt; C[&quot;从右向左处理 i&quot;]
+  C --&gt; D[&quot;查询 sum of L[i]-1&quot;]
+  D --&gt; E[&quot;插入 R[i]&quot;]
+  E --&gt; C
+  </pre></div>
+
+<p>正确性可用归纳说明：最右位置处理前树为空，与“只含右侧”一致；查询准确统计全部合法右端点；插入当前 R 后，恰好形成下一个位置的右侧集合。每一对合法 <code>(i,j)</code> 只在处理 i 时计入一次。</p>
+<h3 id="完整-C-17"><a href="#完整-C-17" class="headerlink" title="完整 C++17"></a>完整 C++17</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Fenwick</span> &#123;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; tree;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Fenwick</span><span class="params">(<span class="type">int</span> size)</span> : n(size), tree(size + <span class="number">1</span>, <span class="number">0</span>) &#123;</span>&#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> delta)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (; x &lt;= n; x += x &amp; -x) tree[x] += delta;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">sum</span><span class="params">(<span class="type">int</span> x)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> result = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (; x &gt; <span class="number">0</span>; x -= x &amp; -x) result += tree[x];</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">a</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; x : a) cin &gt;&gt; x;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; values = a;</span><br><span class="line">    <span class="built_in">sort</span>(values.<span class="built_in">begin</span>(), values.<span class="built_in">end</span>());</span><br><span class="line">    values.<span class="built_in">erase</span>(<span class="built_in">unique</span>(values.<span class="built_in">begin</span>(), values.<span class="built_in">end</span>()), values.<span class="built_in">end</span>());</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; x : a) &#123;</span><br><span class="line">        x = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(<span class="built_in">lower_bound</span>(values.<span class="built_in">begin</span>(), values.<span class="built_in">end</span>(), x)</span><br><span class="line">                             - values.<span class="built_in">begin</span>()) + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">count</span><span class="params">(values.size() + <span class="number">1</span>, <span class="number">0</span>)</span>, <span class="title">left</span><span class="params">(n)</span>, <span class="title">right</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) left[i] = ++count[a[i]];</span><br><span class="line">    <span class="built_in">fill</span>(count.<span class="built_in">begin</span>(), count.<span class="built_in">end</span>(), <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt;= <span class="number">0</span>; --i) right[i] = ++count[a[i]];</span><br><span class="line"></span><br><span class="line">    <span class="function">Fenwick <span class="title">bit</span><span class="params">(n)</span></span>; <span class="comment">// Its coordinate is frequency, not the original value.</span></span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> answer = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt;= <span class="number">0</span>; --i) &#123;</span><br><span class="line">        answer += bit.<span class="built_in">sum</span>(left[i] - <span class="number">1</span>);</span><br><span class="line">        bit.<span class="built_in">add</span>(right[i], <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>排序、二分映射和树状数组扫描总时间 <code>O(n log n)</code>，额外空间 <code>O(n)</code>。树节点只存不超过 n 的元素数量，用 int 足够；答案不超过 <code>n(n-1)/2</code>，用 long long。</p>
+<table>
+<thead>
+<tr>
+<th>边界</th>
+<th>应有结果或性质</th>
+<th>能抓住的错误</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>n&#x3D;1</td>
+<td>0</td>
+<td>把当前位置提前插入</td>
+</tr>
+<tr>
+<td>所有值不同</td>
+<td>L、R 都是 1，答案 0</td>
+<td>把严格大于写成大于等于</td>
+</tr>
+<tr>
+<td>三个相同值</td>
+<td>只有 <code>(2,3)</code>，答案 1</td>
+<td>比较原数值而不是频次</td>
+</tr>
+<tr>
+<td>百万个相同值</td>
+<td><code>floor((n-1)²/4)</code></td>
+<td>32 位答案溢出</td>
+</tr>
+</tbody></table>
+<p>最后一个公式来自 <code>L[i]=i</code>、<code>R[j]=n-j+1</code>，合法条件为 <code>i&lt;j</code> 且 <code>i+j&gt;n+1</code>；按 j 对 <code>max(0,2j-n-2)</code> 求和即可得到该闭式。</p>
+<h2 id="4-第二题：61E-Enemy-is-weak"><a href="#4-第二题：61E-Enemy-is-weak" class="headerlink" title="4. 第二题：61E Enemy is weak"></a>4. 第二题：61E Enemy is weak</h2><h3 id="固定中间项，让两个选择独立"><a href="#固定中间项，让两个选择独立" class="headerlink" title="固定中间项，让两个选择独立"></a>固定中间项，让两个选择独立</h3><p>要统计 <code>i&lt;j&lt;k</code> 且 <code>a[i]&gt;a[j]&gt;a[k]</code>。三重枚举是 <code>O(n³)</code>；即使固定 j 后分别线性扫描左右，也要 <code>O(n²)</code>。</p>
+<p>定义 <code>greaterLeft[j]</code> 为左边严格较大元素数，<code>smallerRight[j]</code> 为右边严格较小元素数。固定 j 后，任何一个合法左端点与任何一个合法右端点组合都会满足条件，所以贡献为两者乘积。</p>
+<p>对 <code>[10,8,3,1]</code>：</p>
+<table>
+<thead>
+<tr>
+<th>中间位置 j</th>
+<th>a[j]</th>
+<th>左侧较大数</th>
+<th>右侧较小数</th>
+<th>贡献</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>10</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>8</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p>答案为 4。每个三元组有唯一中间位置，因此求和不会重复。</p>
+<h3 id="两遍扫描的循环不变量"><a href="#两遍扫描的循环不变量" class="headerlink" title="两遍扫描的循环不变量"></a>两遍扫描的循环不变量</h3><p>正向扫描到零起下标 j 时，树中有 j 个先前元素；<code>j-sum(rank[j])</code> 就是左侧严格较大数。清空计数状态、重新建立一棵树后反向扫描，<code>sum(rank[j]-1)</code> 给出右侧严格较小数。两遍都先查询、后插入。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;保持大小关系的离散化&quot;] --&gt; B[&quot;正向扫描：已见数量减去不大于当前的数量&quot;]
+  B --&gt; C[&quot;保存 greaterLeft&quot;]
+  C --&gt; D[&quot;使用一棵新的空树反向扫描&quot;]
+  D --&gt; E[&quot;求右边严格较小元素数&quot;]
+  E --&gt; F[&quot;左右数量相乘，累加到答案&quot;]
+  </pre></div>
+
+<p>这并不是把整个数组排序后数三元组。排序的只是辅助映射表，原位置顺序不能改变。两遍树状数组分别保证左右位置关系，排名查询保证值的大小关系，乘法原理与唯一中间点共同给出正确性。</p>
+<h3 id="完整-C-17-1"><a href="#完整-C-17-1" class="headerlink" title="完整 C++17"></a>完整 C++17</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Fenwick</span> &#123;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; tree;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Fenwick</span><span class="params">(<span class="type">int</span> size)</span> : n(size), tree(size + <span class="number">1</span>, <span class="number">0</span>) &#123;</span>&#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (; x &lt;= n; x += x &amp; -x) ++tree[x];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">sum</span><span class="params">(<span class="type">int</span> x)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> result = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (; x &gt; <span class="number">0</span>; x -= x &amp; -x) result += tree[x];</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">a</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; x : a) cin &gt;&gt; x;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; values = a;</span><br><span class="line">    <span class="built_in">sort</span>(values.<span class="built_in">begin</span>(), values.<span class="built_in">end</span>());</span><br><span class="line">    values.<span class="built_in">erase</span>(<span class="built_in">unique</span>(values.<span class="built_in">begin</span>(), values.<span class="built_in">end</span>()), values.<span class="built_in">end</span>());</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; x : a) &#123;</span><br><span class="line">        x = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(<span class="built_in">lower_bound</span>(values.<span class="built_in">begin</span>(), values.<span class="built_in">end</span>(), x)</span><br><span class="line">                             - values.<span class="built_in">begin</span>()) + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">Fenwick <span class="title">leftBit</span><span class="params">(<span class="keyword">static_cast</span>&lt;<span class="type">int</span>&gt;(values.size()))</span></span>;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">greaterLeft</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; n; ++j) &#123;</span><br><span class="line">        greaterLeft[j] = j - leftBit.<span class="built_in">sum</span>(a[j]);</span><br><span class="line">        leftBit.<span class="built_in">add</span>(a[j]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">Fenwick <span class="title">rightBit</span><span class="params">(<span class="keyword">static_cast</span>&lt;<span class="type">int</span>&gt;(values.size()))</span></span>;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> answer = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> j = n - <span class="number">1</span>; j &gt;= <span class="number">0</span>; --j) &#123;</span><br><span class="line">        <span class="type">int</span> smallerRight = rightBit.<span class="built_in">sum</span>(a[j] - <span class="number">1</span>);</span><br><span class="line">        answer += <span class="number">1LL</span> * greaterLeft[j] * smallerRight;</span><br><span class="line">        rightBit.<span class="built_in">add</span>(a[j]);</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间 <code>O(n log n)</code>，空间 <code>O(n)</code>。<code>1LL</code> 必须在乘法之前参与运算，而不是让两个 int 先相乘、溢出后才赋给 long long。</p>
+<table>
+<thead>
+<tr>
+<th>输入形态</th>
+<th>答案</th>
+<th>检查重点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>严格递增</td>
+<td>0</td>
+<td>不等号方向</td>
+</tr>
+<tr>
+<td>三个数严格递减</td>
+<td>1</td>
+<td>中间位置是否计入自身</td>
+</tr>
+<tr>
+<td>n 个数严格递减</td>
+<td><code>n(n-1)(n-2)/6</code></td>
+<td>三元组上界</td>
+</tr>
+<tr>
+<td>n&#x3D;1,000,000 严格递减</td>
+<td>166,666,166,667,000,000</td>
+<td>既超过 32 位，也超过 JavaScript Number 精确整数范围</td>
+</tr>
+</tbody></table>
+<p>独立验证器用 JavaScript BigInt 计算最后一行的期望值，避免让测试程序自身的精度问题掩盖错误。题目保证数值互异；代码仍使用严格比较的标准写法，不把互异条件当成省略等号分析的借口。</p>
+<h2 id="5-第三题：911D-Inversion-Counting"><a href="#5-第三题：911D-Inversion-Counting" class="headerlink" title="5. 第三题：911D Inversion Counting"></a>5. 第三题：911D Inversion Counting</h2><h3 id="不要维护题目没有询问的信息"><a href="#不要维护题目没有询问的信息" class="headerlink" title="不要维护题目没有询问的信息"></a>不要维护题目没有询问的信息</h3><p>逆序对是 <code>i&lt;j</code> 且 <code>a[i]&gt;a[j]</code> 的点对。每次反转 <code>[l,r]</code> 后，题目只问逆序对数是奇数还是偶数。</p>
+<p>直接反转数组、重算逆序数，即使每次计数用树状数组也要 <code>O(m n log n)</code>。只保留一个奇偶位，才能充分利用问题结构。</p>
+<p>初始奇偶性可以用 <code>O(n²)</code> 暴力求出：n 仅为 1500，这已经足够。下面使用树状数组统一前两题的知识，初始为 <code>O(n log n)</code>；真正关键不是这点优化，而是之后每次只需 <code>O(1)</code>。</p>
+<h3 id="一次反转为什么只看长度"><a href="#一次反转为什么只看长度" class="headerlink" title="一次反转为什么只看长度"></a>一次反转为什么只看长度</h3><p>令区间长度 <code>len=r-l+1</code>，把所有数对分成三类。</p>
+<table>
+<thead>
+<tr>
+<th>数对位置</th>
+<th>反转的影响</th>
+<th>对总奇偶性的影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>两个都在区间外</td>
+<td>位置与数值均未变</td>
+<td>无</td>
+</tr>
+<tr>
+<td>一个在区间内、一个在区间外</td>
+<td>区间内数值集合不变，外部元素仍全部在它们左侧或右侧</td>
+<td>与该外部元素有关的逆序对总数不变</td>
+</tr>
+<tr>
+<td>两个都在区间内</td>
+<td>相对先后顺序颠倒，且数值不同</td>
+<td>每一对的逆序状态翻转</td>
+</tr>
+</tbody></table>
+<p>区间内共有 <code>len(len-1)/2</code> 对。某一对从 0 变 1 或从 1 变 0，对模 2 的计数都是翻转。因此新奇偶性等于旧奇偶性异或 <code>C(len,2) mod 2</code>。</p>
+<p>互异条件非常重要：<code>[1,1]</code> 反转后仍无逆序对，不能套用“长度 2 必翻转”。本题是排列，而且反转保持排列性质，所以每轮证明都继续成立。</p>
+<table>
+<thead>
+<tr>
+<th>len mod 4</th>
+<th>C(len,2) 的奇偶</th>
+<th>是否翻转答案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>偶</td>
+<td>否</td>
+</tr>
+<tr>
+<td>1</td>
+<td>偶</td>
+<td>否</td>
+</tr>
+<tr>
+<td>2</td>
+<td>奇</td>
+<td>是</td>
+</tr>
+<tr>
+<td>3</td>
+<td>奇</td>
+<td>是</td>
+</tr>
+</tbody></table>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[&quot;原排列&quot;] --&gt; B[&quot;求初始逆序奇偶位&quot;]
+  B --&gt; C[&quot;读入一次反转区间&quot;]
+  C --&gt; D[&quot;计算区间内数对数量的奇偶&quot;]
+  D --&gt; E[&quot;异或并输出 odd 或 even&quot;]
+  E --&gt; C
+  </pre></div>
+
+<h3 id="累积操作的手算"><a href="#累积操作的手算" class="headerlink" title="累积操作的手算"></a>累积操作的手算</h3><p>从 <code>[1,2,4,3]</code> 开始，逆序数为 1。下面为了验证推导才列出实际数组；正式程序不需要真的反转。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>实际数组</th>
+<th>逆序数</th>
+<th>仅用奇偶位得到的输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>反转 <code>[1,1]</code></td>
+<td><code>[1,2,4,3]</code></td>
+<td>1</td>
+<td>odd</td>
+</tr>
+<tr>
+<td>反转 <code>[1,4]</code></td>
+<td><code>[3,4,2,1]</code></td>
+<td>5</td>
+<td>odd</td>
+</tr>
+<tr>
+<td>再反转 <code>[1,4]</code></td>
+<td><code>[1,2,4,3]</code></td>
+<td>1</td>
+<td>odd</td>
+</tr>
+<tr>
+<td>反转 <code>[2,3]</code></td>
+<td><code>[1,4,2,3]</code></td>
+<td>2</td>
+<td>even</td>
+</tr>
+</tbody></table>
+<h3 id="完整-C-17-2"><a href="#完整-C-17-2" class="headerlink" title="完整 C++17"></a>完整 C++17</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Fenwick</span> &#123;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; tree;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Fenwick</span><span class="params">(<span class="type">int</span> size)</span> : n(size), tree(size + <span class="number">1</span>, <span class="number">0</span>) &#123;</span>&#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (; x &lt;= n; x += x &amp; -x) ++tree[x];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">sum</span><span class="params">(<span class="type">int</span> x)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> result = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (; x &gt; <span class="number">0</span>; x -= x &amp; -x) result += tree[x];</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    <span class="function">Fenwick <span class="title">bit</span><span class="params">(n)</span></span>; <span class="comment">// Input is a permutation of 1..n.</span></span><br><span class="line">    <span class="type">int</span> parity = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> x;</span><br><span class="line">        cin &gt;&gt; x;</span><br><span class="line">        parity ^= (i - bit.<span class="built_in">sum</span>(x)) &amp; <span class="number">1</span>;</span><br><span class="line">        bit.<span class="built_in">add</span>(x);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> m;</span><br><span class="line">    cin &gt;&gt; m;</span><br><span class="line">    <span class="keyword">while</span> (m--) &#123;</span><br><span class="line">        <span class="type">int</span> l, r;</span><br><span class="line">        cin &gt;&gt; l &gt;&gt; r;</span><br><span class="line">        <span class="type">long</span> <span class="type">long</span> len = r - l + <span class="number">1</span>;</span><br><span class="line">        parity ^= <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;((len * (len - <span class="number">1</span>) / <span class="number">2</span>) &amp; <span class="number">1LL</span>);</span><br><span class="line">        cout &lt;&lt; (parity ? <span class="string">&quot;odd&quot;</span> : <span class="string">&quot;even&quot;</span>) &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总时间 <code>O(n log n + m)</code>，额外空间 <code>O(n)</code>。读完初始数组后，树状数组不再使用，也不需要修改其中的信息；它完成的任务只是产生初始奇偶位。</p>
+<h2 id="6-三题一起复盘：到底在树里存什么"><a href="#6-三题一起复盘：到底在树里存什么" class="headerlink" title="6. 三题一起复盘：到底在树里存什么"></a>6. 三题一起复盘：到底在树里存什么</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>树的坐标轴</th>
+<th>节点累计内容</th>
+<th>算法真正依赖的不变量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>459D</td>
+<td>出现次数 <code>1..n</code></td>
+<td>右侧有多少个 R 落在该范围</td>
+<td>查询前只含严格右侧位置</td>
+</tr>
+<tr>
+<td>61E</td>
+<td>数值的离散化排名</td>
+<td>已扫描元素的数量</td>
+<td>正向只有左侧，反向只有右侧</td>
+</tr>
+<tr>
+<td>911D 初始阶段</td>
+<td>排列值 <code>1..n</code></td>
+<td>先前元素的数量</td>
+<td>每对逆序在其右端点被计入</td>
+</tr>
+<tr>
+<td>911D 查询阶段</td>
+<td>不再需要树</td>
+<td>一个奇偶位</td>
+<td>反转影响的奇偶只由长度决定</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>常见错误</th>
+<th>为什么错</th>
+<th>最小修正</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>把 459D 的原数值作为查询阈值</td>
+<td>题目比较的是频次</td>
+<td>分开值的排名与出现次数</td>
+</tr>
+<tr>
+<td>查询之前先插入当前位置</td>
+<td>扫描集合可能包含自己</td>
+<td>明确循环入口的不变量</td>
+</tr>
+<tr>
+<td>把 <code>&lt;x</code> 写成 <code>sum(x)</code></td>
+<td>多计等值项</td>
+<td>严格小于用 <code>sum(x-1)</code></td>
+</tr>
+<tr>
+<td>两遍扫描共用未重置的树</td>
+<td>左侧数据污染右侧统计</td>
+<td>建立一棵新的空树</td>
+</tr>
+<tr>
+<td>将原数组整体排序后计数</td>
+<td>丢失位置条件</td>
+<td>只排序辅助映射数组</td>
+</tr>
+<tr>
+<td>用 int 保存三元组答案</td>
+<td>大输入溢出</td>
+<td>乘法起点和答案均使用 64 位</td>
+</tr>
+<tr>
+<td>911D 每次从初始奇偶重新算</td>
+<td>操作是累计的</td>
+<td>始终更新当前 parity</td>
+</tr>
+<tr>
+<td>把排列证明套到重复值数组</td>
+<td>相等数对不翻转逆序状态</td>
+<td>检查证明用到的条件</td>
+</tr>
+</tbody></table>
+<p>能否说清“坐标轴是什么”，通常比能否背出 lowbit 更能判断是否理解了树状数组。需要更复杂的区间摘要时，再读 <a href="/esblog/65042.html">线段树三题</a>；只有加法计数与前缀查询时，树状数组通常更轻巧。</p>
+<h2 id="7-可复现的独立验证"><a href="#7-可复现的独立验证" class="headerlink" title="7. 可复现的独立验证"></a>7. 可复现的独立验证</h2><p>验证程序在 <code>tests/verify-fenwick-three-article.cjs</code>，直接从本文提取三份 C++，使用 <code>g++ -std=c++17 -O2 -Wall -Wextra -pedantic</code> 编译，要求无警告。它不复用正文算法作为参考答案：</p>
+<ul>
+<li>459D：直接枚举位置对，逐段统计相应数值出现次数；另枚举三值小数组并加入高值随机数据。</li>
+<li>61E：小数据直接枚举所有三元组；百万长度递减数组用 BigInt 的组合数独立核验。</li>
+<li>911D：对小排列真实执行每次反转，再用双循环重算逆序对；覆盖连续反转和单点区间，另测 20 万次查询。</li>
+<li>三题都保留官方样例与本文手算，检查小边界、最大规模和输出格式。</li>
+</ul>
+<p>在项目根目录执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node tests/verify-fenwick-three-article.cjs</span><br></pre></td></tr></table></figure>
+
+<p>编译产物保留在验证目录，脚本不清理缓存或构建目录。测试能增加实现的可信度，但扫描不变量、乘法计数和反转奇偶性的证明仍是算法成立的依据。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/52369.html">https://eulersail.com/esblog/52369.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/">树状数组</a><a class="post-meta__tags" href="/tags/%E7%A6%BB%E6%95%A3%E5%8C%96/">离散化</a><a class="post-meta__tags" href="/tags/%E9%80%86%E5%BA%8F%E5%AF%B9/">逆序对</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E6%95%B0/">计数</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/86425.html" title="门德尔松《意大利交响曲》：四种步伐为何走向小调终点"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">门德尔松《意大利交响曲》：四种步伐为何走向小调终点</div></div></a></div><div class="next-post pull-right"><a href="/esblog/74652.html" title="勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div><div><a href="/esblog/60521.html" title="Codeforces 贪心三题：排序、交换论证与局部最优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="title">Codeforces 贪心三题：排序、交换论证与局部最优</div></div></a></div><div><a href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-04</div><div class="title">Codeforces 二分答案三题：可行性、边界与上界</div></div></a></div><div><a href="/esblog/68219.html" title="Codeforces 动态规划两题：状态、转移与不可达"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-05</div><div class="title">Codeforces 动态规划两题：状态、转移与不可达</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">61</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E4%B8%8E%E5%AE%98%E6%96%B9%E7%BA%A6%E6%9D%9F"><span class="toc-text">1. 学习路线与官方约束</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84%EF%BC%9A%E5%8A%A8%E6%80%81%E7%BB%B4%E6%8A%A4%E4%B8%80%E4%B8%AA%E8%AE%A1%E6%95%B0%E5%89%8D%E7%BC%80"><span class="toc-text">2. 树状数组：动态维护一个计数前缀</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E9%9D%99%E6%80%81%E5%89%8D%E7%BC%80%E5%92%8C%E5%88%B0%E5%8A%A8%E6%80%81%E5%89%8D%E7%BC%80%E5%92%8C"><span class="toc-text">从静态前缀和到动态前缀和</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A6%BB%E6%95%A3%E5%8C%96%E4%B8%8D%E6%98%AF%E6%94%B9%E5%8F%98%E6%AF%94%E8%BE%83%E5%85%B3%E7%B3%BB"><span class="toc-text">离散化不是改变比较关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%AC%AC%E4%B8%80%E9%A2%98%EF%BC%9A459D-Pashmak-and-Parmida%E2%80%99s-problem"><span class="toc-text">3. 第一题：459D Pashmak and Parmida’s problem</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%8A%E4%B8%A4%E6%AE%B5%E9%A2%91%E7%8E%87%E5%8F%98%E6%88%90%E4%B8%A4%E4%B8%AA%E6%95%B0%E7%BB%84"><span class="toc-text">把两段频率变成两个数组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E5%8F%B3%E5%90%91%E5%B7%A6%EF%BC%8C%E8%AE%A9%E4%BD%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6%E8%87%AA%E5%8A%A8%E6%88%90%E7%AB%8B"><span class="toc-text">从右向左，让位置条件自动成立</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17"><span class="toc-text">完整 C++17</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AC%AC%E4%BA%8C%E9%A2%98%EF%BC%9A61E-Enemy-is-weak"><span class="toc-text">4. 第二题：61E Enemy is weak</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BA%E5%AE%9A%E4%B8%AD%E9%97%B4%E9%A1%B9%EF%BC%8C%E8%AE%A9%E4%B8%A4%E4%B8%AA%E9%80%89%E6%8B%A9%E7%8B%AC%E7%AB%8B"><span class="toc-text">固定中间项，让两个选择独立</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E9%81%8D%E6%89%AB%E6%8F%8F%E7%9A%84%E5%BE%AA%E7%8E%AF%E4%B8%8D%E5%8F%98%E9%87%8F"><span class="toc-text">两遍扫描的循环不变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-1"><span class="toc-text">完整 C++17</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E7%AC%AC%E4%B8%89%E9%A2%98%EF%BC%9A911D-Inversion-Counting"><span class="toc-text">5. 第三题：911D Inversion Counting</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E8%A6%81%E7%BB%B4%E6%8A%A4%E9%A2%98%E7%9B%AE%E6%B2%A1%E6%9C%89%E8%AF%A2%E9%97%AE%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="toc-text">不要维护题目没有询问的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E5%8F%8D%E8%BD%AC%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AA%E7%9C%8B%E9%95%BF%E5%BA%A6"><span class="toc-text">一次反转为什么只看长度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%AF%E7%A7%AF%E6%93%8D%E4%BD%9C%E7%9A%84%E6%89%8B%E7%AE%97"><span class="toc-text">累积操作的手算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-2"><span class="toc-text">完整 C++17</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E4%B8%89%E9%A2%98%E4%B8%80%E8%B5%B7%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%88%B0%E5%BA%95%E5%9C%A8%E6%A0%91%E9%87%8C%E5%AD%98%E4%BB%80%E4%B9%88"><span class="toc-text">6. 三题一起复盘：到底在树里存什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E5%8F%AF%E5%A4%8D%E7%8E%B0%E7%9A%84%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81"><span class="toc-text">7. 可复现的独立验证</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86425.html" title="门德尔松《意大利交响曲》：四种步伐为何走向小调终点">门德尔松《意大利交响曲》：四种步伐为何走向小调终点</a><time datetime="2026-09-28T02:05:00.000Z" title="发表于 2026-09-28 10:05:00">2026-09-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/52369.html" title="Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶">Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶</a><time datetime="2026-09-28T02:00:00.000Z" title="发表于 2026-09-28 10:00:00">2026-09-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/74652.html" title="勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲">勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲</a><time datetime="2026-09-24T06:45:00.000Z" title="发表于 2026-09-24 14:45:00">2026-09-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/58631.html" title="Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树">Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树</a><time datetime="2026-09-24T06:20:00.000Z" title="发表于 2026-09-24 14:20:00">2026-09-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/93061.html" title="舒伯特《B 小调“未完成”交响曲》：两乐章怎样构成完整的听觉弧线">舒伯特《B 小调“未完成”交响曲》：两乐章怎样构成完整的听觉弧线</a><time datetime="2026-09-23T08:40:00.000Z" title="发表于 2026-09-23 16:40:00">2026-09-23</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
