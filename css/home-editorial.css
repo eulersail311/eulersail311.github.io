@@ -1,0 +1,136 @@
+/* Editorial homepage. Scoped to index templates; article typography is unchanged. */
+#page-header.full_page {
+  height: 300px;
+  min-height: 0;
+  background-attachment: scroll;
+}
+#page-header.full_page #site-info { top: 100px; }
+#page-header.full_page #site-title { font-size: clamp(30px, 3.6vw, 46px); letter-spacing: .035em; }
+#page-header.full_page #site-subtitle { font-size: 16px; }
+#page-header.full_page #scroll-down { display: none; }
+
+.sail-journal {
+  --editorial-ink: #182b43;
+  --editorial-muted: #55657a;
+  --editorial-paper: #fff;
+  --editorial-line: #dce4ef;
+}
+[data-theme='dark'] .sail-journal {
+  --editorial-ink: #e5edf7;
+  --editorial-muted: #adbed1;
+  --editorial-paper: #172337;
+  --editorial-line: #33465e;
+}
+.sail-journal [data-tone] { --topic-color: #2462a9; --topic-wash: #edf4fd; }
+.sail-journal [data-tone='ai'] { --topic-color: #6550a3; --topic-wash: #f2effb; }
+.sail-journal [data-tone='music'] { --topic-color: #8b611c; --topic-wash: #fbf3e5; }
+.sail-journal [data-tone='notes'] { --topic-color: #276e68; --topic-wash: #edf7f4; }
+[data-theme='dark'] .sail-journal [data-tone] { --topic-color: #99c5ff; --topic-wash: #20344d; }
+[data-theme='dark'] .sail-journal [data-tone='ai'] { --topic-color: #c4b5fd; --topic-wash: #302a49; }
+[data-theme='dark'] .sail-journal [data-tone='music'] { --topic-color: #ecc888; --topic-wash: #3c3225; }
+[data-theme='dark'] .sail-journal [data-tone='notes'] { --topic-color: #8bd2c7; --topic-wash: #213c3d; }
+.sail-journal a { color: inherit; }
+.sail-journal a:focus-visible {
+  outline: 3px solid var(--sail-accent);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+.sail-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .16em; }
+.sail-feature {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  overflow: hidden;
+  padding: 32px;
+  border: 1px solid #385579;
+  border-radius: 20px;
+  background: #172d49;
+  color: #f3f7ff;
+  box-shadow: 0 18px 44px #172d4914;
+}
+.sail-feature .sail-eyebrow { color: #b3cee9; margin-bottom: 22px; }
+.sail-feature-category { display: inline-block; font-size: 12px; color: #bdd9fb !important; }
+.sail-feature h2 { margin: 10px 0 14px; color: inherit; font-size: clamp(23px, 2.4vw, 31px); line-height: 1.5; letter-spacing: -.03em; }
+.sail-feature h2 a:hover { color: #bdd9fb; }
+.sail-feature p { margin: 0; max-width: 42em; color: #c4d2e3; font-size: 14px; line-height: 1.9; }
+.sail-feature-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 26px; }
+.sail-feature-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 25px; min-height: 44px; padding: 8px 17px; border: 1px solid #adc9e6; border-radius: 8px; font-size: 13px; }
+.sail-feature-link:hover { background: #2b4565; color: #fff; }
+.sail-feature-detail { color: #b3c4d9; font-size: 11px; }
+.sail-feature a:focus-visible { outline-color: #d1e5ff; }
+.sail-feature-art {
+  position: relative;
+  align-self: stretch;
+  margin: 20px -10px 0 20px;
+  background-image: linear-gradient(#accce514 1px, transparent 1px), linear-gradient(90deg, #accce514 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.sail-art-orbit { position: absolute; top: 26px; right: -40px; width: 200px; height: 200px; border: 1px solid #7ea7cd55; border-radius: 50%; }
+.sail-art-line { position: absolute; top: 92px; left: 14px; width: 136px; height: 100px; border-top: 1px solid #b7d2eb; border-right: 1px solid #b7d2eb; transform: skewY(-29deg); }
+.sail-art-node { position: absolute; display: grid; place-items: center; width: 45px; height: 45px; border: 1px solid #a4c9ee; background: #223d5c; border-radius: 10px; color: #c7e2ff; font: 14px ui-monospace, monospace; }
+.node-one { top: 100px; left: 0; }
+.node-two { top: 27px; right: 0; }
+.node-three { top: 174px; right: 0; }
+.sail-art-caption { position: absolute; bottom: 2px; left: 0; font-size: 9px; letter-spacing: .04em; color: #b3c4d9; white-space: nowrap; }
+.sail-section-heading { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin: 34px 0 16px; color: var(--editorial-ink); }
+.sail-section-heading .sail-eyebrow { color: var(--editorial-muted); }
+.sail-section-heading h2 { margin: 5px 0 0; color: inherit; font-size: 22px; line-height: 1.5; }
+.sail-section-heading > a { padding-block: 10px; font-size: 12px; white-space: nowrap; }
+.sail-section-heading > a:hover { color: var(--sail-accent); }
+.sail-topic-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.sail-topic { position: relative; display: flex; flex-direction: column; overflow: hidden; min-width: 0; padding: 20px; border: 1px solid var(--editorial-line); border-radius: 14px; background: var(--topic-wash); transition: transform .2s ease, border-color .2s ease; }
+.sail-topic:hover { transform: translateY(-3px); border-color: var(--topic-color); }
+.sail-topic-top { display: flex; align-items: center; justify-content: space-between; min-height: 35px; gap: 5px; color: var(--topic-color); font-size: 8px; letter-spacing: .06em; }
+.sail-topic-mark { font: 27px Georgia, serif; }
+.sail-topic h3 { margin: 18px 0 8px; color: var(--topic-color); font-size: 20px; }
+.sail-topic p { margin: 0; font-size: 12px; line-height: 1.8; }
+.sail-topic .sail-topic-title { color: var(--editorial-ink); font-weight: 600; }
+.sail-topic .sail-topic-description { margin-top: 8px; color: var(--editorial-muted); }
+.sail-topic-bottom { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: space-between; margin-top: auto; padding-top: 22px; color: var(--topic-color); font-size: 10px; }
+.sail-topic::after { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--topic-color); content: ''; }
+.sail-topic[data-tone='algorithm'] { background-image: linear-gradient(90deg, transparent 96%, #2462a90a 96%); background-size: 24px 100%; }
+.sail-topic[data-tone='ai'] { background-image: radial-gradient(circle, #8d74c323 1px, transparent 1px); background-size: 16px 16px; }
+.sail-topic[data-tone='music'] { background-image: repeating-radial-gradient(ellipse at 120% -40%, transparent 0 32px, #b4823112 33px 34px); }
+.sail-latest-heading { border-top: 1px solid var(--editorial-line); padding-top: 25px; }
+.sail-total { color: var(--editorial-muted); font-size: 12px; }
+.sail-post-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.sail-post-card { display: flex; flex-direction: column; min-width: 0; padding: 25px; border: 1px solid var(--editorial-line); border-top: 3px solid var(--topic-color); border-radius: 13px; background: var(--editorial-paper); color: var(--editorial-ink); transition: box-shadow .2s ease, transform .2s ease; }
+.sail-post-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px #152c4810; }
+.sail-post-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.sail-category-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 2px 10px; border-radius: 5px; color: var(--topic-color) !important; background: var(--topic-wash); font-size: 11px; }
+.sail-post-top time { color: var(--editorial-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.sail-post-card h3 { margin: 17px 0 12px; font-size: 20px; line-height: 1.6; color: inherit; overflow-wrap: anywhere; }
+.sail-post-title:hover { color: var(--topic-color); }
+.sail-post-description { margin: 0 0 18px; color: var(--editorial-muted); font-size: 13px; line-height: 1.9; }
+.sail-post-metrics { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: auto; color: var(--editorial-muted); font-size: 11px; }
+.sail-post-metrics span + span::before { content: '·'; margin-right: 10px; }
+.sail-post-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 17px; padding-top: 11px; border-top: 1px solid var(--editorial-line); }
+.sail-post-label { color: var(--topic-color); font-size: 9px; letter-spacing: .1em; }
+.sail-post-open { display: inline-flex; align-items: center; min-height: 38px; font-size: 12px; }
+.sail-post-open:hover { color: var(--topic-color); }
+@media (max-width: 1100px) and (min-width: 901px) {
+  .sail-feature { grid-template-columns: 1fr; }
+  .sail-feature-art { display: none; }
+  .sail-topic { padding: 16px; }
+}
+@media (max-width: 600px) {
+  #page-header.full_page { height: 235px; }
+  #page-header.full_page #site-info { top: 78px; }
+  #page-header.full_page #site-subtitle { font-size: 13px; }
+  .sail-feature { padding: 24px 22px; grid-template-columns: 1fr; border-radius: 15px; }
+  .sail-feature-art { display: none; }
+  .sail-feature .sail-eyebrow { margin-bottom: 17px; }
+  .sail-feature h2 { font-size: 24px; }
+  .sail-topic-grid, .sail-post-grid { grid-template-columns: 1fr; gap: 14px; }
+  .sail-topic { padding: 18px 20px; }
+  .sail-topic h3 { margin-top: 4px; }
+  .sail-topic-bottom { padding-top: 14px; }
+  .sail-topic-description { max-width: 34em; }
+  .sail-section-heading { flex-wrap: wrap; margin-top: 27px; }
+  .sail-section-heading h2 { font-size: 21px; }
+  .sail-post-card { padding: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sail-topic, .sail-post-card { transition: none; }
+  .sail-topic:hover, .sail-post-card:hover { transform: none; }
+}
