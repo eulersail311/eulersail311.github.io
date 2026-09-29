@@ -1,0 +1,682 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从 embedding 到语义检索：向量相似度、召回与独立评测 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="衔接 Transformer 与 RAG，从句向量、对比学习、余弦手算走到分块、召回与重排，用纯 Python 实现可复现的检索端，并区分近邻召回率与真实相关性评测。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从 embedding 到语义检索：向量相似度、召回与独立评测">
+<meta property="og:url" content="https://eulersail.com/esblog/68429.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="衔接 Transformer 与 RAG，从句向量、对比学习、余弦手算走到分块、召回与重排，用纯 Python 实现可复现的检索端，并区分近邻召回率与真实相关性评测。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-29T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-29T03:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="RAG">
+<meta property="article:tag" content="评测">
+<meta property="article:tag" content="Embedding">
+<meta property="article:tag" content="语义检索">
+<meta property="article:tag" content="向量检索">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/68429.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从 embedding 到语义检索：向量相似度、召回与独立评测',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-29 11:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">108</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">从 embedding 到语义检索：向量相似度、召回与独立评测</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-29T03:00:00.000Z" title="发表于 2026-09-29 11:00:00">2026-09-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-29T03:00:00.000Z" title="更新于 2026-09-29 11:00:00">2026-09-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>19分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="从 embedding 到语义检索：向量相似度、召回与独立评测"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>用户问“电子票据在哪儿拿”，文档写“进入订单详情下载发票”。两者词面不完全一致，却可能讨论同一件事。语义检索希望把这种联系表示成可比较的向量关系，再找到有用的文本。</p>
+<p>但“变成向量”不是成功的终点：编码空间、相似度、文本分块和评测目标只要有一个不一致，最近的向量也可能不是最有用的证据。这篇沿着 <strong>文本怎样变成向量 → 怎样比较 → 怎样检索 → 怎样证明有用</strong> 展开。</p>
+<span id="more"></span>
+
+<h2 id="1-接在-Transformer-和-RAG-之间"><a href="#1-接在-Transformer-和-RAG-之间" class="headerlink" title="1. 接在 Transformer 和 RAG 之间"></a>1. 接在 Transformer 和 RAG 之间</h2><p>先读 <a href="/esblog/64183.html">Transformer 入门</a>，会更容易理解编码器的内部计算；想知道训练如何改变向量，可补 <a href="/esblog/71926.html">反向传播与优化器</a>。本文重点是检索这一层，之后再接 <a href="/esblog/43018.html">RAGFlow 实战</a> 与 <a href="/esblog/58241.html">RAG 评测</a>。</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>输入与输出</th>
+<th>本篇需要回答的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>表示</td>
+<td>文本 → 向量</td>
+<td>为什么相关文本会靠近，而不是随便给一句话编号</td>
+</tr>
+<tr>
+<td>检索</td>
+<td>查询向量 → 候选文本</td>
+<td>用什么分数，如何处理过滤与并列</td>
+</tr>
+<tr>
+<td>重排</td>
+<td>查询和候选 → 新顺序</td>
+<td>怎样在小候选集上比较更细的相关性</td>
+</tr>
+<tr>
+<td>生成</td>
+<td>查询和证据 → 回答</td>
+<td>本文不实现；检索正确也不能代替回答核验</td>
+</tr>
+</tbody></table>
+<p>本文的可运行代码只依赖 Python 标准库。为了让每个数都能手算，<strong>示例向量由人工指定，只实现检索端，不训练或调用语义编码模型</strong>。它验证的是数值计算、过滤顺序和评测逻辑，不是中文语义理解能力。接真实编码器时，需要另做标注集评测。</p>
+<h2 id="2-token-向量不等于可直接搜索的句向量"><a href="#2-token-向量不等于可直接搜索的句向量" class="headerlink" title="2. token 向量不等于可直接搜索的句向量"></a>2. token 向量不等于可直接搜索的句向量</h2><p>Transformer 会为一串 token 产生一组上下文表示。检索通常需要一个固定长度的表示来对应一段文本，因此还需要与训练方式匹配的聚合或输出步骤。</p>
+<table>
+<thead>
+<tr>
+<th>表示</th>
+<th>一般形状</th>
+<th>不应混淆的事情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>token embedding</td>
+<td><code>长度 × 隐藏维度</code></td>
+<td>输入查表向量不等于最终文本语义</td>
+</tr>
+<tr>
+<td>上下文隐藏状态</td>
+<td><code>长度 × 隐藏维度</code></td>
+<td>每个位置受上下文影响，但仍是一组向量</td>
+</tr>
+<tr>
+<td>文本 embedding</td>
+<td><code>输出维度</code></td>
+<td>经过模型规定的聚合、投影等步骤，可供检索比较</td>
+</tr>
+<tr>
+<td>批量文本 embedding</td>
+<td><code>文本数 × 输出维度</code></td>
+<td>不同行必须使用兼容的编码约定</td>
+</tr>
+</tbody></table>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;文本与角色前缀&quot;] --&gt; B[&quot;分词与截断&quot;]
+  B --&gt; C[&quot;Transformer 上下文表示&quot;]
+  C --&gt; D[&quot;按模型约定聚合或投影&quot;]
+  D --&gt; E[&quot;固定维度文本向量&quot;]
+  E --&gt; F[&quot;按检索度量决定是否归一化&quot;]
+  </pre></div>
+
+<p>平均池化是一种方法，但不是所有模型的通用规定。采用平均池化时，padding 位置通常应由掩码排除；换成取特殊位置、最后一个有效 token 或投影层输出，必须有相应模型说明支持。随便把生成模型的一层平均，就假设得到优秀检索向量，是跳过了训练目标这一环。</p>
+<p>Sentence-BERT 的关键思路之一，是通过适合句子比较的训练方式，使文本能够分别编码后再比较，而不是每一对文本都重新一起送入模型。<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1908.10084">Sentence-BERT 原始论文</a></p>
+<h3 id="靠近不是坐标轴自带的含义"><a href="#靠近不是坐标轴自带的含义" class="headerlink" title="靠近不是坐标轴自带的含义"></a>靠近不是坐标轴自带的含义</h3><p>为了画图，我们可能把二维坐标叫“开票”“网络”；真实向量的某一维通常不能直接解释成一个稳定主题。向量在某个训练目标下的相对位置，比单个坐标的名称更重要。</p>
+<p>常见训练思路是：让查询与正例的分数相对更高，与负例的分数相对更低。例如“如何下载发票”的正例是对应操作说明，困难负例则可能是“如何修改发票抬头”——词面相近，却回答了另一个问题。假负例同样危险：未标注的另一个正确入口，不应该仅因为未被选中就被当成错误答案。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  Q[&quot;查询：怎样下载发票&quot;] --&gt; E[&quot;编码与配对打分&quot;]
+  P[&quot;正例：下载入口说明&quot;] --&gt; E
+  N[&quot;困难负例：修改抬头说明&quot;] --&gt; E
+  E --&gt; L[&quot;训练目标比较正负分数&quot;]
+  L --&gt; U[&quot;反向传播更新编码器参数&quot;]
+  U --&gt; E
+  </pre></div>
+
+<p>这个示意图描述一类训练组织方式，不代表所有 embedding 模型使用相同损失或相同负例策略。训练数据强调的关系，也会影响“靠近”究竟更像主题相似、问题等价，还是能回答查询。</p>
+<h2 id="3-余弦、点积和距离：把一组数算明白"><a href="#3-余弦、点积和距离：把一组数算明白" class="headerlink" title="3. 余弦、点积和距离：把一组数算明白"></a>3. 余弦、点积和距离：把一组数算明白</h2><p>对于非零向量 q 和 d：点积为对应元素乘积之和；欧氏范数为平方和的平方根；余弦相似度为 <code>dot(q,d) / (norm(q) × norm(d))</code>。余弦比较方向，范围为 <code>[-1,1]</code>，不是相关概率。</p>
+<p>下面所有向量都是<strong>手工构造的教学数据</strong>。查询 <code>q=(1,0)</code>，它的范数为 1。</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>示例文本</th>
+<th>向量 d</th>
+<th>范数</th>
+<th>点积</th>
+<th>余弦（约）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>发票入口</td>
+<td><code>(3,4)</code></td>
+<td>5</td>
+<td>3</td>
+<td>0.600000</td>
+</tr>
+<tr>
+<td>B</td>
+<td>电子发票下载</td>
+<td><code>(10,0)</code></td>
+<td>10</td>
+<td>10</td>
+<td>1.000000</td>
+</tr>
+<tr>
+<td>C</td>
+<td>网络日志与开票排查合集</td>
+<td><code>(100,100)</code></td>
+<td><code>100√2</code></td>
+<td>100</td>
+<td>0.707107</td>
+</tr>
+<tr>
+<td>D</td>
+<td>无线网络故障</td>
+<td><code>(0,2)</code></td>
+<td>2</td>
+<td>0</td>
+<td>0.000000</td>
+</tr>
+</tbody></table>
+<p>点积排序是 <code>C → B → A → D</code>，余弦排序是 <code>B → C → A → D</code>。C 的长度很大，使原始点积变高；这并不自动说明 C 更相关。反过来，也不能断言点积总是错误：如果模型训练与索引就是为点积设计，范数可能承载有用信号，应遵循模型约定。</p>
+<h3 id="为什么单位向量可以直接用点积"><a href="#为什么单位向量可以直接用点积" class="headerlink" title="为什么单位向量可以直接用点积"></a>为什么单位向量可以直接用点积</h3><p>把非零向量除以自己的范数，得到单位向量。两个单位向量的范数都为 1，所以点积就是余弦。进一步展开平方距离：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">||q - d||² = ||q||² + ||d||² - 2 dot(q,d)</span><br><span class="line">单位向量时：||q - d||² = 2 - 2 dot(q,d)</span><br></pre></td></tr></table></figure>
+
+<p>因此，对同一组单位向量，按点积从大到小与按平方 L2 距离从小到大排序等价。Faiss 官方明确区分内积与余弦，并说明其 L2 返回值是平方距离。<a target="_blank" rel="noopener" href="https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances">Faiss：度量与距离</a></p>
+<table>
+<thead>
+<tr>
+<th>使用的分数</th>
+<th>排序方向</th>
+<th>必须先确认</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原始点积</td>
+<td>大的靠前</td>
+<td>模型是否按这种评分方式训练或推荐</td>
+</tr>
+<tr>
+<td>余弦相似度</td>
+<td>大的靠前</td>
+<td>两侧向量均非零，范数计算正确</td>
+</tr>
+<tr>
+<td>单位向量点积</td>
+<td>大的靠前</td>
+<td>查询与文档均按相同规则归一化</td>
+</tr>
+<tr>
+<td>L2 或平方 L2</td>
+<td>小的靠前</td>
+<td>API 返回的是距离还是平方距离</td>
+</tr>
+</tbody></table>
+<p>零向量没有定义良好的余弦方向。本文选择明确报错，不偷偷把它当成“相似度为零”；NaN、无穷大和维度不同也都在边界处拒绝。</p>
+<h2 id="4-从分块到索引：离线和在线要对得上"><a href="#4-从分块到索引：离线和在线要对得上" class="headerlink" title="4. 从分块到索引：离线和在线要对得上"></a>4. 从分块到索引：离线和在线要对得上</h2><p>长文通常会切成较小的检索单元。切得太小，条件、表头或步骤可能断开；切得太大，不相关内容会占据表示与上下文预算。固定字数只是基线，标题、段落、表格边界也值得参与切分。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  D[&quot;离线：原文与元数据&quot;] --&gt; C[&quot;按结构切块，保留来源与版本&quot;]
+  C --&gt; E[&quot;文档编码器与归一化约定&quot;]
+  E --&gt; I[&quot;向量索引与文本映射&quot;]
+  Q[&quot;在线：查询与用户上下文&quot;] --&gt; QE[&quot;兼容的查询编码器&quot;]
+  QE --&gt; S[&quot;在允许的候选集合内检索&quot;]
+  I --&gt; S
+  S --&gt; R[&quot;重排与证据检查&quot;]
+  R --&gt; O[&quot;返回带来源的文本片段&quot;]
+  </pre></div>
+
+<p>查询编码器与文档编码器需要处在兼容空间；它们可以是同一模型的不同输入角色，也可能是经过联合训练的两个分支。<strong>维度相同不代表空间兼容</strong>：不能拿一个模型的查询去搜另一个模型的历史向量。</p>
+<table>
+<thead>
+<tr>
+<th>应随索引记录的配置</th>
+<th>为什么影响复现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>模型标识与具体版本</td>
+<td>同名模型更新或换模型可能改变向量空间</td>
+</tr>
+<tr>
+<td>查询／文档前缀或任务角色</td>
+<td>同一句话以不同角色编码可能得到不同表示</td>
+</tr>
+<tr>
+<td>分词器、截断长度与池化</td>
+<td>超长内容是否被丢弃、padding 是否参与聚合</td>
+</tr>
+<tr>
+<td>向量维度、归一化与距离度量</td>
+<td>决定分数含义和排序方向</td>
+</tr>
+<tr>
+<td>分块策略、原文版本与块 ID</td>
+<td>结果能否准确回到当时的原始证据</td>
+</tr>
+<tr>
+<td>数据范围与访问策略版本</td>
+<td>查询应在哪些文档中进行</td>
+</tr>
+</tbody></table>
+<p>模型或分块策略发生影响表示的变化时，应重新生成受影响的向量并验证新索引，不把新旧表示无说明地混用。保留可回滚的旧版本，在评测通过后再切换查询流量。</p>
+<h3 id="当前接口与模型约定怎样核对"><a href="#当前接口与模型约定怎样核对" class="headerlink" title="当前接口与模型约定怎样核对"></a>当前接口与模型约定怎样核对</h3><p>截至 2026-09-29，Sentence Transformers 的语义搜索文档建议在非对称检索中使用 <code>encode_query</code> 与 <code>encode_document</code>，让模型配置中的角色、提示或路由得以应用；没有这些差异的模型可能与普通 <code>encode</code> 得到相同结果。方法名并不保证替你补上所有模型专属前缀，仍要检查具体模型配置。<a target="_blank" rel="noopener" href="https://sbert.net/examples/sentence_transformer/applications/semantic-search/README.html">Sentence Transformers 官方语义搜索文档</a></p>
+<p>例如 <code>intfloat/multilingual-e5-small</code> 的官方说明要求检索查询加 <code>query: </code>、文档加 <code>passage: </code>，非英文文本同样如此，并说明长文本最多截断到 512 tokens。这是该模型的约定，不是所有 embedding 模型的统一规范；也不要同时手动添加前缀、又让配置重复添加。<a target="_blank" rel="noopener" href="https://huggingface.co/intfloat/multilingual-e5-small">E5 官方模型说明</a></p>
+<p>本文不下载模型、不提供未经本机运行的框架示例。接入时应固定自己的依赖和模型版本，先测输入约定，再运行下一节的检索逻辑。</p>
+<h2 id="5-纯-Python：一个可以独立核对的检索端"><a href="#5-纯-Python：一个可以独立核对的检索端" class="headerlink" title="5. 纯 Python：一个可以独立核对的检索端"></a>5. 纯 Python：一个可以独立核对的检索端</h2><p>下面程序完成文档向量归一化、查询评分、过滤后取 top-k，以及 Recall@k 和首个命中倒数排名。它不调用网络，不需要凭据，也不实现语义编码或完整权限系统。</p>
+<p>示例在前面的 A—D 之外增加 E：向量 <code>(20,0)</code>，范围为 <code>internal</code>。公开查询只允许 <code>public</code>；E 虽然与查询同向，也不会进入公开结果。这个 scope 是教学用数据标签，真实系统必须从可信的服务端身份与策略得到可见范围，不能让用户随意填写一个 scope 来获得权限。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">unit</span>(<span class="params">vector</span>):</span><br><span class="line">    values = <span class="built_in">tuple</span>(<span class="built_in">float</span>(x) <span class="keyword">for</span> x <span class="keyword">in</span> vector)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> values <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">all</span>(math.isfinite(x) <span class="keyword">for</span> x <span class="keyword">in</span> values):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;vector must be nonempty and finite&quot;</span>)</span><br><span class="line">    scale = <span class="built_in">max</span>(<span class="built_in">abs</span>(x) <span class="keyword">for</span> x <span class="keyword">in</span> values)</span><br><span class="line">    <span class="keyword">if</span> scale == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;zero vector has no cosine direction&quot;</span>)</span><br><span class="line">    <span class="comment"># Scale first so finite but very large/small inputs remain usable.</span></span><br><span class="line">    scaled = <span class="built_in">tuple</span>(x / scale <span class="keyword">for</span> x <span class="keyword">in</span> values)</span><br><span class="line">    length = math.sqrt(math.fsum(x * x <span class="keyword">for</span> x <span class="keyword">in</span> scaled))</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">tuple</span>(x / length <span class="keyword">for</span> x <span class="keyword">in</span> scaled)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">build_index</span>(<span class="params">rows</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> rows:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;index must contain at least one document&quot;</span>)</span><br><span class="line">    entries = []</span><br><span class="line">    seen = <span class="built_in">set</span>()</span><br><span class="line">    dimension = <span class="literal">None</span></span><br><span class="line">    <span class="keyword">for</span> row <span class="keyword">in</span> rows:</span><br><span class="line">        ident = row[<span class="string">&quot;id&quot;</span>]</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(ident, <span class="built_in">str</span>) <span class="keyword">or</span> <span class="keyword">not</span> ident <span class="keyword">or</span> ident <span class="keyword">in</span> seen:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;document IDs must be unique nonempty strings&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(row[<span class="string">&quot;scope&quot;</span>], <span class="built_in">str</span>):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;scope must be a string&quot;</span>)</span><br><span class="line">        vector = unit(row[<span class="string">&quot;vector&quot;</span>])</span><br><span class="line">        <span class="keyword">if</span> dimension <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            dimension = <span class="built_in">len</span>(vector)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(vector) != dimension:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;document dimension mismatch&quot;</span>)</span><br><span class="line">        seen.add(ident)</span><br><span class="line">        entries.append((ident, vector, row[<span class="string">&quot;scope&quot;</span>]))</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">tuple</span>(entries)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">search</span>(<span class="params">index, query, k, allowed_scopes</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(k) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> k &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;k must be a nonnegative integer&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> index:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;empty index&quot;</span>)</span><br><span class="line">    q = unit(query)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(q) != <span class="built_in">len</span>(index[<span class="number">0</span>][<span class="number">1</span>]):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;query dimension mismatch&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(allowed_scopes, <span class="built_in">str</span>):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;allowed_scopes must be a collection, not a string&quot;</span>)</span><br><span class="line">    allowed = <span class="built_in">set</span>(allowed_scopes)</span><br><span class="line">    hits = []</span><br><span class="line">    <span class="keyword">for</span> ident, vector, scope <span class="keyword">in</span> index:</span><br><span class="line">        <span class="keyword">if</span> scope <span class="keyword">not</span> <span class="keyword">in</span> allowed:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        score = math.fsum(x * y <span class="keyword">for</span> x, y <span class="keyword">in</span> <span class="built_in">zip</span>(q, vector))</span><br><span class="line">        hits.append(&#123;<span class="string">&quot;id&quot;</span>: ident, <span class="string">&quot;score&quot;</span>: score&#125;)</span><br><span class="line">    <span class="comment"># Deterministic order for exactly equal computed scores.</span></span><br><span class="line">    hits.sort(key=<span class="keyword">lambda</span> hit: (-hit[<span class="string">&quot;score&quot;</span>], hit[<span class="string">&quot;id&quot;</span>]))</span><br><span class="line">    <span class="keyword">return</span> hits[:k]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">metrics</span>(<span class="params">ranked_ids, relevant_ids, k</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(k) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> k &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;k must be a nonnegative integer&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(ranked_ids) != <span class="built_in">len</span>(<span class="built_in">set</span>(ranked_ids)):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;ranked IDs must not repeat&quot;</span>)</span><br><span class="line">    relevant = <span class="built_in">set</span>(relevant_ids)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> relevant:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">&quot;recall&quot;</span>: <span class="literal">None</span>, <span class="string">&quot;reciprocal_rank&quot;</span>: <span class="literal">None</span>&#125;</span><br><span class="line">    top = ranked_ids[:k]</span><br><span class="line">    found = <span class="built_in">len</span>(<span class="built_in">set</span>(top) &amp; relevant)</span><br><span class="line">    first = <span class="built_in">next</span>((rank <span class="keyword">for</span> rank, ident <span class="keyword">in</span> <span class="built_in">enumerate</span>(top, <span class="number">1</span>)</span><br><span class="line">                  <span class="keyword">if</span> ident <span class="keyword">in</span> relevant), <span class="literal">None</span>)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;recall&quot;</span>: found / <span class="built_in">len</span>(relevant),</span><br><span class="line">            <span class="string">&quot;reciprocal_rank&quot;</span>: <span class="number">0.0</span> <span class="keyword">if</span> first <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">else</span> <span class="number">1.0</span> / first&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">demo</span>():</span><br><span class="line">    rows = [</span><br><span class="line">        &#123;<span class="string">&quot;id&quot;</span>: <span class="string">&quot;A&quot;</span>, <span class="string">&quot;vector&quot;</span>: [<span class="number">3</span>, <span class="number">4</span>], <span class="string">&quot;scope&quot;</span>: <span class="string">&quot;public&quot;</span>&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;id&quot;</span>: <span class="string">&quot;B&quot;</span>, <span class="string">&quot;vector&quot;</span>: [<span class="number">10</span>, <span class="number">0</span>], <span class="string">&quot;scope&quot;</span>: <span class="string">&quot;public&quot;</span>&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;id&quot;</span>: <span class="string">&quot;C&quot;</span>, <span class="string">&quot;vector&quot;</span>: [<span class="number">100</span>, <span class="number">100</span>], <span class="string">&quot;scope&quot;</span>: <span class="string">&quot;public&quot;</span>&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;id&quot;</span>: <span class="string">&quot;D&quot;</span>, <span class="string">&quot;vector&quot;</span>: [<span class="number">0</span>, <span class="number">2</span>], <span class="string">&quot;scope&quot;</span>: <span class="string">&quot;public&quot;</span>&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;id&quot;</span>: <span class="string">&quot;E&quot;</span>, <span class="string">&quot;vector&quot;</span>: [<span class="number">20</span>, <span class="number">0</span>], <span class="string">&quot;scope&quot;</span>: <span class="string">&quot;internal&quot;</span>&#125;,</span><br><span class="line">    ]</span><br><span class="line">    hits = search(build_index(rows), [<span class="number">1</span>, <span class="number">0</span>], <span class="number">3</span>, &#123;<span class="string">&quot;public&quot;</span>&#125;)</span><br><span class="line">    ids = [hit[<span class="string">&quot;id&quot;</span>] <span class="keyword">for</span> hit <span class="keyword">in</span> hits]</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;hits&quot;</span>: hits, <span class="string">&quot;at_2&quot;</span>: metrics(ids, &#123;<span class="string">&quot;A&quot;</span>, <span class="string">&quot;B&quot;</span>&#125;, <span class="number">2</span>),</span><br><span class="line">            <span class="string">&quot;at_3&quot;</span>: metrics(ids, &#123;<span class="string">&quot;A&quot;</span>, <span class="string">&quot;B&quot;</span>&#125;, <span class="number">3</span>)&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(demo(), ensure_ascii=<span class="literal">False</span>, indent=<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+<p>把代码保存为 <code>retrieval_demo.py</code>，执行 <code>python retrieval_demo.py</code>。结果中的 ID 顺序应为 <code>B,C,A</code>，分数约为 <code>1,0.707107,0.6</code>。E 在评分前已经被过滤。</p>
+<table>
+<thead>
+<tr>
+<th>验算项</th>
+<th>预期结果</th>
+<th>为什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>public 的 top-3</td>
+<td>B、C、A</td>
+<td>按余弦降序，排除 E</td>
+</tr>
+<tr>
+<td>相关集合 <code>&#123;A,B&#125;</code> 的 Recall@2</td>
+<td>0.5</td>
+<td>前两名只找回 B，分母是 2 个相关文档</td>
+</tr>
+<tr>
+<td>同一集合的 Recall@3</td>
+<td>1.0</td>
+<td>A 与 B 都进入前三名</td>
+</tr>
+<tr>
+<td>两次的 RR@k</td>
+<td>1.0</td>
+<td>第一名已经相关，不会因 A 靠后而变化</td>
+</tr>
+<tr>
+<td>k&#x3D;0 或允许范围为空</td>
+<td>空列表</td>
+<td>不返回候选，不扩大可见范围</td>
+</tr>
+</tbody></table>
+<p>建索引做 <code>O(Nd)</code> 次量级的数值处理并存储 <code>O(Nd)</code> 数据。查询先扫描 N 个 scope，给其中 M 个允许的文档评分，再完整排序，代价为 <code>O(N + Md + M log M)</code>，额外候选空间 <code>O(M)</code>。正式系统可以批量矩阵运算、用大小为 k 的堆或专用向量索引；这个版本优先保留易读、可对拍的基线。</p>
+<p>过滤必须参与候选生成。先在所有文档中取两条、再删掉无权限结果，可能只剩一条，而本来有两条可见的好结果。真实 ANN 系统的预过滤／后过滤策略各有约束，应在权限隔离、召回率与性能之间明确设计，而不是把这个小示例当作安全产品。</p>
+<h2 id="6-精确扫描、近似检索、混合与重排"><a href="#6-精确扫描、近似检索、混合与重排" class="headerlink" title="6. 精确扫描、近似检索、混合与重排"></a>6. 精确扫描、近似检索、混合与重排</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>解决的主要问题</th>
+<th>不能代替的事情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>精确向量扫描</td>
+<td>在给定向量和度量下找到真实最近邻</td>
+<td>最近邻未必符合业务相关性</td>
+</tr>
+<tr>
+<td>ANN 近似索引</td>
+<td>降低大规模查询成本</td>
+<td>可能漏掉精确近邻，需要测速度与召回折中</td>
+</tr>
+<tr>
+<td>关键词／稀疏检索</td>
+<td>捕捉术语、编号和字面证据</td>
+<td>单靠词面未必识别改写后的查询</td>
+</tr>
+<tr>
+<td>混合检索</td>
+<td>合并不同检索方式的候选</td>
+<td>不同原始分数的尺度未必可以直接相加</td>
+</tr>
+<tr>
+<td>Cross-Encoder 重排</td>
+<td>在较小候选集上联合比较查询与文本</td>
+<td>未被召回的文档无法靠重排凭空找回</td>
+</tr>
+</tbody></table>
+<p>双编码器可以提前存好文档向量，在线只编码查询。Cross-Encoder 则把查询与候选一起处理，通常适合重排较小候选集，而不是对整个库逐条做昂贵配对。<a target="_blank" rel="noopener" href="https://sbert.net/examples/sentence_transformer/applications/retrieve_rerank/README.html">Sentence Transformers：检索与重排</a></p>
+<p>对于“错误码 XQ-107”“合同第 4.2 条”等精确标识，保留关键词基线尤其重要。对复杂系统，可以先合并多路候选并按文档或块 ID 去重，再统一重排；如果合并的是原始分数，要验证尺度兼容性。不要直接把一个余弦分数与另一个无界相关性分数相加，就假定权重有同样含义。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  Q[&quot;查询&quot;] --&gt; V[&quot;向量召回&quot;]
+  Q --&gt; K[&quot;关键词召回&quot;]
+  V --&gt; M[&quot;合并候选与去重&quot;]
+  K --&gt; M
+  M --&gt; R[&quot;小候选集重排&quot;]
+  R --&gt; E[&quot;证据与权限复核&quot;]
+  E --&gt; A[&quot;进入回答或展示结果&quot;]
+  </pre></div>
+
+<p>检索分数不是“答案正确概率”，重排器的输出也未必天然校准。固定阈值必须针对具体模型、领域与查询分布验证；换模型之后，旧阈值不能自动继承。</p>
+<h2 id="7-两种召回率不能混为一谈"><a href="#7-两种召回率不能混为一谈" class="headerlink" title="7. 两种召回率不能混为一谈"></a>7. 两种召回率不能混为一谈</h2><p>第一种问题是“近似索引有没有找到精确算法会找到的近邻”；第二种是“系统有没有找到人工判定相关的资料”。它们的参考集合不同。</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>参考集合或定义</th>
+<th>能发现什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ANN 邻居召回率</td>
+<td>ANN top-k 与精确 top-k 的交集大小除以 k（候选不少于 k）</td>
+<td>索引近似带来的遗漏</td>
+</tr>
+<tr>
+<td>相关性 Recall@k</td>
+<td>前 k 个唯一结果中的相关 ID 数 &#x2F; 所有已标注相关 ID 数</td>
+<td>实际相关资料有没有召回</td>
+</tr>
+<tr>
+<td>RR@k</td>
+<td>前 k 内首个相关结果排名的倒数；无命中为 0</td>
+<td>第一条有用结果出现得有多早</td>
+</tr>
+<tr>
+<td>MRR@k</td>
+<td>多个查询的 RR@k 平均</td>
+<td>查询集上的首个命中表现</td>
+</tr>
+</tbody></table>
+<p>在第五节的例子里，精确排序毫无近邻误差，但 Recall@2 只有 0.5。它已经说明：数值代码正确，不等于向量空间达到了我们的相关性目标。</p>
+<p>代码中的 <code>reciprocal_rank</code> 是<strong>一个查询</strong>的 RR，不是单独一次运行就得到整个数据集的 MRR。相关标签为空时，本例返回 <code>None</code>，不把“没有标注”当成“系统一定检索失败”；汇总时应明确纳入哪些查询。无答案查询应单独测试误报与拒答，不能因为不计入 Recall 就忽略它们。</p>
+<table>
+<thead>
+<tr>
+<th>评测集应该覆盖</th>
+<th>示例问题</th>
+<th>标签注意事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同义改写</td>
+<td>“票据在哪拿”与“下载发票”</td>
+<td>可有多篇正确文档，不能只认一条</td>
+</tr>
+<tr>
+<td>词面近但意图不同</td>
+<td>下载发票与修改抬头</td>
+<td>构造困难负例，检查模型是否只认主题</td>
+</tr>
+<tr>
+<td>编号与数字</td>
+<td>错误码、版本号、条款号</td>
+<td>注意近似文字匹配造成的错误</td>
+</tr>
+<tr>
+<td>不同语言与领域表达</td>
+<td>简称、口语、专业术语</td>
+<td>按实际用户分布抽样</td>
+</tr>
+<tr>
+<td>无答案与权限边界</td>
+<td>库中不存在的问题或不可见资料</td>
+<td>相关集合以该用户可见语料为准</td>
+</tr>
+</tbody></table>
+<p>先保留一组小而可人工检查的问题，再扩大覆盖范围。把调参集和最终测试集分开，记录延迟、成本与相关性；切块调整后还要重新核对块级标签，不能把旧块 ID 原封不动当成新索引真值。BEIR 的跨数据集评测也提醒我们，某一种检索方法在一个任务上的表现不保证能迁移到所有领域。<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2104.08663">BEIR 原始论文</a></p>
+<h2 id="8-错误清单与独立验证"><a href="#8-错误清单与独立验证" class="headerlink" title="8. 错误清单与独立验证"></a>8. 错误清单与独立验证</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>优先检查</th>
+<th>不要立刻下的结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>换了编码器后结果突然失真</td>
+<td>查询与文档模型、版本、维度和输入角色</td>
+<td>“向量数据库坏了”</td>
+</tr>
+<tr>
+<td>文档越长分数越大</td>
+<td>原始点积、范数与模型约定</td>
+<td>“内容越多越相关”</td>
+</tr>
+<tr>
+<td>相关句在长文末尾却搜不到</td>
+<td>截断与分块边界</td>
+<td>“模型不懂中文”</td>
+</tr>
+<tr>
+<td>编号查询总找错</td>
+<td>关键词基线、混合召回与负例</td>
+<td>“再换一个更大模型就好”</td>
+</tr>
+<tr>
+<td>ANN 与精确结果差异大</td>
+<td>索引参数与邻居召回</td>
+<td>“必须重新训练 embedding”</td>
+</tr>
+<tr>
+<td>精确近邻正确但业务答案错</td>
+<td>相关性标签、模型任务适配与重排</td>
+<td>“只要提高 ANN recall 就能解决”</td>
+</tr>
+<tr>
+<td>过滤后结果数量不足</td>
+<td>过滤发生在哪一层、候选预算</td>
+<td>“允许返回越权文档补齐”</td>
+</tr>
+<tr>
+<td>分数高却没有支持答案的句子</td>
+<td>证据内容与可回答性</td>
+<td>“高相似度就是可信回答”</td>
+</tr>
+</tbody></table>
+<p>专项验证器 <code>tests/verify-embedding-retrieval-article.cjs</code> 从本文提取 Python 代码直接运行，不维护另一份可能漂移的示例。参考答案由独立 JavaScript 实现计算原始余弦，并用单位向量的平方距离复核排序。</p>
+<p>验证覆盖随机向量、正比例缩放不变性、分数范围、确定性并列、过滤后 top-k、维度错误、零向量、极大极小有限值、重复 ID、空相关集合，以及本文的 B—C—A 手算。归一化与近邻测试不使用真实语义标签，因此<strong>不会把这些测试次数报告成模型检索准确率</strong>。</p>
+<p>本次验证通过 362 组检索案例、120 组指标案例、20 项非法输入拒绝检查，共完成 32,607 项数值核验。随机部分使用固定种子，可以重复运行得到同样结果。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node tests/verify-embedding-retrieval-article.cjs</span><br></pre></td></tr></table></figure>
+
+<p>读完后可以做三个小练习：把 C 的向量整体乘以 10，比较点积和余弦；把 k 从 2 改为 3，观察 Recall 与 RR 的不同变化；在允许范围中加入 <code>internal</code>，解释为什么结果变化来自候选集合而不是编码器变聪明了。</p>
+<p>下一步回到 <a href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程学习专题</a>，继续 <a href="/esblog/43018.html">RAGFlow 搭建</a> 或 <a href="/esblog/58241.html">RAG 评测与故障定位</a>。此时“检索”不再是一个黑盒按钮，而是几层可以分别检查的假设。</p>
+<h2 id="资料入口"><a href="#资料入口" class="headerlink" title="资料入口"></a>资料入口</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1908.10084">Sentence-BERT 论文</a>：文本分别编码与句子比较的训练思路。</li>
+<li><a target="_blank" rel="noopener" href="https://sbert.net/examples/sentence_transformer/applications/semantic-search/README.html">Sentence Transformers 语义搜索文档</a>：查询与文档角色、编码接口。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/facebookresearch/faiss/wiki/MetricType-and-distances">Faiss 度量说明</a>：余弦、内积和平方 L2 的关系。</li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/intfloat/multilingual-e5-small">E5 官方模型卡</a>：特定模型的前缀、池化及长度约定。</li>
+<li><a target="_blank" rel="noopener" href="https://sbert.net/examples/sentence_transformer/applications/retrieve_rerank/README.html">Retrieve &amp; Re-Rank 官方文档</a>：两阶段检索架构。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2104.08663">BEIR 论文</a>：跨领域检索评测。</li>
+</ul>
+<p>接口与模型资料于 2026-09-29 核对；本文手算、数据、代码与学习路线为本站重新组织。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/68429.html">https://eulersail.com/esblog/68429.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/RAG/">RAG</a><a class="post-meta__tags" href="/tags/%E8%AF%84%E6%B5%8B/">评测</a><a class="post-meta__tags" href="/tags/Embedding/">Embedding</a><a class="post-meta__tags" href="/tags/%E8%AF%AD%E4%B9%89%E6%A3%80%E7%B4%A2/">语义检索</a><a class="post-meta__tags" href="/tags/%E5%90%91%E9%87%8F%E6%A3%80%E7%B4%A2/">向量检索</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/86425.html" title="门德尔松《意大利交响曲》：四种步伐为何走向小调终点"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">门德尔松《意大利交响曲》：四种步伐为何走向小调终点</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/58241.html" title="RAG 知识库评测：从检索命中到可信回答"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">RAG 知识库评测：从检索命中到可信回答</div></div></a></div><div><a href="/esblog/43018.html" title="从文档到可检索知识库：RAGFlow 搭建与调优实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-29</div><div class="title">从文档到可检索知识库：RAGFlow 搭建与调优实战</div></div></a></div><div><a href="/esblog/95731.html" title="大模型推理时计算：多想一会儿，为什么不一定更可靠"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-05</div><div class="title">大模型推理时计算：多想一会儿，为什么不一定更可靠</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">108</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%8E%A5%E5%9C%A8-Transformer-%E5%92%8C-RAG-%E4%B9%8B%E9%97%B4"><span class="toc-text">1. 接在 Transformer 和 RAG 之间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-token-%E5%90%91%E9%87%8F%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%8F%AF%E7%9B%B4%E6%8E%A5%E6%90%9C%E7%B4%A2%E7%9A%84%E5%8F%A5%E5%90%91%E9%87%8F"><span class="toc-text">2. token 向量不等于可直接搜索的句向量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A0%E8%BF%91%E4%B8%8D%E6%98%AF%E5%9D%90%E6%A0%87%E8%BD%B4%E8%87%AA%E5%B8%A6%E7%9A%84%E5%90%AB%E4%B9%89"><span class="toc-text">靠近不是坐标轴自带的含义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BD%99%E5%BC%A6%E3%80%81%E7%82%B9%E7%A7%AF%E5%92%8C%E8%B7%9D%E7%A6%BB%EF%BC%9A%E6%8A%8A%E4%B8%80%E7%BB%84%E6%95%B0%E7%AE%97%E6%98%8E%E7%99%BD"><span class="toc-text">3. 余弦、点积和距离：把一组数算明白</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%95%E4%BD%8D%E5%90%91%E9%87%8F%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E7%94%A8%E7%82%B9%E7%A7%AF"><span class="toc-text">为什么单位向量可以直接用点积</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%BB%8E%E5%88%86%E5%9D%97%E5%88%B0%E7%B4%A2%E5%BC%95%EF%BC%9A%E7%A6%BB%E7%BA%BF%E5%92%8C%E5%9C%A8%E7%BA%BF%E8%A6%81%E5%AF%B9%E5%BE%97%E4%B8%8A"><span class="toc-text">4. 从分块到索引：离线和在线要对得上</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%93%E5%89%8D%E6%8E%A5%E5%8F%A3%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%BA%A6%E5%AE%9A%E6%80%8E%E6%A0%B7%E6%A0%B8%E5%AF%B9"><span class="toc-text">当前接口与模型约定怎样核对</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E7%BA%AF-Python%EF%BC%9A%E4%B8%80%E4%B8%AA%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E6%A0%B8%E5%AF%B9%E7%9A%84%E6%A3%80%E7%B4%A2%E7%AB%AF"><span class="toc-text">5. 纯 Python：一个可以独立核对的检索端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E7%B2%BE%E7%A1%AE%E6%89%AB%E6%8F%8F%E3%80%81%E8%BF%91%E4%BC%BC%E6%A3%80%E7%B4%A2%E3%80%81%E6%B7%B7%E5%90%88%E4%B8%8E%E9%87%8D%E6%8E%92"><span class="toc-text">6. 精确扫描、近似检索、混合与重排</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E4%B8%A4%E7%A7%8D%E5%8F%AC%E5%9B%9E%E7%8E%87%E4%B8%8D%E8%83%BD%E6%B7%B7%E4%B8%BA%E4%B8%80%E8%B0%88"><span class="toc-text">7. 两种召回率不能混为一谈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E9%94%99%E8%AF%AF%E6%B8%85%E5%8D%95%E4%B8%8E%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81"><span class="toc-text">8. 错误清单与独立验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B5%84%E6%96%99%E5%85%A5%E5%8F%A3"><span class="toc-text">资料入口</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/68429.html" title="从 embedding 到语义检索：向量相似度、召回与独立评测">从 embedding 到语义检索：向量相似度、召回与独立评测</a><time datetime="2026-09-29T03:00:00.000Z" title="发表于 2026-09-29 11:00:00">2026-09-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86425.html" title="门德尔松《意大利交响曲》：四种步伐为何走向小调终点">门德尔松《意大利交响曲》：四种步伐为何走向小调终点</a><time datetime="2026-09-28T02:05:00.000Z" title="发表于 2026-09-28 10:05:00">2026-09-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/52369.html" title="Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶">Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶</a><time datetime="2026-09-28T02:00:00.000Z" title="发表于 2026-09-28 10:00:00">2026-09-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/74652.html" title="勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲">勃拉姆斯《E 小调第四交响曲》：短动机怎样走向帕萨卡利亚终曲</a><time datetime="2026-09-24T06:45:00.000Z" title="发表于 2026-09-24 14:45:00">2026-09-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/58631.html" title="Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树">Codeforces 换根 DP 三题：距离和、树上涂色与最大白子树</a><time datetime="2026-09-24T06:20:00.000Z" title="发表于 2026-09-24 14:20:00">2026-09-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
