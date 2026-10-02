@@ -1,0 +1,673 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 强连通分量三题 从互相可达到缩点后的源与汇 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用 427C、999E 和 949C 串起强连通分量、缩点 DAG、源分量与汇分量，包含非递归 Kosaraju、费用计数与维护依赖的正确性证明、手算和三份完整 C++17。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 强连通分量三题 从互相可达到缩点后的源与汇">
+<meta property="og:url" content="https://eulersail.com/esblog/75631.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用 427C、999E 和 949C 串起强连通分量、缩点 DAG、源分量与汇分量，包含非递归 Kosaraju、费用计数与维护依赖的正确性证明、手算和三份完整 C++17。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-02T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-02T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="图论">
+<meta property="article:tag" content="强连通分量">
+<meta property="article:tag" content="缩点">
+<meta property="article:tag" content="Kosaraju">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/75631.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 强连通分量三题 从互相可达到缩点后的源与汇',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-02 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">66</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">115</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 强连通分量三题 从互相可达到缩点后的源与汇</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-02T02:00:00.000Z" title="发表于 2026-10-02 10:00:00">2026-10-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-02T02:00:00.000Z" title="更新于 2026-10-02 10:00:00">2026-10-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>20分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 强连通分量三题 从互相可达到缩点后的源与汇"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/81937.html">拓扑排序</a>擅长处理没有环的依赖图。但是，遇到环不一定意味着问题无解：有时环表示一组必须一起考虑的顶点。先把“互相可达”的点压成一个整体，再研究整体之间的单向关系，就能把一般有向图变成 DAG。</p>
+<p>本篇依次解决三个问题：每个整体内部怎样选点、怎样让首都覆盖所有整体、怎样找到不会牵连外部的最小维护集合。建议已了解 DFS、邻接表和有向可达性后阅读；不需要先背 Tarjan 模板。</p>
+<span id="more"></span>
+
+<h2 id="三题路线与官方信息"><a href="#三题路线与官方信息" class="headerlink" title="三题路线与官方信息"></a>三题路线与官方信息</h2><table>
+<thead>
+<tr>
+<th>题目</th>
+<th>官方难度</th>
+<th>官方标签</th>
+<th>本篇训练重点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/427/C">427C Checkposts</a></td>
+<td>1700</td>
+<td>dfs and similar、graphs、two pointers</td>
+<td>分量内最小费用与方案乘法</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/999/E">999E Reachability from the Capital</a></td>
+<td>2000</td>
+<td>dfs and similar、graphs、greedy</td>
+<td>未覆盖 DAG 的源分量</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/949/C">949C Data Center Maintenance</a></td>
+<td>1900</td>
+<td>dfs and similar、graphs</td>
+<td>从冲突条件建蕴含边，选择汇分量</td>
+</tr>
+</tbody></table>
+<p>题名、难度、标签与下文约束于 2026-10-02 核对官方题页。官方标签原样保留；例如 427C 虽带 two pointers 标签，本篇解法并不使用双指针。三题不是机械递增的难度阶梯，而是同一结构的三种用途。</p>
+<table>
+<thead>
+<tr>
+<th>题目</th>
+<th>规模与数据范围</th>
+<th>时空限制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>427C</td>
+<td>1 ≤ n ≤ 100000，0 ≤ m ≤ 300000，0 ≤ 费用 ≤ 10⁹</td>
+<td>2 秒，256 MB</td>
+</tr>
+<tr>
+<td>999E</td>
+<td>1 ≤ n ≤ 5000，0 ≤ m ≤ 5000，1 ≤ s ≤ n</td>
+<td>2 秒，256 MB</td>
+</tr>
+<tr>
+<td>949C</td>
+<td>2 ≤ n ≤ 100000，1 ≤ m ≤ 100000，2 ≤ h ≤ 100000，0 ≤ uᵢ &lt; h</td>
+<td>1 秒，512 MB</td>
+</tr>
+</tbody></table>
+<p>前两题的有向边没有自环、没有同方向重复边；949C 的客户连接两个不同数据中心，初始维护小时不同，但客户对可以重复。以下代码不依赖边去重。</p>
+<h2 id="从互相可达到缩点"><a href="#从互相可达到缩点" class="headerlink" title="从互相可达到缩点"></a>从互相可达到缩点</h2><p>如果 a 能走到 b，b 也能走到 a，就把它们视为同一类。这是等价关系：自身可达、互相对称，而且路径可以拼接，所以具有传递性。每个等价类就是一个<strong>强连通分量</strong>，简称 SCC。只有 a 能到 b 不够；无向并查集不能直接替代这个判定。</p>
+<p>将每个 SCC 压成一个点，仅保留跨分量边，得到缩点图。它必然无环：若几个分量构成环，沿环就能相互到达，它们本应是同一个分量。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;原图：1 与 2 互相可达&quot;] --&gt; B[&quot;压成分量 A&quot;]
+  C[&quot;原图：3 与 4 互相可达&quot;] --&gt; D[&quot;压成分量 B&quot;]
+  B --&gt;|&quot;原图存在 2 → 3&quot;| D
+  D --&gt; E[&quot;分量 C：单独的点 5&quot;]
+  </pre></div>
+
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>能够忽略什么</th>
+<th>仍要保留什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分量内部</td>
+<td>具体从哪个点进入，内部都能到达</td>
+<td>点的费用、个数等权重</td>
+</tr>
+<tr>
+<td>分量之间</td>
+<td>同一方向的重复边通常不影响可达性</td>
+<td>边的方向</td>
+</tr>
+<tr>
+<td>DAG 上</td>
+<td>不再需要处理有向环</td>
+<td>源、汇、可达范围等全局关系</td>
+</tr>
+</tbody></table>
+<p>一个容易混淆的地方是：SCC 并不等于“度数大的一团点”，也不要求任意两点之间都有直接边。一条有向大环就是一个 SCC。</p>
+<h2 id="非递归-Kosaraju-为什么要记录退出顺序"><a href="#非递归-Kosaraju-为什么要记录退出顺序" class="headerlink" title="非递归 Kosaraju 为什么要记录退出顺序"></a>非递归 Kosaraju 为什么要记录退出顺序</h2><p>Kosaraju 做两遍搜索。第一遍在原图建立完整 DFS 森林，在一个点的邻居全部处理完后，才把它加入退出序列。第二遍按退出序列的逆序，在反图中搜索，每次新搜索得到一个分量。</p>
+<p>为什么方向恰好匹配？对缩点边 A → B，两分量不可能彼此可达。若先访问 A，搜索会完成 B 再完成 A；若先访问 B，B 无法进入 A，仍会先完成。因此 A 的最大退出时刻大于 B 的最大退出时刻。尚未分配的分量中，退出最晚者是原缩点图的源；转到反图后，它不会走进另一个尚未分配的分量。重复剥离便得到全部 SCC。</p>
+<table>
+<thead>
+<tr>
+<th>第一遍栈的状态</th>
+<th>含义</th>
+<th>何时改变</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>seen[v]</td>
+<td>v 是否已经入过栈</td>
+<td>入栈时标记</td>
+</tr>
+<tr>
+<td>next[v]</td>
+<td>下一个待检查的邻居下标</td>
+<td>每检查一条边就增加</td>
+</tr>
+<tr>
+<td>st.back()</td>
+<td>当前尚未退出的 DFS 节点</td>
+<td>模拟递归调用栈</td>
+</tr>
+<tr>
+<td>order</td>
+<td>已完成节点的退出序列</td>
+<td>邻居全部处理完才追加</td>
+</tr>
+</tbody></table>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;栈顶节点 v&quot;] --&gt; B{&quot;还有未检查的邻居？&quot;}
+  B --&gt;|&quot;有&quot;| C[&quot;取下一条边并推进游标&quot;]
+  C --&gt; D{&quot;邻居是否未访问？&quot;}
+  D --&gt;|&quot;是&quot;| E[&quot;标记邻居并入栈&quot;]
+  D --&gt;|&quot;否&quot;| A
+  E --&gt; A
+  B --&gt;|&quot;没有&quot;| F[&quot;把 v 加入退出序列并出栈&quot;]
+  </pre></div>
+
+<p>例如只有 1 → 2 → 3 时，第一遍从 1 开始得到退出序列 [3,2,1]；反向处理 [1,2,3]，在反图中依次得到三个单点分量。如果误把入栈序列 [1,2,3] 当退出序列，反向从 3 搜索会把三个点错误合并。</p>
+<p>第二遍只需收集反图可达的未分配点，不需要再记录退出时刻，可以用普通栈。以下三份实现都使用显式栈，避免十万点长链造成递归栈溢出；每个 SCC 对象只调用一次 build。</p>
+<h2 id="第一题-427C-每个分量选一个最低费用点"><a href="#第一题-427C-每个分量选一个最低费用点" class="headerlink" title="第一题 427C 每个分量选一个最低费用点"></a>第一题 427C 每个分量选一个最低费用点</h2><p>题目的保护关系要求双向可达：在 i 建检查站，能够保护 j 的条件是 i&#x3D;j，或 i 能到 j 且 j 能到 i。于是一个站恰好能覆盖自身 SCC，不能覆盖其他 SCC。</p>
+<h3 id="先最小费用，再最少站点"><a href="#先最小费用，再最少站点" class="headerlink" title="先最小费用，再最少站点"></a>先最小费用，再最少站点</h3><p>每个分量至少需要一个站，而任意一个站都足够。因为费用非负，选最低费用点不会更差。特别注意：费用允许为 0。即使多个零费用站不增加总费用，题目还要求在最低费用下尽量少建站，因此仍然每个分量恰好选一个。</p>
+<table>
+<thead>
+<tr>
+<th>分量</th>
+<th>点费用</th>
+<th>最低贡献</th>
+<th>可选最低费用点数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>4、1、1</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0、0</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<td>C</td>
+<td>7</td>
+<td>7</td>
+<td>1</td>
+</tr>
+<tr>
+<td>合并结果</td>
+<td>各分量独立</td>
+<td>8</td>
+<td>2 × 2 × 1 &#x3D; 4</td>
+</tr>
+</tbody></table>
+<p>正确性由两部分组成：任何方案在每个分量的花费都不小于分量最低费用；逐个选一个最低费用点达到该下界，且站点数也是必要的分量数。每个分量的选择互不限制，所以方案数相乘，对 1000000007 取模。</p>
+<table>
+<thead>
+<tr>
+<th>朴素方案</th>
+<th>问题</th>
+<th>SCC 后的处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>从每点分别搜索双向可达集合</td>
+<td>可达性重复计算，最坏 O(n(n+m))</td>
+<td>两遍 DFS 一次划分</td>
+</tr>
+<tr>
+<td>枚举所有站点子集</td>
+<td>2ⁿ 个方案</td>
+<td>每个分量扫描一次</td>
+</tr>
+<tr>
+<td>只看最低费用不看站点数</td>
+<td>多选零费用点导致多计方案</td>
+<td>每个分量恰好一个站</td>
+</tr>
+</tbody></table>
+<p>总费用最大为 10⁵ × 10⁹ &#x3D; 10¹⁴，不能使用 int。方案数的乘法中间值也使用 long long。</p>
+<h3 id="完整-C-17-实现"><a href="#完整-C-17-实现" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">SCC</span> &#123;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; g, rg, groups;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; comp;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">SCC</span><span class="params">(<span class="type">int</span> n_)</span> : n(n_), g(n), rg(n), comp(n, <span class="number">-1</span>) &#123;</span>&#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123; g[a].<span class="built_in">push_back</span>(b); rg[b].<span class="built_in">push_back</span>(a); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">char</span>&gt; <span class="title">seen</span><span class="params">(n, <span class="literal">false</span>)</span></span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">size_t</span>&gt; <span class="title">next</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; order, st;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> root = <span class="number">0</span>; root &lt; n; ++root) &#123;</span><br><span class="line">            <span class="keyword">if</span> (seen[root]) <span class="keyword">continue</span>;</span><br><span class="line">            seen[root] = <span class="literal">true</span>;</span><br><span class="line">            st.<span class="built_in">push_back</span>(root);</span><br><span class="line">            <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                <span class="type">int</span> v = st.<span class="built_in">back</span>();</span><br><span class="line">                <span class="keyword">if</span> (next[v] &lt; g[v].<span class="built_in">size</span>()) &#123;</span><br><span class="line">                    <span class="type">int</span> u = g[v][next[v]++];</span><br><span class="line">                    <span class="keyword">if</span> (!seen[u]) &#123; seen[u] = <span class="literal">true</span>; st.<span class="built_in">push_back</span>(u); &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    order.<span class="built_in">push_back</span>(v); <span class="comment">// Exit time, not entry time.</span></span><br><span class="line">                    st.<span class="built_in">pop_back</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> it = order.<span class="built_in">rbegin</span>(); it != order.<span class="built_in">rend</span>(); ++it) &#123;</span><br><span class="line">            <span class="type">int</span> root = *it;</span><br><span class="line">            <span class="keyword">if</span> (comp[root] != <span class="number">-1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="type">int</span> id = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(groups.<span class="built_in">size</span>());</span><br><span class="line">            groups.<span class="built_in">push_back</span>(&#123;&#125;);</span><br><span class="line">            comp[root] = id;</span><br><span class="line">            st.<span class="built_in">push_back</span>(root);</span><br><span class="line">            <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                <span class="type">int</span> v = st.<span class="built_in">back</span>(); st.<span class="built_in">pop_back</span>();</span><br><span class="line">                groups[id].<span class="built_in">push_back</span>(v);</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> u : rg[v]) <span class="keyword">if</span> (comp[u] == <span class="number">-1</span>) &#123;</span><br><span class="line">                    comp[u] = id; st.<span class="built_in">push_back</span>(u);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>); cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n; cin &gt;&gt; n;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">cost</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;x : cost) cin &gt;&gt; x;</span><br><span class="line">    <span class="function">SCC <span class="title">scc</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="type">int</span> m; cin &gt;&gt; m;</span><br><span class="line">    <span class="keyword">while</span> (m--) &#123; <span class="type">int</span> a, b; cin &gt;&gt; a &gt;&gt; b; scc.<span class="built_in">add</span>(a - <span class="number">1</span>, b - <span class="number">1</span>); &#125;</span><br><span class="line">    scc.<span class="built_in">build</span>();</span><br><span class="line">    <span class="type">const</span> <span class="type">long</span> <span class="type">long</span> MOD = <span class="number">1000000007</span>;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> total = <span class="number">0</span>, ways = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">const</span> <span class="keyword">auto</span> &amp;group : scc.groups) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="type">long</span> best = LLONG_MAX, count = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v : group) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cost[v] &lt; best) &#123; best = cost[v]; count = <span class="number">1</span>; &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (cost[v] == best) ++count;</span><br><span class="line">        &#125;</span><br><span class="line">        total += best;</span><br><span class="line">        ways = ways * count % MOD;</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; total &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; ways &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="第二题-999E-未覆盖子图的源各需要一条新路"><a href="#第二题-999E-未覆盖子图的源各需要一条新路" class="headerlink" title="第二题 999E 未覆盖子图的源各需要一条新路"></a>第二题 999E 未覆盖子图的源各需要一条新路</h2><p>要求添加尽量少的有向边，使首都 s 能到达所有城市。先缩点，再从 s 所在分量搜索，将已经能到达的分量标记。剩下的分量诱导出一个 DAG，答案就是这个子图中入度为零的分量数。</p>
+<h3 id="为什么不数剩余城市或原图零入度点"><a href="#为什么不数剩余城市或原图零入度点" class="headerlink" title="为什么不数剩余城市或原图零入度点"></a>为什么不数剩余城市或原图零入度点</h3><p>假设首都已经覆盖 R，剩下 A、B、C、D，边为 A → C、B → C、C → D。给 A 和 B 各加一条从首都出发的边就足够，答案是 2，不是剩余分量数 4。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  S[&quot;首都所在分量 R&quot;] -. &quot;新增&quot; .-&gt; A[&quot;未覆盖源 A&quot;]
+  S -. &quot;新增&quot; .-&gt; B[&quot;未覆盖源 B&quot;]
+  A --&gt; C[&quot;未覆盖分量 C&quot;]
+  B --&gt; C
+  C --&gt; D[&quot;未覆盖分量 D&quot;]
+  </pre></div>
+
+<table>
+<thead>
+<tr>
+<th>分量</th>
+<th>未覆盖子图中的入边来源</th>
+<th>是否需要直接接入</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>无</td>
+<td>是</td>
+</tr>
+<tr>
+<td>B</td>
+<td>无</td>
+<td>是</td>
+</tr>
+<tr>
+<td>C</td>
+<td>A、B</td>
+<td>否</td>
+</tr>
+<tr>
+<td>D</td>
+<td>C</td>
+<td>否</td>
+</tr>
+</tbody></table>
+<p>下界：每个未覆盖源都必须有新边进入，否则从首都无法第一次走入它。不同源不能共用同一条进入边，因此至少需要源的数量条边。注意原图不会存在“已覆盖分量 → 未覆盖分量”的边，否则后者早已被搜索覆盖。</p>
+<p>上界：从首都分别连到每个未覆盖源。在有限 DAG 中，任一点都能沿入边反向追溯到一个源，因此这些新边能覆盖全部剩余分量。上下界相等，结论成立。</p>
+<table>
+<thead>
+<tr>
+<th>错误计数</th>
+<th>反例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数未覆盖顶点</td>
+<td>一个不可达的有向环只需要一条新路</td>
+</tr>
+<tr>
+<td>数原图零入度顶点</td>
+<td>上述环的每点入度都非零，仍需新路</td>
+</tr>
+<tr>
+<td>数全部缩点图的源</td>
+<td>首都已经覆盖的部分不应再次收费</td>
+</tr>
+<tr>
+<td>数所有未覆盖分量</td>
+<td>A → B → C 只需给 A 一条路</td>
+</tr>
+</tbody></table>
+<p>实现只记录 hasIn 布尔值，不必计算准确入度或给平行边去重。这里的 DAG 用于可达性与源判断，不需要真正运行拓扑排序。</p>
+<h3 id="完整-C-17-实现-1"><a href="#完整-C-17-实现-1" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">SCC</span> &#123;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; g, rg, groups;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; comp;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">SCC</span><span class="params">(<span class="type">int</span> n_)</span> : n(n_), g(n), rg(n), comp(n, <span class="number">-1</span>) &#123;</span>&#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123; g[a].<span class="built_in">push_back</span>(b); rg[b].<span class="built_in">push_back</span>(a); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">char</span>&gt; <span class="title">seen</span><span class="params">(n, <span class="literal">false</span>)</span></span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">size_t</span>&gt; <span class="title">next</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; order, st;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> root = <span class="number">0</span>; root &lt; n; ++root) &#123;</span><br><span class="line">            <span class="keyword">if</span> (seen[root]) <span class="keyword">continue</span>;</span><br><span class="line">            seen[root] = <span class="literal">true</span>;</span><br><span class="line">            st.<span class="built_in">push_back</span>(root);</span><br><span class="line">            <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                <span class="type">int</span> v = st.<span class="built_in">back</span>();</span><br><span class="line">                <span class="keyword">if</span> (next[v] &lt; g[v].<span class="built_in">size</span>()) &#123;</span><br><span class="line">                    <span class="type">int</span> u = g[v][next[v]++];</span><br><span class="line">                    <span class="keyword">if</span> (!seen[u]) &#123; seen[u] = <span class="literal">true</span>; st.<span class="built_in">push_back</span>(u); &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    order.<span class="built_in">push_back</span>(v); <span class="comment">// Exit time, not entry time.</span></span><br><span class="line">                    st.<span class="built_in">pop_back</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> it = order.<span class="built_in">rbegin</span>(); it != order.<span class="built_in">rend</span>(); ++it) &#123;</span><br><span class="line">            <span class="type">int</span> root = *it;</span><br><span class="line">            <span class="keyword">if</span> (comp[root] != <span class="number">-1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="type">int</span> id = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(groups.<span class="built_in">size</span>());</span><br><span class="line">            groups.<span class="built_in">push_back</span>(&#123;&#125;);</span><br><span class="line">            comp[root] = id;</span><br><span class="line">            st.<span class="built_in">push_back</span>(root);</span><br><span class="line">            <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                <span class="type">int</span> v = st.<span class="built_in">back</span>(); st.<span class="built_in">pop_back</span>();</span><br><span class="line">                groups[id].<span class="built_in">push_back</span>(v);</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> u : rg[v]) <span class="keyword">if</span> (comp[u] == <span class="number">-1</span>) &#123;</span><br><span class="line">                    comp[u] = id; st.<span class="built_in">push_back</span>(u);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>); cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n, m, s; cin &gt;&gt; n &gt;&gt; m &gt;&gt; s; --s;</span><br><span class="line">    <span class="function">SCC <span class="title">scc</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">while</span> (m--) &#123; <span class="type">int</span> a, b; cin &gt;&gt; a &gt;&gt; b; scc.<span class="built_in">add</span>(a - <span class="number">1</span>, b - <span class="number">1</span>); &#125;</span><br><span class="line">    scc.<span class="built_in">build</span>();</span><br><span class="line">    <span class="type">int</span> k = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(scc.groups.<span class="built_in">size</span>());</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">dag</span>(k);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> a = <span class="number">0</span>; a &lt; n; ++a) <span class="keyword">for</span> (<span class="type">int</span> b : scc.g[a])</span><br><span class="line">        <span class="keyword">if</span> (scc.comp[a] != scc.comp[b])</span><br><span class="line">            dag[scc.comp[a]].<span class="built_in">push_back</span>(scc.comp[b]);</span><br><span class="line">    <span class="function">vector&lt;<span class="type">char</span>&gt; <span class="title">reached</span><span class="params">(k, <span class="literal">false</span>)</span>, <span class="title">hasIn</span><span class="params">(k, <span class="literal">false</span>)</span></span>;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; st = &#123;scc.comp[s]&#125;;</span><br><span class="line">    reached[scc.comp[s]] = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">        <span class="type">int</span> a = st.<span class="built_in">back</span>(); st.<span class="built_in">pop_back</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> b : dag[a]) <span class="keyword">if</span> (!reached[b]) &#123;</span><br><span class="line">            reached[b] = <span class="literal">true</span>; st.<span class="built_in">push_back</span>(b);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> a = <span class="number">0</span>; a &lt; k; ++a) <span class="keyword">if</span> (!reached[a])</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> b : dag[a]) <span class="keyword">if</span> (!reached[b]) hasIn[b] = <span class="literal">true</span>;</span><br><span class="line">    <span class="type">int</span> answer = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> a = <span class="number">0</span>; a &lt; k; ++a) <span class="keyword">if</span> (!reached[a] &amp;&amp; !hasIn[a]) ++answer;</span><br><span class="line">    cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="第三题-949C-最小维护集合是一个汇分量"><a href="#第三题-949C-最小维护集合是一个汇分量" class="headerlink" title="第三题 949C 最小维护集合是一个汇分量"></a>第三题 949C 最小维护集合是一个汇分量</h2><p>每个数据中心每天在小时 uᵢ 维护，时间按 h 小时循环。每位客户连接两个中心，初始两者的维护小时不同。现在要选择<strong>非空</strong>集合，将所选中心的维护时间都加一并对 h 取模，仍让每位客户的两个中心错开。目标是选择尽量少的中心。</p>
+<h3 id="从一次冲突推出边的方向"><a href="#从一次冲突推出边的方向" class="headerlink" title="从一次冲突推出边的方向"></a>从一次冲突推出边的方向</h3><p>考虑客户连接 a、b。只有其中一个被选中时，才可能把原来不同的小时变成相同。</p>
+<table>
+<thead>
+<tr>
+<th>选择 a</th>
+<th>选择 b</th>
+<th>是否可能新冲突</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>否</td>
+<td>否</td>
+<td>不变，合法</td>
+</tr>
+<tr>
+<td>是</td>
+<td>是</td>
+<td>同时循环平移，仍然不同</td>
+</tr>
+<tr>
+<td>是</td>
+<td>否</td>
+<td>当 (uₐ+1) mod h &#x3D; uᵦ 时冲突</td>
+</tr>
+<tr>
+<td>否</td>
+<td>是</td>
+<td>当 (uᵦ+1) mod h &#x3D; uₐ 时冲突</td>
+</tr>
+</tbody></table>
+<p>因此，如果 (uₐ+1) mod h &#x3D; uᵦ，就建边 a → b，意思是“选择 a 必须选择 b”。反向条件同理。两个条件必须写成独立的 if：h&#x3D;2 时它们能同时成立，不能用 else if 漏掉一个方向。</p>
+<p>把每条边理解为蕴含关系后，合法选择集恰好是对后继封闭的非空集合：选一个点就必须选它能到达的所有点。一个 SCC 内的点必须同选或同不选。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;只调整 a 会与 b 撞时&quot;] --&gt; B[&quot;建立蕴含边 a → b&quot;]
+  B --&gt; C[&quot;强连通分量必须整体选择&quot;]
+  C --&gt; D[&quot;跨分量边表示继续牵连其他分量&quot;]
+  D --&gt; E[&quot;无出边的汇分量可以单独选择&quot;]
+  E --&gt; F[&quot;取顶点数最少的汇分量&quot;]
+  </pre></div>
+
+<h3 id="最优性不只是“没有出边就合法”"><a href="#最优性不只是“没有出边就合法”" class="headerlink" title="最优性不只是“没有出边就合法”"></a>最优性不只是“没有出边就合法”</h3><p>一个汇分量没有跨分量出边，因此单独选择它确实合法。但合法还不等于最优，需要补上下界。</p>
+<p>任取非空合法集合，从其中任一分量沿 DAG 出边不断向前。因为集合对后继封闭，经过的所有分量都在集合里；又因为 DAG 有限，最终到达整个缩点图的一个汇。该合法集合至少包含这个汇分量的全部点，其大小不小于“所有汇分量中的最小大小”。选最小汇恰好达到下界。</p>
+<table>
+<thead>
+<tr>
+<th>h 与小时</th>
+<th>客户连接</th>
+<th>蕴含图</th>
+<th>最小合法选择</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>h&#x3D;5，0、1、2</td>
+<td>1—2、2—3</td>
+<td>1 → 2 → 3</td>
+<td>只选 3</td>
+</tr>
+<tr>
+<td>h&#x3D;2，0、1</td>
+<td>1—2</td>
+<td>1 ↔ 2</td>
+<td>两点都选</td>
+</tr>
+<tr>
+<td>h&#x3D;3，0、1、2</td>
+<td>1—2、2—3、3—1</td>
+<td>三点成环</td>
+<td>三点都选</td>
+</tr>
+<tr>
+<td>h&#x3D;5，4、0</td>
+<td>1—2</td>
+<td>1 → 2</td>
+<td>只选 2</td>
+</tr>
+</tbody></table>
+<p>最后一行专门检查跨过午夜的取模。若存在孤立点，它自己就是大小 1 的汇分量，可以直接构成最优解。输入客户对重复只会产生重复蕴含边，不影响证明。</p>
+<h3 id="完整-C-17-实现-2"><a href="#完整-C-17-实现-2" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">SCC</span> &#123;</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; g, rg, groups;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; comp;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">SCC</span><span class="params">(<span class="type">int</span> n_)</span> : n(n_), g(n), rg(n), comp(n, <span class="number">-1</span>) &#123;</span>&#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123; g[a].<span class="built_in">push_back</span>(b); rg[b].<span class="built_in">push_back</span>(a); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">char</span>&gt; <span class="title">seen</span><span class="params">(n, <span class="literal">false</span>)</span></span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">size_t</span>&gt; <span class="title">next</span><span class="params">(n, <span class="number">0</span>)</span></span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; order, st;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> root = <span class="number">0</span>; root &lt; n; ++root) &#123;</span><br><span class="line">            <span class="keyword">if</span> (seen[root]) <span class="keyword">continue</span>;</span><br><span class="line">            seen[root] = <span class="literal">true</span>;</span><br><span class="line">            st.<span class="built_in">push_back</span>(root);</span><br><span class="line">            <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                <span class="type">int</span> v = st.<span class="built_in">back</span>();</span><br><span class="line">                <span class="keyword">if</span> (next[v] &lt; g[v].<span class="built_in">size</span>()) &#123;</span><br><span class="line">                    <span class="type">int</span> u = g[v][next[v]++];</span><br><span class="line">                    <span class="keyword">if</span> (!seen[u]) &#123; seen[u] = <span class="literal">true</span>; st.<span class="built_in">push_back</span>(u); &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    order.<span class="built_in">push_back</span>(v); <span class="comment">// Exit time, not entry time.</span></span><br><span class="line">                    st.<span class="built_in">pop_back</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> it = order.<span class="built_in">rbegin</span>(); it != order.<span class="built_in">rend</span>(); ++it) &#123;</span><br><span class="line">            <span class="type">int</span> root = *it;</span><br><span class="line">            <span class="keyword">if</span> (comp[root] != <span class="number">-1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="type">int</span> id = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(groups.<span class="built_in">size</span>());</span><br><span class="line">            groups.<span class="built_in">push_back</span>(&#123;&#125;);</span><br><span class="line">            comp[root] = id;</span><br><span class="line">            st.<span class="built_in">push_back</span>(root);</span><br><span class="line">            <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                <span class="type">int</span> v = st.<span class="built_in">back</span>(); st.<span class="built_in">pop_back</span>();</span><br><span class="line">                groups[id].<span class="built_in">push_back</span>(v);</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> u : rg[v]) <span class="keyword">if</span> (comp[u] == <span class="number">-1</span>) &#123;</span><br><span class="line">                    comp[u] = id; st.<span class="built_in">push_back</span>(u);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>); cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n, m, h; cin &gt;&gt; n &gt;&gt; m &gt;&gt; h;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">hour</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> &amp;x : hour) cin &gt;&gt; x;</span><br><span class="line">    <span class="function">SCC <span class="title">scc</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">while</span> (m--) &#123;</span><br><span class="line">        <span class="type">int</span> a, b; cin &gt;&gt; a &gt;&gt; b; --a; --b;</span><br><span class="line">        <span class="keyword">if</span> ((hour[a] + <span class="number">1</span>) % h == hour[b]) scc.<span class="built_in">add</span>(a, b);</span><br><span class="line">        <span class="keyword">if</span> ((hour[b] + <span class="number">1</span>) % h == hour[a]) scc.<span class="built_in">add</span>(b, a);</span><br><span class="line">    &#125;</span><br><span class="line">    scc.<span class="built_in">build</span>();</span><br><span class="line">    <span class="type">int</span> k = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(scc.groups.<span class="built_in">size</span>());</span><br><span class="line">    <span class="function">vector&lt;<span class="type">char</span>&gt; <span class="title">hasOut</span><span class="params">(k, <span class="literal">false</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> a = <span class="number">0</span>; a &lt; n; ++a) <span class="keyword">for</span> (<span class="type">int</span> b : scc.g[a])</span><br><span class="line">        <span class="keyword">if</span> (scc.comp[a] != scc.comp[b]) hasOut[scc.comp[a]] = <span class="literal">true</span>;</span><br><span class="line">    <span class="type">int</span> best = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> c = <span class="number">0</span>; c &lt; k; ++c) <span class="keyword">if</span> (!hasOut[c]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (best == <span class="number">-1</span> || scc.groups[c].<span class="built_in">size</span>() &lt; scc.groups[best].<span class="built_in">size</span>()) best = c;</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; scc.groups[best].<span class="built_in">size</span>() &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> v : scc.groups[best]) cout &lt;&lt; v + <span class="number">1</span> &lt;&lt; <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">    cout &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="复杂度与实现边界"><a href="#复杂度与实现边界" class="headerlink" title="复杂度与实现边界"></a>复杂度与实现边界</h2><table>
+<thead>
+<tr>
+<th>部分</th>
+<th>时间</th>
+<th>额外空间</th>
+<th>需要留意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>非递归 Kosaraju</td>
+<td>O(n+m)</td>
+<td>O(n+m)</td>
+<td>原图、反图和显式 DFS 栈</td>
+</tr>
+<tr>
+<td>427C 分量统计</td>
+<td>O(n)</td>
+<td>O(n)</td>
+<td>费用与乘法使用 64 位</td>
+</tr>
+<tr>
+<td>999E 缩点与覆盖</td>
+<td>O(n+m)</td>
+<td>O(n+m)</td>
+<td>仅统计未覆盖部分的入边</td>
+</tr>
+<tr>
+<td>949C 蕴含图与汇判断</td>
+<td>O(n+m)</td>
+<td>O(n+m)</td>
+<td>每个客户至多生成两条边</td>
+</tr>
+</tbody></table>
+<p>表中 949C 的 m 指客户数，最多 2m 条有向蕴含边；常数变化不改变线性复杂度。算法线性不代表可以忽略语言、内存分配与评测机差异，本地运行不等于官方提交通过。</p>
+<table>
+<thead>
+<tr>
+<th>错误清单</th>
+<th>修正</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>只从节点 1 开始第一遍 DFS</td>
+<td>必须遍历所有未访问根，覆盖非连通部分</td>
+</tr>
+<tr>
+<td>第一遍记录入栈顺序</td>
+<td>保存所有邻居处理完后的退出顺序</td>
+</tr>
+<tr>
+<td>第二遍仍用原图</td>
+<td>必须在反图搜索</td>
+</tr>
+<tr>
+<td>十万点链使用未经评估的递归</td>
+<td>显式栈模拟退出过程</td>
+</tr>
+<tr>
+<td>把分量编号当可靠业务顺序</td>
+<td>按实际跨分量边判断入度、出度</td>
+</tr>
+<tr>
+<td>949C 随便取最小 SCC</td>
+<td>必须在汇分量中取最小，否则会牵连外部</td>
+</tr>
+<tr>
+<td>949C 忘记非空限制</td>
+<td>输出至少一个点，空集合不是答案</td>
+</tr>
+<tr>
+<td>427C 将零费用点随意多选</td>
+<td>最低费用之下还需最少站点数</td>
+</tr>
+</tbody></table>
+<h2 id="用独立方法验证而不是复写同一模板"><a href="#用独立方法验证而不是复写同一模板" class="headerlink" title="用独立方法验证而不是复写同一模板"></a>用独立方法验证而不是复写同一模板</h2><p>验证脚本为 tests&#x2F;verify-scc-three-article.cjs，提取本文三份代码直接编译。小数据基准不调用 SCC：427C 用传递闭包和所有站点子集检查费用、站点数及方案数；999E 枚举从首都补边的目标集合并做 BFS；949C 枚举非空集合，实际平移小时并逐客户检查冲突。</p>
+<p>999E 的基准为何可以只枚举首都出发的边？对任意可行补边方案，把每条新边 a → b 改为 s → b，原来沿新边到达 b 的能力不会减弱；之后的旧边路径仍然可走。因此总有同样数量以内的首都出边方案，不会漏掉更优解。这个基准虽慢，却不依赖缩点或源数量定理。</p>
+<p>此外覆盖空图、全零费用、长链、整图一个 SCC、重复客户、h&#x3D;2 双向蕴含、循环边界和最大规模。验证只说明这些测试范围内与独立基准一致，不替代正确性证明。</p>
+<p>本轮三份 C++17 均无警告编译，共通过 1,166 次执行与 31,880 个独立子集核验；小数据包含 199 张有向图和 550 组维护安排，另有官方样例及十万点、三十万条边等边界测试。</p>
+<h2 id="下一步怎样串回路线"><a href="#下一步怎样串回路线" class="headerlink" title="下一步怎样串回路线"></a>下一步怎样串回路线</h2><p>先把 <a href="/esblog/73461.html">拓扑排序三题</a>里的 DAG 依赖关系重新看一遍，再问“如果出现环，环代表矛盾还是一个必须整体处理的集合”。随后比较 <a href="/esblog/46872.html">并查集三题</a>：并查集合并的是无向连通性，而 SCC 利用的是有向双向可达，两者不能混用。</p>
+<p>本篇最值得保留的不是模板名字，而是三个不同的问题出口：<strong>分量内部做统计、未覆盖子图找源、后继封闭集合找汇</strong>。返回<a href="/algorithms/">算法路线</a>可以按图论与树上查询继续练习。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/75631.html">https://eulersail.com/esblog/75631.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E8%AE%BA/">图论</a><a class="post-meta__tags" href="/tags/%E5%BC%BA%E8%BF%9E%E9%80%9A%E5%88%86%E9%87%8F/">强连通分量</a><a class="post-meta__tags" href="/tags/%E7%BC%A9%E7%82%B9/">缩点</a><a class="post-meta__tags" href="/tags/Kosaraju/">Kosaraju</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/91842.html" title="海顿伦敦交响曲 从庄严引子到持续低音上的终曲"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">海顿伦敦交响曲 从庄严引子到持续低音上的终曲</div></div></a></div><div class="next-post pull-right"><a href="/esblog/87216.html" title="贝多芬第三交响曲英雄 从两次重击到变奏终曲"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">贝多芬第三交响曲英雄 从两次重击到变奏终曲</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/77420.html" title="Codeforces 20C Dijkstra：加权最短路与路径还原"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-08</div><div class="title">Codeforces 20C Dijkstra：加权最短路与路径还原</div></div></a></div><div><a href="/esblog/80632.html" title="Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS</div></div></a></div><div><a href="/esblog/82541.html" title="Codeforces 25D：并查集、生成森林与最少改路方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 25D：并查集、生成森林与最少改路方案</div></div></a></div><div><a href="/esblog/94673.html" title="Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-10</div><div class="title">Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树</div></div></a></div><div><a href="/esblog/81937.html" title="Codeforces 510C Fox And Names：从字典序约束到拓扑排序"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-11</div><div class="title">Codeforces 510C Fox And Names：从字典序约束到拓扑排序</div></div></a></div><div><a href="/esblog/70146.html" title="Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-12</div><div class="title">Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">66</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">115</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E9%A2%98%E8%B7%AF%E7%BA%BF%E4%B8%8E%E5%AE%98%E6%96%B9%E4%BF%A1%E6%81%AF"><span class="toc-text">三题路线与官方信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E4%BA%92%E7%9B%B8%E5%8F%AF%E8%BE%BE%E5%88%B0%E7%BC%A9%E7%82%B9"><span class="toc-text">从互相可达到缩点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E9%80%92%E5%BD%92-Kosaraju-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E8%AE%B0%E5%BD%95%E9%80%80%E5%87%BA%E9%A1%BA%E5%BA%8F"><span class="toc-text">非递归 Kosaraju 为什么要记录退出顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%A2%98-427C-%E6%AF%8F%E4%B8%AA%E5%88%86%E9%87%8F%E9%80%89%E4%B8%80%E4%B8%AA%E6%9C%80%E4%BD%8E%E8%B4%B9%E7%94%A8%E7%82%B9"><span class="toc-text">第一题 427C 每个分量选一个最低费用点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%88%E6%9C%80%E5%B0%8F%E8%B4%B9%E7%94%A8%EF%BC%8C%E5%86%8D%E6%9C%80%E5%B0%91%E7%AB%99%E7%82%B9"><span class="toc-text">先最小费用，再最少站点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%A2%98-999E-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%AD%90%E5%9B%BE%E7%9A%84%E6%BA%90%E5%90%84%E9%9C%80%E8%A6%81%E4%B8%80%E6%9D%A1%E6%96%B0%E8%B7%AF"><span class="toc-text">第二题 999E 未覆盖子图的源各需要一条新路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%95%B0%E5%89%A9%E4%BD%99%E5%9F%8E%E5%B8%82%E6%88%96%E5%8E%9F%E5%9B%BE%E9%9B%B6%E5%85%A5%E5%BA%A6%E7%82%B9"><span class="toc-text">为什么不数剩余城市或原图零入度点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0-1"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%A2%98-949C-%E6%9C%80%E5%B0%8F%E7%BB%B4%E6%8A%A4%E9%9B%86%E5%90%88%E6%98%AF%E4%B8%80%E4%B8%AA%E6%B1%87%E5%88%86%E9%87%8F"><span class="toc-text">第三题 949C 最小维护集合是一个汇分量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E4%B8%80%E6%AC%A1%E5%86%B2%E7%AA%81%E6%8E%A8%E5%87%BA%E8%BE%B9%E7%9A%84%E6%96%B9%E5%90%91"><span class="toc-text">从一次冲突推出边的方向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E4%BC%98%E6%80%A7%E4%B8%8D%E5%8F%AA%E6%98%AF%E2%80%9C%E6%B2%A1%E6%9C%89%E5%87%BA%E8%BE%B9%E5%B0%B1%E5%90%88%E6%B3%95%E2%80%9D"><span class="toc-text">最优性不只是“没有出边就合法”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0-2"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%BE%B9%E7%95%8C"><span class="toc-text">复杂度与实现边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E7%8B%AC%E7%AB%8B%E6%96%B9%E6%B3%95%E9%AA%8C%E8%AF%81%E8%80%8C%E4%B8%8D%E6%98%AF%E5%A4%8D%E5%86%99%E5%90%8C%E4%B8%80%E6%A8%A1%E6%9D%BF"><span class="toc-text">用独立方法验证而不是复写同一模板</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E4%B8%80%E6%AD%A5%E6%80%8E%E6%A0%B7%E4%B8%B2%E5%9B%9E%E8%B7%AF%E7%BA%BF"><span class="toc-text">下一步怎样串回路线</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/91842.html" title="海顿伦敦交响曲 从庄严引子到持续低音上的终曲">海顿伦敦交响曲 从庄严引子到持续低音上的终曲</a><time datetime="2026-10-02T02:10:00.000Z" title="发表于 2026-10-02 10:10:00">2026-10-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/75631.html" title="Codeforces 强连通分量三题 从互相可达到缩点后的源与汇">Codeforces 强连通分量三题 从互相可达到缩点后的源与汇</a><time datetime="2026-10-02T02:00:00.000Z" title="发表于 2026-10-02 10:00:00">2026-10-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/87216.html" title="贝多芬第三交响曲英雄 从两次重击到变奏终曲">贝多芬第三交响曲英雄 从两次重击到变奏终曲</a><time datetime="2026-09-30T02:10:00.000Z" title="发表于 2026-09-30 10:10:00">2026-09-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/69328.html" title="Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数">Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数</a><time datetime="2026-09-30T02:00:00.000Z" title="发表于 2026-09-30 10:00:00">2026-09-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/68429.html" title="从 embedding 到语义检索：向量相似度、召回与独立评测">从 embedding 到语义检索：向量相似度、召回与独立评测</a><time datetime="2026-09-29T03:00:00.000Z" title="发表于 2026-09-29 11:00:00">2026-09-29</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
