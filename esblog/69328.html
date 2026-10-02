@@ -1,0 +1,656 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用 1328E、1304E、519E 串起祖先关系、倍增距离、精确步数的奇偶性和树上中点计数，附三份完整 C++17、手算与独立暴力验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数">
+<meta property="og:url" content="https://eulersail.com/esblog/69328.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用 1328E、1304E、519E 串起祖先关系、倍增距离、精确步数的奇偶性和树上中点计数，附三份完整 C++17、手算与独立暴力验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-30T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-30T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="树">
+<meta property="article:tag" content="LCA">
+<meta property="article:tag" content="倍增">
+<meta property="article:tag" content="DFS序">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/69328.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-30 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">64</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">111</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-30T02:00:00.000Z" title="发表于 2026-09-30 10:00:00">2026-09-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-30T02:00:00.000Z" title="更新于 2026-09-30 10:00:00">2026-09-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>20分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>树上的查询不一定需要复杂数据结构。更重要的是先看清：询问的是一条根路径、两点之间的行走，还是一群满足距离关系的点。本文用三题逐层增加工具，最后把“枚举所有点”变成“找中点、减去两边”。</p>
+<p>学习顺序是 <strong>DFS 子树区间 → 倍增祖先与 LCA → 路径距离 → 奇偶性与分量计数</strong>。三份代码独立完整，均使用迭代遍历，避免长链触发递归栈风险。</p>
+<span id="more"></span>
+
+<h2 id="学习路线与题目边界"><a href="#学习路线与题目边界" class="headerlink" title="学习路线与题目边界"></a>学习路线与题目边界</h2><p>先读 <a href="/esblog/43827.html">树上 DFS 三题</a> 和 <a href="/esblog/70146.html">子树区间</a>，再进入本文；若目标是每个根的整体答案，可对照 <a href="/esblog/58631.html">换根 DP 三题</a>。LCA 不是换根 DP 的替代品，它主要回答固定树上两点的关系。</p>
+<p>以下题名、难度、原始标签与约束于 2026-09-30 从 Codeforces 官方题目页核对。难度是平台标记，不代表三题对所有人都严格递增。</p>
+<table>
+<thead>
+<tr>
+<th>官方题目</th>
+<th>难度</th>
+<th>官方标签</th>
+<th>本文抓手</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1328/E">1328E Tree Queries</a></td>
+<td>1900</td>
+<td>dfs and similar, graphs, trees</td>
+<td>全部上移一层后是否共链</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/1304/E">1304E 1-Trees and Queries</a></td>
+<td>2000</td>
+<td>data structures, dfs and similar, shortest paths, trees</td>
+<td>三种路线长度与奇偶性</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/519/E">519E A and B and Lecture Rooms</a></td>
+<td>2100</td>
+<td>binary search, data structures, dfs and similar, dp, trees</td>
+<td>中点两侧分量的补集</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>题目</th>
+<th>核心规模</th>
+<th>不能忽略的条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1328E</td>
+<td>2 ≤ n ≤ 200000；1 ≤ m ≤ 200000；所有询问点数之和 ≤ 200000</td>
+<td>根为 1；同一询问内顶点互异</td>
+</tr>
+<tr>
+<td>1304E</td>
+<td>3 ≤ n ≤ 100000；1 ≤ q ≤ 100000；1 ≤ k ≤ 1000000000</td>
+<td>新边连接不同且原本不相邻的点；可重复走边；询问独立</td>
+</tr>
+<tr>
+<td>519E</td>
+<td>1 ≤ n ≤ 100000；1 ≤ m ≤ 100000</td>
+<td>两个查询点允许相同；距离按边数计</td>
+</tr>
+</tbody></table>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;固定树与大量查询&quot;] --&gt; B[&quot;DFS 区间判祖先&quot;]
+  B --&gt; C[&quot;1328E 上移一层后共链&quot;]
+  A --&gt; D[&quot;倍增祖先与 LCA&quot;]
+  D --&gt; E[&quot;两点距离&quot;]
+  E --&gt; F[&quot;1304E 比较长度和奇偶性&quot;]
+  E --&gt; G[&quot;519E 找中点并减去分量&quot;]
+  </pre></div>
+
+<h2 id="第一题-1328E-把靠近路径改写为祖先关系"><a href="#第一题-1328E-把靠近路径改写为祖先关系" class="headerlink" title="第一题 1328E 把靠近路径改写为祖先关系"></a>第一题 1328E 把靠近路径改写为祖先关系</h2><h3 id="为什么只看父节点就够了"><a href="#为什么只看父节点就够了" class="headerlink" title="为什么只看父节点就够了"></a>为什么只看父节点就够了</h3><p>问题要求存在一条从根出发的路径，使每个给定点到这条路径的距离不超过 1。直接枚举路径终点，再逐个算距离，最坏会重复处理整棵树。</p>
+<p>令根的父节点仍为根，将每个查询点 v 换成 parent[v]。原条件等价于：<strong>这些父节点都在某条根路径上</strong>。</p>
+<p>必要性：若 v 在合法路径上，它的父节点也在路径上；若 v 不在路径上但与路径相邻，邻接的只能是 v 的父节点。假如邻接的是 v 的孩子，根到孩子的路径本来就经过 v，与“不在路径上”矛盾。</p>
+<p>充分性：若所有 parent[v] 都在路径上，每个原点 v 就在路径上或与路径相邻。上移不是要求真实移动顶点，而是把存在性条件换成更易检查的关系。</p>
+<h3 id="最深父节点决定唯一的候选链"><a href="#最深父节点决定唯一的候选链" class="headerlink" title="最深父节点决定唯一的候选链"></a>最深父节点决定唯一的候选链</h3><p>在上移后的点中选深度最大的 w。它们共处一条根路径，当且仅当每个点都是 w 的祖先。相同深度的两个不同点不能互为祖先，因此选谁都不会掩盖冲突。</p>
+<p>DFS 先序中，v 的子树恰好占据半开区间 [tin[v], tin[v]+size[v])。于是 v 是 w 的祖先，当且仅当 w 的进入编号落在该区间内。这里包含“自己是自己的祖先”。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;读取查询点&quot;] --&gt; B[&quot;各自替换为父节点&quot;]
+  B --&gt; C[&quot;选择最深的父节点 w&quot;]
+  C --&gt; D{&quot;所有父节点都是 w 的祖先&quot;}
+  D --&gt;|是| Y[&quot;YES 原点距离根到 w 的路径至多一条边&quot;]
+  D --&gt;|否| N[&quot;NO 出现无法放进同一根路径的分支&quot;]
+  </pre></div>
+
+<h3 id="手算一次分支冲突"><a href="#手算一次分支冲突" class="headerlink" title="手算一次分支冲突"></a>手算一次分支冲突</h3><p>自建树的边为 1—2、1—3、2—4、2—5、3—6，根为 1。</p>
+<table>
+<thead>
+<tr>
+<th>原查询点</th>
+<th>上移后的点</th>
+<th>最深点</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4、5</td>
+<td>2、2</td>
+<td>2</td>
+<td>YES，可取根到 2 的路径</td>
+</tr>
+<tr>
+<td>4、6</td>
+<td>2、3</td>
+<td>2 或 3</td>
+<td>NO，两条分支无法共链</td>
+</tr>
+<tr>
+<td>1、4、3</td>
+<td>1、2、1</td>
+<td>2</td>
+<td>YES，根留在根</td>
+</tr>
+<tr>
+<td>6</td>
+<td>3</td>
+<td>3</td>
+<td>YES，单点总可满足</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>实现细节</th>
+<th>不变量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>栈模拟 DFS，弹出时记录 tin</td>
+<td>一棵子树被完整访问后才轮到兄弟子树</td>
+</tr>
+<tr>
+<td>逆先序累计 size</td>
+<td>孩子的计数先加入父节点</td>
+</tr>
+<tr>
+<td>根的 parent 设为 1</td>
+<td>查询包含根时无需访问虚构的 0 号节点</td>
+</tr>
+<tr>
+<td>比较区间右端使用严格小于</td>
+<td>半开区间不包含下一个子树</td>
+</tr>
+</tbody></table>
+<h3 id="完整-C-17-实现"><a href="#完整-C-17-实现" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n, m;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">g</span>(n + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>, a, b; i &lt; n; ++i) &#123;</span><br><span class="line">        cin &gt;&gt; a &gt;&gt; b;</span><br><span class="line">        g[a].<span class="built_in">push_back</span>(b); g[b].<span class="built_in">push_back</span>(a);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">par</span><span class="params">(n + <span class="number">1</span>)</span>, <span class="title">dep</span><span class="params">(n + <span class="number">1</span>)</span>, <span class="title">tin</span><span class="params">(n + <span class="number">1</span>)</span>, <span class="title">sz</span><span class="params">(n + <span class="number">1</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; order, st&#123;<span class="number">1</span>&#125;;</span><br><span class="line">    par[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (!st.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">        <span class="type">int</span> v = st.<span class="built_in">back</span>(); st.<span class="built_in">pop_back</span>();</span><br><span class="line">        tin[v] = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(order.<span class="built_in">size</span>());</span><br><span class="line">        order.<span class="built_in">push_back</span>(v);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> u : g[v]) <span class="keyword">if</span> (u != par[v]) &#123;</span><br><span class="line">            par[u] = v; dep[u] = dep[v] + <span class="number">1</span>;</span><br><span class="line">            st.<span class="built_in">push_back</span>(u);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; --i) &#123;</span><br><span class="line">        <span class="type">int</span> v = order[i];</span><br><span class="line">        sz[par[v]] += sz[v];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (m--) &#123;</span><br><span class="line">        <span class="type">int</span> k; cin &gt;&gt; k;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">shifted</span><span class="params">(k)</span></span>;</span><br><span class="line">        <span class="type">int</span> deepest = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> &amp;v : shifted) &#123;</span><br><span class="line">            cin &gt;&gt; v; v = par[v];</span><br><span class="line">            <span class="keyword">if</span> (dep[v] &gt; dep[deepest]) deepest = v;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">bool</span> ok = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v : shifted)</span><br><span class="line">            <span class="keyword">if</span> (!(tin[v] &lt;= tin[deepest] &amp;&amp; tin[deepest] &lt; tin[v] + sz[v]))</span><br><span class="line">                ok = <span class="literal">false</span>;</span><br><span class="line">        cout &lt;&lt; (ok ? <span class="string">&quot;YES&quot;</span> : <span class="string">&quot;NO&quot;</span>) &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>预处理时间与空间均为 O(n)，所有查询时间为 O(Σk)。这题无需为“可能用到”而建立 O(n log n) 的 LCA 表。</p>
+<h2 id="共用工具-倍增祖先和最近公共祖先"><a href="#共用工具-倍增祖先和最近公共祖先" class="headerlink" title="共用工具 倍增祖先和最近公共祖先"></a>共用工具 倍增祖先和最近公共祖先</h2><p>第二、三题需要快速计算任意两点距离。若每次沿父指针逐步向上，长链上一次查询就会花 O(n)。</p>
+<p>定义 up[j][v] 为 v 的第 2^j 个祖先，深度 dep[1]&#x3D;0。根以上仍停在根。转移是 up[j][v]&#x3D;up[j−1][up[j−1][v]]，即跳两段相同长度。</p>
+<table>
+<thead>
+<tr>
+<th>要做的操作</th>
+<th>方法</th>
+<th>单次复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>向上跳 s 条边</td>
+<td>将 s 按二进制拆开</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>求 LCA(a,b)</td>
+<td>先抬平深度，再从大到小同时跳</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>求距离</td>
+<td>dep[a]+dep[b]−2dep[LCA(a,b)]</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>求子树大小</td>
+<td>按父先子后的遍历顺序逆序汇总</td>
+<td>全树 O(n)</td>
+</tr>
+</tbody></table>
+<p>LCA 同跳阶段只在两个 2^j 祖先不同时跳跃。此时双方仍严格位于最近公共祖先下方；大步都不能再跳后，两者的父节点就是 LCA。先处理抬平后两点重合的情况，否则祖先与后代的查询会出错。</p>
+<p>例如上面的六点树：LCA(4,5)&#x3D;2，距离为 2+2−2×1&#x3D;2；LCA(4,6)&#x3D;1，距离为 2+2−0&#x3D;4。向上跳 13 层则可拆成 8+4+1，并不需要循环走 13 次。</p>
+<p>代码中的共用 Tree 结构使用父先子后的迭代顺序构建深度和子树大小。<strong>这个顺序不用于 DFS 区间判定</strong>；第一题的 tin 必须来自真正的 DFS，不能用广度优先顺序冒充。</p>
+<h2 id="第二题-1304E-恰好走-k-步不等于最短路"><a href="#第二题-1304E-恰好走-k-步不等于最短路" class="headerlink" title="第二题 1304E 恰好走 k 步不等于最短路"></a>第二题 1304E 恰好走 k 步不等于最短路</h2><p>每个询问临时增加无向边 x—y，问能否从 a 走到 b，恰好使用 k 条边。这里允许重复经过点和边，所以研究的是行走，不是简单路径。新增边在下一次询问中不保留。</p>
+<h3 id="三个长度不能只留下最小值"><a href="#三个长度不能只留下最小值" class="headerlink" title="三个长度不能只留下最小值"></a>三个长度不能只留下最小值</h3><p>不必重新建图跑 BFS。只计算：</p>
+<table>
+<thead>
+<tr>
+<th>候选</th>
+<th>长度</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>d0</td>
+<td>dist(a,b)</td>
+<td>不使用新边</td>
+</tr>
+<tr>
+<td>d1</td>
+<td>dist(a,x)+1+dist(y,b)</td>
+<td>经 x 到 y 使用新边</td>
+</tr>
+<tr>
+<td>d2</td>
+<td>dist(a,y)+1+dist(x,b)</td>
+<td>经 y 到 x 使用新边</td>
+</tr>
+</tbody></table>
+<p>这三种路线都是真实可走的，即使两段树路径有重叠也没有关系。对于某个长度 d，只要 d≤k 且 k−d 为偶数，就可以沿一条边来回走若干次补足长度。n≥3 保证不会遇到无边可绕的单节点树。</p>
+<p>为什么这样也没有漏掉其他可能？加一条边后图中只有一个环。对任意合法行走，先去掉沿边往返的片段，每次删去 2 步；在唯一环上多绕两整圈也可删去，减少的长度仍为偶数。保留至多一次绕环后，新边至多使用一次，余下树上的绕行也都能按偶数步消去。对应的基础路线就是上述三种之一。因此至少存在一个候选，不长于原行走且同奇偶。</p>
+<p>也可以从奇偶理解：偶数长度的环不能改变树路径的奇偶；奇数长度的环能够改变奇偶，但绕到环上同样需要成本，不能只看 k 大不大。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;临时增加 x 与 y 之间的一条边&quot;] --&gt; B[&quot;用原树 LCA 计算 d0 d1 d2&quot;]
+  B --&gt; C[&quot;逐个检查 d 不大于 k&quot;]
+  C --&gt; D[&quot;再检查 k 与 d 奇偶相同&quot;]
+  D --&gt; E{&quot;至少一个候选满足&quot;}
+  E --&gt;|是| Y[&quot;YES 用两步往返补足&quot;]
+  E --&gt;|否| N[&quot;NO 长度或奇偶性不允许&quot;]
+  </pre></div>
+
+<h3 id="一条短链说明为什么要检查三个候选"><a href="#一条短链说明为什么要检查三个候选" class="headerlink" title="一条短链说明为什么要检查三个候选"></a>一条短链说明为什么要检查三个候选</h3><p>原树为 1—2—3—4—5，临时加入 1—3，查询 a&#x3D;1、b&#x3D;2。三个长度分别是 d0&#x3D;1、d1&#x3D;2、d2&#x3D;4。</p>
+<table>
+<thead>
+<tr>
+<th>k</th>
+<th>可用候选</th>
+<th>答案</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>d0&#x3D;1</td>
+<td>YES</td>
+<td>直接到达</td>
+</tr>
+<tr>
+<td>2</td>
+<td>d1&#x3D;2</td>
+<td>YES</td>
+<td>1→3→2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>d0&#x3D;1</td>
+<td>YES</td>
+<td>比直接路线多两步</td>
+</tr>
+<tr>
+<td>4</td>
+<td>d1&#x3D;2 或 d2&#x3D;4</td>
+<td>YES</td>
+<td>可补两步或直接选四步路线</td>
+</tr>
+</tbody></table>
+<p>若只取最短值 1，再检查奇偶，会错误拒绝 k&#x3D;2。另一个对照：加入 1—4、查询 1 到 3，三个长度为 2、2、6；k&#x3D;3 时全部不合格，虽然最短距离只有 2。</p>
+<h3 id="完整-C-17-实现-1"><a href="#完整-C-17-实现-1" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><p>下面包含完整倍增结构，可独立提交，不依赖上一份代码。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Tree</span> &#123;</span><br><span class="line">    <span class="type">int</span> n, lg;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; g, up;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; dep, sz;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Tree</span><span class="params">(<span class="type">int</span> size)</span> : n(size), lg(<span class="number">1</span>), g(n + <span class="number">1</span>),</span></span><br><span class="line"><span class="function">        dep(n + <span class="number">1</span>), sz(n + <span class="number">1</span>, <span class="number">1</span>) &#123;</span></span><br><span class="line">        <span class="keyword">while</span> ((<span class="number">1LL</span> &lt;&lt; lg) &lt;= n) ++lg;</span><br><span class="line">        up.<span class="built_in">assign</span>(lg, <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;(n + <span class="number">1</span>, <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123; g[a].<span class="built_in">push_back</span>(b); g[b].<span class="built_in">push_back</span>(a); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; order&#123;<span class="number">1</span>&#125;;</span><br><span class="line">        up[<span class="number">0</span>][<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; order.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">            <span class="type">int</span> v = order[i];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> u : g[v]) <span class="keyword">if</span> (u != up[<span class="number">0</span>][v]) &#123;</span><br><span class="line">                up[<span class="number">0</span>][u] = v;</span><br><span class="line">                dep[u] = dep[v] + <span class="number">1</span>;</span><br><span class="line">                order.<span class="built_in">push_back</span>(u);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt; lg; ++j)</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">1</span>; v &lt;= n; ++v)</span><br><span class="line">                up[j][v] = up[j - <span class="number">1</span>][up[j - <span class="number">1</span>][v]];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; --i) &#123;</span><br><span class="line">            <span class="type">int</span> v = order[i];</span><br><span class="line">            sz[up[<span class="number">0</span>][v]] += sz[v];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">jump</span><span class="params">(<span class="type">int</span> v, <span class="type">int</span> steps)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; lg; ++j)</span><br><span class="line">            <span class="keyword">if</span> ((steps &gt;&gt; j) &amp; <span class="number">1</span>) v = up[j][v];</span><br><span class="line">        <span class="keyword">return</span> v;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">lca</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (dep[a] &lt; dep[b]) <span class="built_in">swap</span>(a, b);</span><br><span class="line">        a = <span class="built_in">jump</span>(a, dep[a] - dep[b]);</span><br><span class="line">        <span class="keyword">if</span> (a == b) <span class="keyword">return</span> a;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = lg - <span class="number">1</span>; j &gt;= <span class="number">0</span>; --j)</span><br><span class="line">            <span class="keyword">if</span> (up[j][a] != up[j][b]) &#123;</span><br><span class="line">                a = up[j][a]; b = up[j][b];</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">return</span> up[<span class="number">0</span>][a];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">dist</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> dep[a] + dep[b] - <span class="number">2</span> * dep[<span class="built_in">lca</span>(a, b)];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n; cin &gt;&gt; n;</span><br><span class="line">    <span class="function">Tree <span class="title">t</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>, a, b; i &lt; n; ++i) &#123;</span><br><span class="line">        cin &gt;&gt; a &gt;&gt; b; t.<span class="built_in">add</span>(a, b);</span><br><span class="line">    &#125;</span><br><span class="line">    t.<span class="built_in">build</span>();</span><br><span class="line">    <span class="type">int</span> q; cin &gt;&gt; q;</span><br><span class="line">    <span class="keyword">while</span> (q--) &#123;</span><br><span class="line">        <span class="type">int</span> x, y, a, b;</span><br><span class="line">        <span class="type">long</span> <span class="type">long</span> k;</span><br><span class="line">        cin &gt;&gt; x &gt;&gt; y &gt;&gt; a &gt;&gt; b &gt;&gt; k;</span><br><span class="line">        array&lt;<span class="type">long</span> <span class="type">long</span>, 3&gt; length&#123;</span><br><span class="line">            t.<span class="built_in">dist</span>(a, b),</span><br><span class="line">            t.<span class="built_in">dist</span>(a, x) + <span class="number">1LL</span> + t.<span class="built_in">dist</span>(y, b),</span><br><span class="line">            t.<span class="built_in">dist</span>(a, y) + <span class="number">1LL</span> + t.<span class="built_in">dist</span>(x, b)</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">bool</span> ok = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">long</span> <span class="type">long</span> d : length)</span><br><span class="line">            <span class="keyword">if</span> (d &lt;= k &amp;&amp; (k - d) % <span class="number">2</span> == <span class="number">0</span>) ok = <span class="literal">true</span>;</span><br><span class="line">        cout &lt;&lt; (ok ? <span class="string">&quot;YES&quot;</span> : <span class="string">&quot;NO&quot;</span>) &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>预处理 O(n log n)，每个询问只做常数次 LCA，总时间 O((n+q)log n)，空间 O(n log n)。k 最大为 10^9，代码用 long long 保存候选与差值，避免后续扩展约束时混用整数类型。</p>
+<h2 id="第三题-519E-等距点是中点两侧之外的所有点"><a href="#第三题-519E-等距点是中点两侧之外的所有点" class="headerlink" title="第三题 519E 等距点是中点两侧之外的所有点"></a>第三题 519E 等距点是中点两侧之外的所有点</h2><p>给定 a、b，要数出多少顶点 z 满足 dist(z,a)&#x3D;dist(z,b)。逐点做两次距离查询仍要 O(n log n)，无法承受十万次询问。</p>
+<h3 id="从路径投影证明中点条件"><a href="#从路径投影证明中点条件" class="headerlink" title="从路径投影证明中点条件"></a>从路径投影证明中点条件</h3><p>树上任意 z 通向 a、b 的路径，会在 a—b 路径上的某个点 p 分开。两个距离都包含 dist(z,p)，相减后只剩 dist(p,a)−dist(p,b)。所以 z 是否等距，只取决于它接入 a—b 路径的位置是不是正中点。</p>
+<p>先分三种情况：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>结论</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a&#x3D;b</td>
+<td>n</td>
+<td>每个点到同一个端点的距离当然相同</td>
+</tr>
+<tr>
+<td>dist(a,b) 为奇数</td>
+<td>0</td>
+<td>中点落在边内，不是顶点</td>
+</tr>
+<tr>
+<td>正的偶数距离</td>
+<td>找到顶点中点 mid</td>
+<td>保留接入点为 mid 的所有分支</td>
+</tr>
+</tbody></table>
+<p>令距离 d&#x3D;2h。从中点沿路径向 a、b 各走一步，会进入两个不同分量；这些点分别离一个端点更近，都应排除。其余点包括中点自身与旁支，正好等距。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;输入 a 和 b&quot;] --&gt; B{&quot;a 与 b 相同&quot;}
+  B --&gt;|是| N[&quot;答案 n&quot;]
+  B --&gt;|否| C{&quot;路径长度为奇数&quot;}
+  C --&gt;|是| Z[&quot;答案 0&quot;]
+  C --&gt;|否| D[&quot;定位路径中点&quot;]
+  D --&gt; E{&quot;两端深度相同&quot;}
+  E --&gt;|是| F[&quot;总点数减去中点下方两棵子树&quot;]
+  E --&gt;|否| G[&quot;中点子树减去朝更深端点的子树&quot;]
+  </pre></div>
+
+<h3 id="为什么有两条计数公式"><a href="#为什么有两条计数公式" class="headerlink" title="为什么有两条计数公式"></a>为什么有两条计数公式</h3><p>若 dep[a]&#x3D;dep[b]，中点就是它们的 LCA。令 ca&#x3D;jump(a,h−1)、cb&#x3D;jump(b,h−1)，它们是中点朝两个端点方向的孩子。答案为 n−size[ca]−size[cb]。中点上方的整块区域也等距，因此不能只在中点的子树中数。</p>
+<p>若深度不同，交换后让 a 更深。中点必在从 a 向上走 h 步的位置，且位于 LCA 的严格下方。令 mid&#x3D;jump(a,h)、child&#x3D;jump(a,h−1)。朝 b 的分量就是 mid 子树之外的区域；朝 a 的分量是 child 子树。剩下 size[mid]−size[child]。</p>
+<table>
+<thead>
+<tr>
+<th>六点树上的查询</th>
+<th>中点或距离</th>
+<th>手算结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4、5</td>
+<td>中点 2，扣掉子树 4 和 5</td>
+<td>6−1−1&#x3D;4，点为 1、2、3、6</td>
+</tr>
+<tr>
+<td>4、6</td>
+<td>中点 1，扣掉子树 2 和 3</td>
+<td>6−3−2&#x3D;1，只剩 1</td>
+</tr>
+<tr>
+<td>1、4</td>
+<td>中点 2，深度不同</td>
+<td>size[2]−size[4]&#x3D;3−1&#x3D;2，点为 2、5</td>
+</tr>
+<tr>
+<td>2、6</td>
+<td>距离 3</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3、3</td>
+<td>相同点</td>
+<td>6</td>
+</tr>
+</tbody></table>
+<h3 id="完整-C-17-实现-2"><a href="#完整-C-17-实现-2" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Tree</span> &#123;</span><br><span class="line">    <span class="type">int</span> n, lg;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; g, up;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; dep, sz;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Tree</span><span class="params">(<span class="type">int</span> size)</span> : n(size), lg(<span class="number">1</span>), g(n + <span class="number">1</span>),</span></span><br><span class="line"><span class="function">        dep(n + <span class="number">1</span>), sz(n + <span class="number">1</span>, <span class="number">1</span>) &#123;</span></span><br><span class="line">        <span class="keyword">while</span> ((<span class="number">1LL</span> &lt;&lt; lg) &lt;= n) ++lg;</span><br><span class="line">        up.<span class="built_in">assign</span>(lg, <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;(n + <span class="number">1</span>, <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123; g[a].<span class="built_in">push_back</span>(b); g[b].<span class="built_in">push_back</span>(a); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; order&#123;<span class="number">1</span>&#125;;</span><br><span class="line">        up[<span class="number">0</span>][<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; order.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">            <span class="type">int</span> v = order[i];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> u : g[v]) <span class="keyword">if</span> (u != up[<span class="number">0</span>][v]) &#123;</span><br><span class="line">                up[<span class="number">0</span>][u] = v;</span><br><span class="line">                dep[u] = dep[v] + <span class="number">1</span>;</span><br><span class="line">                order.<span class="built_in">push_back</span>(u);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">1</span>; j &lt; lg; ++j)</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">1</span>; v &lt;= n; ++v)</span><br><span class="line">                up[j][v] = up[j - <span class="number">1</span>][up[j - <span class="number">1</span>][v]];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; --i) &#123;</span><br><span class="line">            <span class="type">int</span> v = order[i];</span><br><span class="line">            sz[up[<span class="number">0</span>][v]] += sz[v];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">jump</span><span class="params">(<span class="type">int</span> v, <span class="type">int</span> steps)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; lg; ++j)</span><br><span class="line">            <span class="keyword">if</span> ((steps &gt;&gt; j) &amp; <span class="number">1</span>) v = up[j][v];</span><br><span class="line">        <span class="keyword">return</span> v;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">lca</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (dep[a] &lt; dep[b]) <span class="built_in">swap</span>(a, b);</span><br><span class="line">        a = <span class="built_in">jump</span>(a, dep[a] - dep[b]);</span><br><span class="line">        <span class="keyword">if</span> (a == b) <span class="keyword">return</span> a;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = lg - <span class="number">1</span>; j &gt;= <span class="number">0</span>; --j)</span><br><span class="line">            <span class="keyword">if</span> (up[j][a] != up[j][b]) &#123;</span><br><span class="line">                a = up[j][a]; b = up[j][b];</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">return</span> up[<span class="number">0</span>][a];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">dist</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> dep[a] + dep[b] - <span class="number">2</span> * dep[<span class="built_in">lca</span>(a, b)];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n; cin &gt;&gt; n;</span><br><span class="line">    <span class="function">Tree <span class="title">t</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>, a, b; i &lt; n; ++i) &#123;</span><br><span class="line">        cin &gt;&gt; a &gt;&gt; b; t.<span class="built_in">add</span>(a, b);</span><br><span class="line">    &#125;</span><br><span class="line">    t.<span class="built_in">build</span>();</span><br><span class="line">    <span class="type">int</span> q; cin &gt;&gt; q;</span><br><span class="line">    <span class="keyword">while</span> (q--) &#123;</span><br><span class="line">        <span class="type">int</span> a, b; cin &gt;&gt; a &gt;&gt; b;</span><br><span class="line">        <span class="keyword">if</span> (a == b) &#123; cout &lt;&lt; n &lt;&lt; <span class="string">&#x27;\n&#x27;</span>; <span class="keyword">continue</span>; &#125;</span><br><span class="line">        <span class="type">int</span> d = t.<span class="built_in">dist</span>(a, b);</span><br><span class="line">        <span class="keyword">if</span> (d % <span class="number">2</span>) &#123; cout &lt;&lt; <span class="number">0</span> &lt;&lt; <span class="string">&#x27;\n&#x27;</span>; <span class="keyword">continue</span>; &#125;</span><br><span class="line">        <span class="type">int</span> half = d / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (t.dep[a] == t.dep[b]) &#123;</span><br><span class="line">            <span class="type">int</span> ca = t.<span class="built_in">jump</span>(a, half - <span class="number">1</span>);</span><br><span class="line">            <span class="type">int</span> cb = t.<span class="built_in">jump</span>(b, half - <span class="number">1</span>);</span><br><span class="line">            cout &lt;&lt; n - t.sz[ca] - t.sz[cb] &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (t.dep[a] &lt; t.dep[b]) <span class="built_in">swap</span>(a, b);</span><br><span class="line">            <span class="type">int</span> mid = t.<span class="built_in">jump</span>(a, half);</span><br><span class="line">            <span class="type">int</span> child = t.<span class="built_in">jump</span>(a, half - <span class="number">1</span>);</span><br><span class="line">            cout &lt;&lt; t.sz[mid] - t.sz[child] &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>预处理 O(n log n)，每次查询 O(log n)，空间 O(n log n)。根可以任取，因为无根树上的距离和等距关系不会因预处理根改变；两条公式只是采用根为 1 时的子树表达。</p>
+<h2 id="边界清单与独立验证"><a href="#边界清单与独立验证" class="headerlink" title="边界清单与独立验证"></a>边界清单与独立验证</h2><table>
+<thead>
+<tr>
+<th>容易出错的地方</th>
+<th>后果</th>
+<th>检查方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>把 BFS 顺序当 DFS 先序</td>
+<td>子树区间混进其他分支</td>
+<td>让兄弟各自带孩子</td>
+</tr>
+<tr>
+<td>1328E 检查原点必须共链</td>
+<td>误拒绝合法的相邻旁支</td>
+<td>查询兄弟叶子</td>
+</tr>
+<tr>
+<td>1304E 只看最短候选</td>
+<td>丢失另一个奇偶类</td>
+<td>三角环上的二步查询</td>
+</tr>
+<tr>
+<td>1304E 永久加入新边</td>
+<td>下一询问不再是题目规定的图</td>
+<td>同一原树切换不同新边</td>
+</tr>
+<tr>
+<td>519E 漏掉相同端点</td>
+<td>h−1 变成负数</td>
+<td>查询 a&#x3D;a，包括 n&#x3D;1</td>
+</tr>
+<tr>
+<td>519E 相同深度只数中点子树</td>
+<td>漏掉中点上方的等距点</td>
+<td>查询同一深层父节点的孩子</td>
+</tr>
+<tr>
+<td>用递归遍历十万级长链</td>
+<td>可能栈溢出</td>
+<td>极限长链运行</td>
+</tr>
+<tr>
+<td>把边数与点数混用</td>
+<td>中点偏移一格</td>
+<td>距离 2 的最小非平凡查询</td>
+</tr>
+</tbody></table>
+<p>专项程序从本文抽取三段 C++17，使用 -O2 -Wall -Wextra -pedantic 编译。参考答案不使用文章的 LCA 或计数公式：</p>
+<p>本次三份程序均无警告编译，通过 744 次执行和 581,896 个查询结果核验；其中 246 棵小树包含 1 至 5 个点的全部标号树及固定种子的随机树，另有最大规模链、星形树和最大步数测试。</p>
+<table>
+<thead>
+<tr>
+<th>题目</th>
+<th>独立参考方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1328E</td>
+<td>枚举每个路径终点，显式构造根路径，再检查每个查询点到路径的最小 BFS 距离</td>
+</tr>
+<tr>
+<td>1304E</td>
+<td>临时建图，逐步扩展恰好第 t 步可到达的顶点集合</td>
+</tr>
+<tr>
+<td>519E</td>
+<td>从每个点 BFS，逐个比较到两个端点的距离</td>
+</tr>
+<tr>
+<td>极限规模</td>
+<td>链与星形的闭式答案，以及最大 k 的奇偶边界</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node tests/verify-tree-queries-three-article.cjs</span><br></pre></td></tr></table></figure>
+
+<p>从这三题带走的不是三条孤立公式：先确定“可替代的条件”，再选择祖先判断或 LCA；最后把树的唯一通路转成奇偶约束或分量计数。回到 <a href="/algorithms/">算法练习路径</a>，可以继续比较 <a href="/esblog/46872.html">并查集离线查询</a> 与 <a href="/esblog/65042.html">线段树区间摘要</a>，分清不同查询模型需要维护的信息。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/69328.html">https://eulersail.com/esblog/69328.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E6%A0%91/">树</a><a class="post-meta__tags" href="/tags/LCA/">LCA</a><a class="post-meta__tags" href="/tags/%E5%80%8D%E5%A2%9E/">倍增</a><a class="post-meta__tags" href="/tags/DFS%E5%BA%8F/">DFS序</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/87216.html" title="贝多芬第三交响曲英雄 从两次重击到变奏终曲"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">贝多芬第三交响曲英雄 从两次重击到变奏终曲</div></div></a></div><div class="next-post pull-right"><a href="/esblog/68429.html" title="从 embedding 到语义检索：向量相似度、召回与独立评测"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">从 embedding 到语义检索：向量相似度、召回与独立评测</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/70146.html" title="Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-12</div><div class="title">Codeforces 1006E Military Problem：树上 DFS、先序序列与子树区间</div></div></a></div><div><a href="/esblog/43827.html" title="Codeforces 树上 DFS 三题：深度、路径状态与子树贡献"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-14</div><div class="title">Codeforces 树上 DFS 三题：深度、路径状态与子树贡献</div></div></a></div><div><a href="/esblog/46872.html" title="Codeforces 并查集三题：群组、语言与离线路径查询"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="title">Codeforces 并查集三题：群组、语言与离线路径查询</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">64</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">111</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E4%B8%8E%E9%A2%98%E7%9B%AE%E8%BE%B9%E7%95%8C"><span class="toc-text">学习路线与题目边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%A2%98-1328E-%E6%8A%8A%E9%9D%A0%E8%BF%91%E8%B7%AF%E5%BE%84%E6%94%B9%E5%86%99%E4%B8%BA%E7%A5%96%E5%85%88%E5%85%B3%E7%B3%BB"><span class="toc-text">第一题 1328E 把靠近路径改写为祖先关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AA%E7%9C%8B%E7%88%B6%E8%8A%82%E7%82%B9%E5%B0%B1%E5%A4%9F%E4%BA%86"><span class="toc-text">为什么只看父节点就够了</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E6%B7%B1%E7%88%B6%E8%8A%82%E7%82%B9%E5%86%B3%E5%AE%9A%E5%94%AF%E4%B8%80%E7%9A%84%E5%80%99%E9%80%89%E9%93%BE"><span class="toc-text">最深父节点决定唯一的候选链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%8B%E7%AE%97%E4%B8%80%E6%AC%A1%E5%88%86%E6%94%AF%E5%86%B2%E7%AA%81"><span class="toc-text">手算一次分支冲突</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B1%E7%94%A8%E5%B7%A5%E5%85%B7-%E5%80%8D%E5%A2%9E%E7%A5%96%E5%85%88%E5%92%8C%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88"><span class="toc-text">共用工具 倍增祖先和最近公共祖先</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%A2%98-1304E-%E6%81%B0%E5%A5%BD%E8%B5%B0-k-%E6%AD%A5%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%9C%80%E7%9F%AD%E8%B7%AF"><span class="toc-text">第二题 1304E 恰好走 k 步不等于最短路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E4%B8%AA%E9%95%BF%E5%BA%A6%E4%B8%8D%E8%83%BD%E5%8F%AA%E7%95%99%E4%B8%8B%E6%9C%80%E5%B0%8F%E5%80%BC"><span class="toc-text">三个长度不能只留下最小值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E6%9D%A1%E7%9F%AD%E9%93%BE%E8%AF%B4%E6%98%8E%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%A3%80%E6%9F%A5%E4%B8%89%E4%B8%AA%E5%80%99%E9%80%89"><span class="toc-text">一条短链说明为什么要检查三个候选</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0-1"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%A2%98-519E-%E7%AD%89%E8%B7%9D%E7%82%B9%E6%98%AF%E4%B8%AD%E7%82%B9%E4%B8%A4%E4%BE%A7%E4%B9%8B%E5%A4%96%E7%9A%84%E6%89%80%E6%9C%89%E7%82%B9"><span class="toc-text">第三题 519E 等距点是中点两侧之外的所有点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E8%B7%AF%E5%BE%84%E6%8A%95%E5%BD%B1%E8%AF%81%E6%98%8E%E4%B8%AD%E7%82%B9%E6%9D%A1%E4%BB%B6"><span class="toc-text">从路径投影证明中点条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E4%B8%A4%E6%9D%A1%E8%AE%A1%E6%95%B0%E5%85%AC%E5%BC%8F"><span class="toc-text">为什么有两条计数公式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0-2"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%B8%85%E5%8D%95%E4%B8%8E%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81"><span class="toc-text">边界清单与独立验证</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/87216.html" title="贝多芬第三交响曲英雄 从两次重击到变奏终曲">贝多芬第三交响曲英雄 从两次重击到变奏终曲</a><time datetime="2026-09-30T02:10:00.000Z" title="发表于 2026-09-30 10:10:00">2026-09-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/69328.html" title="Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数">Codeforces 树上查询三题 从祖先区间到 LCA 与等距点计数</a><time datetime="2026-09-30T02:00:00.000Z" title="发表于 2026-09-30 10:00:00">2026-09-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/68429.html" title="从 embedding 到语义检索：向量相似度、召回与独立评测">从 embedding 到语义检索：向量相似度、召回与独立评测</a><time datetime="2026-09-29T03:00:00.000Z" title="发表于 2026-09-29 11:00:00">2026-09-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86425.html" title="门德尔松《意大利交响曲》：四种步伐为何走向小调终点">门德尔松《意大利交响曲》：四种步伐为何走向小调终点</a><time datetime="2026-09-28T02:05:00.000Z" title="发表于 2026-09-28 10:05:00">2026-09-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/52369.html" title="Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶">Codeforces 序列计数三题：树状数组、递减三元组与逆序奇偶</a><time datetime="2026-09-28T02:00:00.000Z" title="发表于 2026-09-28 10:00:00">2026-09-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
