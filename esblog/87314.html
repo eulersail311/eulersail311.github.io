@@ -1,0 +1,674 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用 455B、706D 和 842D 理解 Trie 如何压缩公共前缀，并把字符选择、动态最大异或与累计异或后的 MEX 统一成树上的逐层决策，附正确性证明、手算、三份 C++17 与独立随机验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX">
+<meta property="og:url" content="https://eulersail.com/esblog/87314.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用 455B、706D 和 842D 理解 Trie 如何压缩公共前缀，并把字符选择、动态最大异或与累计异或后的 MEX 统一成树上的逐层决策，附正确性证明、手算、三份 C++17 与独立随机验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-04T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-04T04:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="字符串">
+<meta property="article:tag" content="位运算">
+<meta property="article:tag" content="Trie">
+<meta property="article:tag" content="博弈">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/87314.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-04 12:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">125</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-04T04:00:00.000Z" title="发表于 2026-10-04 12:00:00">2026-10-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-04T04:00:00.000Z" title="更新于 2026-10-04 12:00:00">2026-10-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>19分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>Trie 常被翻译成字典树，但“存一批单词”只是它最直观的外观。更本质的理解是：<strong>把所有对象按前缀合并，并在每一层只保留下一步可能走向哪里。</strong> 前缀可以是字符，也可以是整数从高到低的二进制位。</p>
+<p>这一篇用三道题逐步改变“沿前缀走”的目标：先在字符 Trie 上做胜负博弈，再维护一个可增删的二进制多重集合，最后在整体异或不断累积时寻找最小缺失值。重点不是背三个模板，而是分清节点摘要、逐层贪心成立的条件，以及重复元素是否应该计数。</p>
+<span id="more"></span>
+
+<h2 id="三道题分别多要求什么"><a href="#三道题分别多要求什么" class="headerlink" title="三道题分别多要求什么"></a>三道题分别多要求什么</h2><p>题名、难度、标签与约束于 2026-10-04 通过 Codeforces 官方题目页核对。下表只概括算法任务，不复刻题面叙事。</p>
+<table>
+<thead>
+<tr>
+<th>题目与官方入口</th>
+<th>难度</th>
+<th>主要约束</th>
+<th>Trie 中保存什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/455/B">455B A Lot of Games</a></td>
+<td>1900</td>
+<td>n ≤ 10^5，k ≤ 10^9；总字符数 ≤ 10^5</td>
+<td>26 个字符后继、两类胜负状态</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/706/D">706D Vasiliy’s Multiset</a></td>
+<td>1800</td>
+<td>q ≤ 2×10^5，1 ≤ x ≤ 10^9</td>
+<td>0&#x2F;1 后继、经过节点的出现次数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/842/D">842D Vitya and Strange Lesson</a></td>
+<td>2000</td>
+<td>n,m ≤ 3×10^5，0 ≤ a_i,x ≤ 3×10^5</td>
+<td>0&#x2F;1 后继、子树中的不同值数量</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>题号</th>
+<th>官方标签</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>455B</td>
+<td>dfs and similar、dp、games、implementation、strings、trees</td>
+</tr>
+<tr>
+<td>706D</td>
+<td>binary search、bitmasks、data structures、trees</td>
+</tr>
+<tr>
+<td>842D</td>
+<td>binary search、data structures</td>
+</tr>
+</tbody></table>
+<p>官方标签说明可能用到的思想，并不要求实现逐项对应。本篇三份程序都只使用确定性数组 Trie。</p>
+<h2 id="Trie-压缩的是共同决策前缀"><a href="#Trie-压缩的是共同决策前缀" class="headerlink" title="Trie 压缩的是共同决策前缀"></a>Trie 压缩的是共同决策前缀</h2><p>把单词 <code>ab</code>、<code>ac</code>、<code>b</code> 插入 Trie 时，<code>ab</code> 与 <code>ac</code> 的第一个字符相同，所以共用根到 <code>a</code> 的边；到第二层才分叉。节点不必保存整段前缀，因为从根走来的边已经唯一确定它。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  R[&quot;根：空前缀&quot;] --&gt; A[&quot;a&quot;]
+  R --&gt; B[&quot;b&quot;]
+  A --&gt; AB[&quot;ab&quot;]
+  A --&gt; AC[&quot;ac&quot;]
+  AB --&gt; X[&quot;无后继&quot;]
+  AC --&gt; Y[&quot;无后继&quot;]
+  B --&gt; Z[&quot;无后继&quot;]
+  </pre></div>
+
+<p>如果对象是非负整数，就把“下一个字符”换成“下一位”。从最高位向最低位建二进制 Trie 后，同一子树中的数具有相同高位前缀。于是很多目标都能逐位决定：高位一旦更优，低位怎样变化都无法推翻它。</p>
+<p>但三题需要的节点摘要不同：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>节点摘要</th>
+<th>为什么足够</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>字符串博弈</td>
+<td>当前行动者能否达到两种终局</td>
+<td>后续只取决于可走的孩子状态</td>
+</tr>
+<tr>
+<td>动态最大异或</td>
+<td>子树内元素出现次数</td>
+<td>删除后要判断分支是否仍有元素</td>
+</tr>
+<tr>
+<td>异或后 MEX</td>
+<td>子树内不同值数量</td>
+<td>要判断一个完整值域是否已经填满</td>
+</tr>
+</tbody></table>
+<p>这也是使用 Trie 前最重要的问题：共享前缀之后，未来查询究竟需要知道数量、最值、终止标记，还是某种动态规划状态？</p>
+<h2 id="第一题-455B：一套胜负状态不够"><a href="#第一题-455B：一套胜负状态不够" class="headerlink" title="第一题 455B：一套胜负状态不够"></a>第一题 455B：一套胜负状态不够</h2><p>两名玩家从空串开始轮流追加字符，追加后仍须是至少一个给定字符串的前缀。无法继续的人输掉这一局。共进行 k 局，上一局的失败者在下一局先手，最终只看第 k 局的胜者。</p>
+<p>单局游戏天然落在字符 Trie 上：当前字符串就是一个节点，可选操作就是走向某个孩子，叶子表示无路可走。若只问一局，常规状态 <code>win[v]</code> 已经足够：</p>
+<ul>
+<li>叶子没有合法操作，所以 <code>win[v]=false</code>；</li>
+<li>非叶节点只要存在一个孩子 <code>u</code> 满足 <code>win[u]=false</code>，当前玩家就能把对手送进必败态，因此 <code>win[v]=true</code>。</li>
+</ul>
+<p>问题在于多局之间由失败者取得下一局先手。仅知道普通单局的胜负，不足以描述“输掉当前局，反而取得下一局先手”的情况。还要对同一棵树计算第二个终局条件 <code>lose[v]</code>：把叶子视为 <code>true</code>，其余节点仍执行 <code>存在孩子 u 使 !lose[u]</code>。它表示在“无法移动者获胜”的反向终局规则下，当前行动者是否必胜。</p>
+<p>两套状态分别对应两种终局收益；每一套都假设对手尽力阻止当前玩家的目标。后面会证明，多局之间的衔接恰好只需要这两种叶子取值。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;从叶子向根计算&quot;] --&gt; B[&quot;win：叶子为 false&quot;]
+  A --&gt; C[&quot;lose：叶子为 true&quot;]
+  B --&gt; D[&quot;父状态 &#x3D; 存在一个取反后为真的孩子&quot;]
+  C --&gt; D
+  D --&gt; E{&quot;根的 win &#x2F; lose&quot;}
+  E --&gt;|&quot;false &#x2F; 任意&quot;| F[&quot;多局状态始终为 false&quot;]
+  E --&gt;|&quot;true &#x2F; true&quot;| G[&quot;多局状态始终为 true&quot;]
+  E --&gt;|&quot;true &#x2F; false&quot;| H[&quot;多局状态交替：看 k 奇偶&quot;]
+  </pre></div>
+
+<h3 id="三种根状态怎样决定答案"><a href="#三种根状态怎样决定答案" class="headerlink" title="三种根状态怎样决定答案"></a>三种根状态怎样决定答案</h3><table>
+<thead>
+<tr>
+<th><code>win[root]</code></th>
+<th><code>lose[root]</code></th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>false</td>
+<td>任意</td>
+<td>第一局先手必败，之后也无法扭转最终控制，输出 <code>Second</code></td>
+</tr>
+<tr>
+<td>true</td>
+<td>true</td>
+<td>剩余局数怎样变化，根状态都为真，输出 <code>First</code></td>
+</tr>
+<tr>
+<td>true</td>
+<td>false</td>
+<td>多局根状态随局数交替；k 为奇数时 <code>First</code>，否则 <code>Second</code></td>
+</tr>
+</tbody></table>
+<p><code>win=false</code> 时，无论 <code>lose</code> 是真是假都输出 <code>Second</code>，因此不必再拆分这两种情况。</p>
+<p>以只有字符串 <code>ab</code> 为例，每局必走两步，先手无法继续而输掉该局；失败者下一局仍先手，所以初始先手每局都会输。只有字符串 <code>a</code> 时则相反：每局先手都赢，失败者接任下一局先手，最终胜者才随 k 的奇偶交替。</p>
+<table>
+<thead>
+<tr>
+<th>手算字符串集合</th>
+<th>根的 win</th>
+<th>根的 lose</th>
+<th>k&#x3D;1</th>
+<th>k&#x3D;2</th>
+<th>k&#x3D;3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&#123;ab&#125;</code></td>
+<td>false</td>
+<td>true</td>
+<td>Second</td>
+<td>Second</td>
+<td>Second</td>
+</tr>
+<tr>
+<td><code>&#123;a&#125;</code></td>
+<td>true</td>
+<td>false</td>
+<td>First</td>
+<td>Second</td>
+<td>First</td>
+</tr>
+<tr>
+<td><code>&#123;a, bb&#125;</code></td>
+<td>true</td>
+<td>true</td>
+<td>First</td>
+<td>First</td>
+<td>First</td>
+</tr>
+</tbody></table>
+<h3 id="正确性证明"><a href="#正确性证明" class="headerlink" title="正确性证明"></a>正确性证明</h3><p>对节点到叶子的最大距离做归纳。叶子无合法移动，第一套终局取值为假，第二套终局取值为真，符合定义。假设所有孩子状态正确，当前玩家选择一个孩子后双方身份交换，所以该选择能达到目标，当且仅当孩子状态为假；存在至少一个这样的选择时父状态为真。因此两套递推都正确。</p>
+<p>再令 F(t) 表示从根开始、还有 t 局时，当前先手能否保证赢得最后一局。只有一局时，F(1)&#x3D;win[root]。当 t&gt;1，本局走到叶子后，无法移动的人输掉本局，但他会成为下一局先手，所以这个叶子对“当前行动者”的最终收益恰好是 F(t−1)。</p>
+<p>如果 F(t−1)&#x3D;false，所有叶子取 false，整棵树的计算就是 win；如果 F(t−1)&#x3D;true，所有叶子取 true，计算就是 lose。因此有精确递推：</p>
+<p><code>F(t) = F(t−1) ? lose[root] : win[root]</code>。</p>
+<p>由此可得：win 为 false 时 F 始终为 false；win、lose 均为 true 时 F 始终为 true；win 为 true 且 lose 为 false 时 F 从 true 开始交替。这证明了上表三种结论，无需模拟最多十亿局。</p>
+<h3 id="完整-C-17-实现"><a href="#完整-C-17-实现" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;array&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">    array&lt;<span class="type">int</span>, 26&gt; next&#123;&#125;;</span><br><span class="line">    <span class="type">bool</span> win = <span class="literal">false</span>;</span><br><span class="line">    <span class="type">bool</span> lose = <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">Node</span>() &#123; next.<span class="built_in">fill</span>(<span class="number">-1</span>); &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> k;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; k;</span><br><span class="line">    <span class="function">vector&lt;Node&gt; <span class="title">trie</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        string s;</span><br><span class="line">        cin &gt;&gt; s;</span><br><span class="line">        <span class="type">int</span> node = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">char</span> ch : s) &#123;</span><br><span class="line">            <span class="type">int</span> edge = ch - <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line">            <span class="keyword">if</span> (trie[node].next[edge] == <span class="number">-1</span>) &#123;</span><br><span class="line">                trie[node].next[edge] = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(trie.<span class="built_in">size</span>());</span><br><span class="line">                trie.<span class="built_in">emplace_back</span>();</span><br><span class="line">            &#125;</span><br><span class="line">            node = trie[node].next[edge];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> node = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(trie.<span class="built_in">size</span>()) - <span class="number">1</span>; node &gt;= <span class="number">0</span>; --node) &#123;</span><br><span class="line">        <span class="type">bool</span> leaf = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> child : trie[node].next) &#123;</span><br><span class="line">            <span class="keyword">if</span> (child == <span class="number">-1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            leaf = <span class="literal">false</span>;</span><br><span class="line">            trie[node].win = trie[node].win || !trie[child].win;</span><br><span class="line">            trie[node].lose = trie[node].lose || !trie[child].lose;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (leaf) trie[node].lose = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!trie[<span class="number">0</span>].win) cout &lt;&lt; <span class="string">&quot;Second\n&quot;</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (trie[<span class="number">0</span>].lose) cout &lt;&lt; <span class="string">&quot;First\n&quot;</span>;</span><br><span class="line">    <span class="keyword">else</span> cout &lt;&lt; (k % <span class="number">2</span> == <span class="number">1</span> ? <span class="string">&quot;First\n&quot;</span> : <span class="string">&quot;Second\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>孩子只会在父节点之后创建，编号必然大于父节点。因此按编号逆序处理，就能先计算孩子再计算父亲，避免长度十万的链导致递归栈溢出。直接扫描数组的时间为 O(S·|Σ|)，其中 S 是总字符数、|Σ|&#x3D;26；空间 O(S·|Σ|)。保存实际孩子列表也可以把状态计算写成 O(S)。</p>
+<table>
+<thead>
+<tr>
+<th>边界与错误</th>
+<th>正确处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>一个字符串是另一个的前缀</td>
+<td>到达单词结尾不能主动停止；有后继就仍可走</td>
+</tr>
+<tr>
+<td>k 可达 10^9</td>
+<td>只需要奇偶，不模拟 k 局</td>
+</tr>
+<tr>
+<td>只算一套 <code>win</code></td>
+<td>无法区分终局奇偶是否可控</td>
+</tr>
+<tr>
+<td>把重复单词建成重复分支</td>
+<td>Trie 边应复用；重复字符串不增加新操作</td>
+</tr>
+</tbody></table>
+<h2 id="第二题-706D：动态多重集合需要计数"><a href="#第二题-706D：动态多重集合需要计数" class="headerlink" title="第二题 706D：动态多重集合需要计数"></a>第二题 706D：动态多重集合需要计数</h2><p>集合初始含有 0，之后支持插入一个数、删除一次出现、查询 <code>x xor y</code> 的最大值。若每次查询遍历整个集合，最坏会达到 O(q²)。排序结构也不容易直接比较异或大小，因为普通数值顺序与异或后的顺序不同。</p>
+<p>从第 30 位到第 0 位建立二进制 Trie。查询 x 时，在当前位 b 上优先走与 x 的该位相反的分支，这会让答案的第 b 位变成 1。若相反分支没有仍存活的元素，才走相同分支。</p>
+<h3 id="为什么逐位贪心正确"><a href="#为什么逐位贪心正确" class="headerlink" title="为什么逐位贪心正确"></a>为什么逐位贪心正确</h3><p>假设更高位已经固定。两个候选答案第一次不同的位置是 b，那么第 b 位为 1 的答案至少比第 b 位为 0 的答案大 2^b，而所有更低位之和最多为 2^b−1。因此只要相反分支中还有元素，高位得到 1 永远优于放弃它换取任意低位组合。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;从最高位读取 x 的当前位 b&quot;] --&gt; B{&quot;相反位分支计数 &gt; 0 吗&quot;}
+  B --&gt;|&quot;是&quot;| C[&quot;走相反分支，答案该位写 1&quot;]
+  B --&gt;|&quot;否&quot;| D[&quot;走相同分支，答案该位写 0&quot;]
+  C --&gt; E{&quot;还有更低位吗&quot;}
+  D --&gt; E
+  E --&gt;|&quot;有&quot;| A
+  E --&gt;|&quot;无&quot;| F[&quot;得到最大异或值&quot;]
+  </pre></div>
+
+<p>删除让问题从普通集合变成多重集合。不能删掉一条共享路径，因为其他数可能仍经过它；也不能只记“节点存在”，因为同一个数可插入多次。每个节点保存经过它的当前元素出现次数，插入沿路加一，删除沿路减一，查询只走计数为正的孩子。</p>
+<table>
+<thead>
+<tr>
+<th>当前集合</th>
+<th>查询 x&#x3D;3</th>
+<th>候选异或值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0, 1, 6, 8, 9, 11</td>
+<td>3 xor 0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>3 xor 6</td>
+<td>5</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>3 xor 8</td>
+<td>11</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>3 xor 9</td>
+<td>10</td>
+</tr>
+<tr>
+<td>同上</td>
+<td>3 xor 11</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<p>最高位选择首先把 8、9、11 留在候选中，后续再逐位细分，最终得到 11。这个过程从未需要知道完整排序。</p>
+<h3 id="完整-C-17-实现-1"><a href="#完整-C-17-实现-1" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;array&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">    array&lt;<span class="type">int</span>, 2&gt; next&#123;<span class="number">-1</span>, <span class="number">-1</span>&#125;;</span><br><span class="line">    <span class="type">int</span> count = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> q;</span><br><span class="line">    cin &gt;&gt; q;</span><br><span class="line">    <span class="function">vector&lt;Node&gt; <span class="title">trie</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    trie.<span class="built_in">reserve</span>((q + <span class="number">1</span>) * <span class="number">31</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> update = [&amp;](<span class="type">int</span> value, <span class="type">int</span> delta) &#123;</span><br><span class="line">        <span class="type">int</span> node = <span class="number">0</span>;</span><br><span class="line">        trie[node].count += delta;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> bit = <span class="number">30</span>; bit &gt;= <span class="number">0</span>; --bit) &#123;</span><br><span class="line">            <span class="type">int</span> edge = (value &gt;&gt; bit) &amp; <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span> (trie[node].next[edge] == <span class="number">-1</span>) &#123;</span><br><span class="line">                trie[node].next[edge] = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(trie.<span class="built_in">size</span>());</span><br><span class="line">                trie.<span class="built_in">push_back</span>(Node&#123;&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">            node = trie[node].next[edge];</span><br><span class="line">            trie[node].count += delta;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> maximumXor = [&amp;](<span class="type">int</span> value) &#123;</span><br><span class="line">        <span class="type">int</span> node = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> answer = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> bit = <span class="number">30</span>; bit &gt;= <span class="number">0</span>; --bit) &#123;</span><br><span class="line">            <span class="type">int</span> edge = (value &gt;&gt; bit) &amp; <span class="number">1</span>;</span><br><span class="line">            <span class="type">int</span> wanted = edge ^ <span class="number">1</span>;</span><br><span class="line">            <span class="type">int</span> child = trie[node].next[wanted];</span><br><span class="line">            <span class="keyword">if</span> (child != <span class="number">-1</span> &amp;&amp; trie[child].count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                answer |= <span class="number">1</span> &lt;&lt; bit;</span><br><span class="line">                node = child;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                node = trie[node].next[edge];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> answer;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">update</span>(<span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">while</span> (q--) &#123;</span><br><span class="line">        <span class="type">char</span> operation;</span><br><span class="line">        <span class="type">int</span> x;</span><br><span class="line">        cin &gt;&gt; operation &gt;&gt; x;</span><br><span class="line">        <span class="keyword">if</span> (operation == <span class="string">&#x27;+&#x27;</span>) <span class="built_in">update</span>(x, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (operation == <span class="string">&#x27;-&#x27;</span>) <span class="built_in">update</span>(x, <span class="number">-1</span>);</span><br><span class="line">        <span class="keyword">else</span> cout &lt;&lt; <span class="built_in">maximumXor</span>(x) &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每次操作固定检查 31 位，时间 O(31q)，最坏新增 O(31q) 个节点。题目保证删除前该值存在，且 0 始终保留，因此查询时相同分支一定有路可走。</p>
+<table>
+<thead>
+<tr>
+<th>常见错误</th>
+<th>后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>删除时把孩子指针改成 −1</td>
+<td>破坏与其他数共享的前缀</td>
+</tr>
+<tr>
+<td>节点只记布尔存在</td>
+<td>重复插入后删除一次会误判为空</td>
+</tr>
+<tr>
+<td>从低位开始贪心</td>
+<td>低位收益可能牺牲更重要的高位</td>
+</tr>
+<tr>
+<td>位宽不足或移位到符号位</td>
+<td>本题处理 29..0 已足够；代码统一用 30..0，避免对有符号 int 执行 <code>1 &lt;&lt; 31</code></td>
+</tr>
+</tbody></table>
+<h2 id="第三题-842D：异或不必真的修改整棵树"><a href="#第三题-842D：异或不必真的修改整棵树" class="headerlink" title="第三题 842D：异或不必真的修改整棵树"></a>第三题 842D：异或不必真的修改整棵树</h2><p>给定一个数组，每次查询把所有元素与 x 异或，并输出新数组的 MEX。操作会累积。若真的遍历数组修改，再从 0 扫描缺失值，每次可能 O(n)。</p>
+<p>连续异或满足结合律和自反性：</p>
+<p><code>((a xor x1) xor x2) = a xor (x1 xor x2)</code>。</p>
+<p>因此只需维护累计掩码 <code>mask ^= x</code>，原集合保持不动。重复值不影响 MEX，所以先去重；这也是本题与 706D 节点计数含义不同的地方。</p>
+<h3 id="用子树容量判断哪里有缺口"><a href="#用子树容量判断哪里有缺口" class="headerlink" title="用子树容量判断哪里有缺口"></a>用子树容量判断哪里有缺口</h3><p>所有数与掩码异或后，要找最小的缺失结果 y。仍从高位向低位决定 y，优先尝试令当前结果位为 0。若 y 的当前位取 0，则原数对应位必须等于 <code>mask</code> 的当前位。</p>
+<p>深度来到 bit 时，该候选子树覆盖所有剩余 bit 个低位，共有 2^bit 个不同值：</p>
+<ul>
+<li>若子树中的不同值数量小于 2^bit，说明里面至少有一个缺口，可以保持 y 的当前位为 0；</li>
+<li>若数量恰好为 2^bit，该半边已经填满，只能把 y 的当前位设为 1，转向另一半。</li>
+</ul>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;累计 mask ^&#x3D; x&quot;] --&gt; B[&quot;从最高位尝试让 MEX 当前位为 0&quot;]
+  B --&gt; C[&quot;查看原数位 &#x3D; mask 位的子树&quot;]
+  C --&gt; D{&quot;不同值数量 &lt; 该子树容量吗&quot;}
+  D --&gt;|&quot;是，有缺口&quot;| E[&quot;保持结果位 0，进入该子树&quot;]
+  D --&gt;|&quot;否，已填满&quot;| F[&quot;结果位写 1，进入另一子树&quot;]
+  E --&gt; G{&quot;低位处理完了吗&quot;}
+  F --&gt; G
+  G --&gt;|&quot;否&quot;| B
+  G --&gt;|&quot;是&quot;| H[&quot;得到最小未出现值&quot;]
+  </pre></div>
+
+<h3 id="一次手算"><a href="#一次手算" class="headerlink" title="一次手算"></a>一次手算</h3><p>原集合为 <code>&#123;0,1,5,6&#125;</code>，查询 x&#x3D;1 后，结果集合为 <code>&#123;1,0,4,7&#125;</code>，MEX 是 2。</p>
+<table>
+<thead>
+<tr>
+<th>决策范围</th>
+<th>优先检查的结果半边</th>
+<th>对应原集合半边</th>
+<th>是否填满</th>
+<th>MEX 决策</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0..7</td>
+<td>结果最高位 0</td>
+<td>原最高位 0</td>
+<td>未填满</td>
+<td>最高位取 0</td>
+</tr>
+<tr>
+<td>0..3</td>
+<td>结果下一位 0</td>
+<td>原该位等于 mask 位 0</td>
+<td>0、1 对应结果 0、1，已填满</td>
+<td>该位取 1</td>
+</tr>
+<tr>
+<td>2..3</td>
+<td>结果最低位 0</td>
+<td>对应原值 3，不存在</td>
+<td>未填满</td>
+<td>最低位取 0</td>
+</tr>
+</tbody></table>
+<p>得到二进制 <code>010</code>，即 2。注意算法查的是“某一整块值域是否填满”，不是把已存在的数按普通大小二分。</p>
+<h3 id="正确性证明-1"><a href="#正确性证明-1" class="headerlink" title="正确性证明"></a>正确性证明</h3><p>保持不变量：进入某个 Trie 节点前，已经确定的 y 高位是所有可能缺失值中字典序最小的高位前缀，并且当前节点对应与该前缀一致的原数范围。</p>
+<p>在 bit 位，结果位 0 对应原数位 <code>mask_bit</code>。若该子树计数小于容量，根据抽屉原理其中至少缺少一个完整低位组合，所以存在以当前最小前缀继续的缺失值；选择 0 最优。若计数等于容量，所有低位组合都存在，结果位 0 不可能形成缺失值，只能选择 1。两种转移都保持不变量。处理完最低位后，所得 y 存在缺口且按高位优先规则最小，因此正是 MEX。</p>
+<h3 id="完整-C-17-实现-2"><a href="#完整-C-17-实现-2" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;array&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">    array&lt;<span class="type">int</span>, 2&gt; next&#123;<span class="number">-1</span>, <span class="number">-1</span>&#125;;</span><br><span class="line">    <span class="type">int</span> distinct = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">constexpr</span> <span class="type">int</span> BITS = <span class="number">19</span>;</span><br><span class="line">    <span class="keyword">constexpr</span> <span class="type">int</span> LIMIT = <span class="number">1</span> &lt;&lt; BITS;</span><br><span class="line">    <span class="type">int</span> n, m;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    <span class="function">vector&lt;Node&gt; <span class="title">trie</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    trie.<span class="built_in">reserve</span>(<span class="number">1</span> + n * BITS);</span><br><span class="line">    <span class="function">vector&lt;<span class="type">char</span>&gt; <span class="title">present</span><span class="params">(LIMIT, <span class="literal">false</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> insert = [&amp;](<span class="type">int</span> value) &#123;</span><br><span class="line">        <span class="keyword">if</span> (present[value]) <span class="keyword">return</span>;</span><br><span class="line">        present[value] = <span class="literal">true</span>;</span><br><span class="line">        <span class="type">int</span> node = <span class="number">0</span>;</span><br><span class="line">        ++trie[node].distinct;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> bit = BITS - <span class="number">1</span>; bit &gt;= <span class="number">0</span>; --bit) &#123;</span><br><span class="line">            <span class="type">int</span> edge = (value &gt;&gt; bit) &amp; <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span> (trie[node].next[edge] == <span class="number">-1</span>) &#123;</span><br><span class="line">                trie[node].next[edge] = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(trie.<span class="built_in">size</span>());</span><br><span class="line">                trie.<span class="built_in">push_back</span>(Node&#123;&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">            node = trie[node].next[edge];</span><br><span class="line">            ++trie[node].distinct;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> value;</span><br><span class="line">        cin &gt;&gt; value;</span><br><span class="line">        <span class="built_in">insert</span>(value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> countOf = [&amp;](<span class="type">int</span> node) &#123;</span><br><span class="line">        <span class="keyword">return</span> node == <span class="number">-1</span> ? <span class="number">0</span> : trie[node].distinct;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> mask = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (m--) &#123;</span><br><span class="line">        <span class="type">int</span> x;</span><br><span class="line">        cin &gt;&gt; x;</span><br><span class="line">        mask ^= x;</span><br><span class="line">        <span class="type">int</span> node = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> answer = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> bit = BITS - <span class="number">1</span>; bit &gt;= <span class="number">0</span>; --bit) &#123;</span><br><span class="line">            <span class="type">int</span> maskBit = (mask &gt;&gt; bit) &amp; <span class="number">1</span>;</span><br><span class="line">            <span class="type">int</span> preferred = node == <span class="number">-1</span> ? <span class="number">-1</span> : trie[node].next[maskBit];</span><br><span class="line">            <span class="type">int</span> capacity = <span class="number">1</span> &lt;&lt; bit;</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">countOf</span>(preferred) &lt; capacity) &#123;</span><br><span class="line">                node = preferred;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                answer |= <span class="number">1</span> &lt;&lt; bit;</span><br><span class="line">                node = trie[node].next[maskBit ^ <span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        cout &lt;&lt; answer &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>数组值和查询值都不超过 300000，小于 2^19；累计异或仍落在 19 位内。由于不同元素最多 300000 个，小于 2^19，整棵值域不可能全部填满，MEX 也一定能在 19 位范围内找到。时间 O((n+m)·19)，空间 O(n·19+2^19)。</p>
+<table>
+<thead>
+<tr>
+<th>边界与错误</th>
+<th>正确处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输入含重复值</td>
+<td>MEX 只关心是否出现，插入前必须去重</td>
+</tr>
+<tr>
+<td>多次查询</td>
+<td>维护累计 <code>mask</code>，不能只使用本次 x</td>
+</tr>
+<tr>
+<td>用节点总出现次数判断填满</td>
+<td>重复值会把计数抬高，应统计不同值</td>
+</tr>
+<tr>
+<td>子指针不存在</td>
+<td>计数视为 0，说明该范围立即有缺口</td>
+</tr>
+<tr>
+<td>容量写成 <code>2^(bit+1)</code></td>
+<td>当前选定一侧后只剩 bit 个低位，容量是 2^bit</td>
+</tr>
+</tbody></table>
+<h2 id="三题放在一起，真正可迁移的是什么"><a href="#三题放在一起，真正可迁移的是什么" class="headerlink" title="三题放在一起，真正可迁移的是什么"></a>三题放在一起，真正可迁移的是什么</h2><table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>455B</th>
+<th>706D</th>
+<th>842D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前缀单位</td>
+<td>字符</td>
+<td>从高到低的二进制位</td>
+<td>从高到低的二进制位</td>
+</tr>
+<tr>
+<td>是否动态修改</td>
+<td>否</td>
+<td>插入与删除</td>
+<td>原集合不变，只改懒掩码</td>
+</tr>
+<tr>
+<td>重复元素</td>
+<td>不增加新操作</td>
+<td>必须保留出现次数</td>
+<td>必须去重</td>
+</tr>
+<tr>
+<td>查询决策</td>
+<td>子节点胜负取反</td>
+<td>优先让异或位为 1</td>
+<td>优先让 MEX 位为 0</td>
+</tr>
+<tr>
+<td>正确性核心</td>
+<td>树上极小极大归纳</td>
+<td>高位收益压过所有低位</td>
+<td>子树计数与值域容量比较</td>
+</tr>
+</tbody></table>
+<p>二进制 Trie 的两道题看起来都在“按位贪心”，方向却相反：最大异或希望尽早得到 1；MEX 希望尽早保持 0，但只有候选半边尚未填满时才能这样做。把“优先走哪边”背成模板，很容易在目标稍变时写反。更可靠的方法是明确比较对象和节点摘要，再证明高位决策不会被低位推翻。</p>
+<h2 id="提交前检查清单"><a href="#提交前检查清单" class="headerlink" title="提交前检查清单"></a>提交前检查清单</h2><ol>
+<li>字符串结尾是否真的意味着游戏结束，还是只在没有后继时结束？</li>
+<li>节点统计的是出现次数还是不同值数量？</li>
+<li>删除一个重复值后，共享前缀是否仍保持可用？</li>
+<li>位宽是否覆盖输入、累计运算和可能答案？</li>
+<li>贪心优先分支为空、已满或计数归零时，备用分支是否安全？</li>
+<li>多次整体异或能否合并成一个懒标记，而不是修改所有元素？</li>
+<li>复杂度按元素数计算，还是按“元素数 × 位数 &#x2F; 字符总长”计算？</li>
+</ol>
+<h2 id="验证说明"><a href="#验证说明" class="headerlink" title="验证说明"></a>验证说明</h2><p><code>tests/verify-trie-three-article.cjs</code> 从本文提取三份 C++17 代码，以 <code>-O2 -Wall -Wextra -pedantic</code> 编译，并执行 808 次程序。455B 的参考模型直接展开多局完整博弈，由两名玩家分别最大化和最小化最终胜负，另穷举六个短单词的全部 63 个非空子集与 1 到 6 局的组合；706D 用普通多重集合逐项枚举最大异或；842D 对累计掩码显式变换集合后重新计算 MEX。最大查询规模专项使用全为零的原数组，以“累计掩码为零则 MEX&#x3D;1，否则为 0”独立核验。</p>
+<p>当前共核对 307,591 个胜负或数值结果，覆盖 10 万字符、20 万次动态集合操作、30 万个输入值与 30 万次 MEX 查询，以及重复插入删除和高位边界。三份代码均无编译警告，全部结果与独立参考模型一致。</p>
+<h2 id="来源"><a href="#来源" class="headerlink" title="来源"></a>来源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/455/B">455B A Lot of Games 官方题面</a></li>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/706/D">706D Vasiliy’s Multiset 官方题面</a></li>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/842/D">842D Vitya and Strange Lesson 官方题面</a></li>
+<li><a target="_blank" rel="noopener" href="https://codeforces.com/apiHelp/methods#problemset.problems">Codeforces Problemset API</a></li>
+</ul>
+<p>题目事实来自上述官方页面；算法推导、示例组织、证明与代码均为本站原创整理。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/87314.html">https://eulersail.com/esblog/87314.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2/">字符串</a><a class="post-meta__tags" href="/tags/%E4%BD%8D%E8%BF%90%E7%AE%97/">位运算</a><a class="post-meta__tags" href="/tags/Trie/">Trie</a><a class="post-meta__tags" href="/tags/%E5%8D%9A%E5%BC%88/">博弈</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/95724.html" title="舒曼第三交响曲莱茵 从三拍推进到庄严插曲与终曲回望"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">舒曼第三交响曲莱茵 从三拍推进到庄严插曲与终曲回望</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/81937.html" title="Codeforces 510C Fox And Names：从字典序约束到拓扑排序"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-11</div><div class="title">Codeforces 510C Fox And Names：从字典序约束到拓扑排序</div></div></a></div><div><a href="/esblog/28416.html" title="Codeforces 339D Xenia and Bit Operations：交替 OR&#x2F;XOR 线段树"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-14</div><div class="title">Codeforces 339D Xenia and Bit Operations：交替 OR&#x2F;XOR 线段树</div></div></a></div><div><a href="/esblog/36285.html" title="Codeforces 字符串匹配三题 从前缀函数到边界计数与差分匹配"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-04</div><div class="title">Codeforces 字符串匹配三题 从前缀函数到边界计数与差分匹配</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">125</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E9%81%93%E9%A2%98%E5%88%86%E5%88%AB%E5%A4%9A%E8%A6%81%E6%B1%82%E4%BB%80%E4%B9%88"><span class="toc-text">三道题分别多要求什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Trie-%E5%8E%8B%E7%BC%A9%E7%9A%84%E6%98%AF%E5%85%B1%E5%90%8C%E5%86%B3%E7%AD%96%E5%89%8D%E7%BC%80"><span class="toc-text">Trie 压缩的是共同决策前缀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%A2%98-455B%EF%BC%9A%E4%B8%80%E5%A5%97%E8%83%9C%E8%B4%9F%E7%8A%B6%E6%80%81%E4%B8%8D%E5%A4%9F"><span class="toc-text">第一题 455B：一套胜负状态不够</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E6%A0%B9%E7%8A%B6%E6%80%81%E6%80%8E%E6%A0%B7%E5%86%B3%E5%AE%9A%E7%AD%94%E6%A1%88"><span class="toc-text">三种根状态怎样决定答案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">正确性证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%A2%98-706D%EF%BC%9A%E5%8A%A8%E6%80%81%E5%A4%9A%E9%87%8D%E9%9B%86%E5%90%88%E9%9C%80%E8%A6%81%E8%AE%A1%E6%95%B0"><span class="toc-text">第二题 706D：动态多重集合需要计数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%90%E4%BD%8D%E8%B4%AA%E5%BF%83%E6%AD%A3%E7%A1%AE"><span class="toc-text">为什么逐位贪心正确</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0-1"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%A2%98-842D%EF%BC%9A%E5%BC%82%E6%88%96%E4%B8%8D%E5%BF%85%E7%9C%9F%E7%9A%84%E4%BF%AE%E6%94%B9%E6%95%B4%E6%A3%B5%E6%A0%91"><span class="toc-text">第三题 842D：异或不必真的修改整棵树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E5%AD%90%E6%A0%91%E5%AE%B9%E9%87%8F%E5%88%A4%E6%96%AD%E5%93%AA%E9%87%8C%E6%9C%89%E7%BC%BA%E5%8F%A3"><span class="toc-text">用子树容量判断哪里有缺口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E6%89%8B%E7%AE%97"><span class="toc-text">一次手算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E-1"><span class="toc-text">正确性证明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0-2"><span class="toc-text">完整 C++17 实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E9%A2%98%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7%EF%BC%8C%E7%9C%9F%E6%AD%A3%E5%8F%AF%E8%BF%81%E7%A7%BB%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">三题放在一起，真正可迁移的是什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E5%89%8D%E6%A3%80%E6%9F%A5%E6%B8%85%E5%8D%95"><span class="toc-text">提交前检查清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E8%AF%B4%E6%98%8E"><span class="toc-text">验证说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E6%BA%90"><span class="toc-text">来源</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/87314.html" title="Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX">Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX</a><time datetime="2026-10-04T04:00:00.000Z" title="发表于 2026-10-04 12:00:00">2026-10-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/95724.html" title="舒曼第三交响曲莱茵 从三拍推进到庄严插曲与终曲回望">舒曼第三交响曲莱茵 从三拍推进到庄严插曲与终曲回望</a><time datetime="2026-10-03T16:01:00.000Z" title="发表于 2026-10-04 00:01:00">2026-10-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/36285.html" title="Codeforces 字符串匹配三题 从前缀函数到边界计数与差分匹配">Codeforces 字符串匹配三题 从前缀函数到边界计数与差分匹配</a><time datetime="2026-10-03T16:00:00.000Z" title="发表于 2026-10-04 00:00:00">2026-10-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/45892.html" title="数据库索引入门 从联合索引到 SQLite 查询计划">数据库索引入门 从联合索引到 SQLite 查询计划</a><time datetime="2026-10-03T02:00:00.000Z" title="发表于 2026-10-03 10:00:00">2026-10-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/91842.html" title="海顿伦敦交响曲 从庄严引子到持续低音上的终曲">海顿伦敦交响曲 从庄严引子到持续低音上的终曲</a><time datetime="2026-10-02T02:10:00.000Z" title="发表于 2026-10-02 10:10:00">2026-10-02</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
