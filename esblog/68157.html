@@ -1,0 +1,511 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 86D 莫队算法 从频次平方到离线窗口移动 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从 Powerful array 的频次平方和推导单点增删，用分块和蛇形排序控制窗口移动，附正确性证明、手算轨迹、复杂度分析、C++17 实现与独立对拍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 86D 莫队算法 从频次平方到离线窗口移动">
+<meta property="og:url" content="https://eulersail.com/esblog/68157.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从 Powerful array 的频次平方和推导单点增删，用分块和蛇形排序控制窗口移动，附正确性证明、手算轨迹、复杂度分析、C++17 实现与独立对拍。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-05T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-05T01:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="双指针">
+<meta property="article:tag" content="离线查询">
+<meta property="article:tag" content="莫队算法">
+<meta property="article:tag" content="分块">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/68157.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 86D 莫队算法 从频次平方到离线窗口移动',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-05 09:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">74</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">130</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 86D 莫队算法 从频次平方到离线窗口移动</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-05T01:00:00.000Z" title="发表于 2026-10-05 09:00:00">2026-10-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-05T01:00:00.000Z" title="更新于 2026-10-05 09:00:00">2026-10-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 86D 莫队算法 从频次平方到离线窗口移动"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>前缀和擅长把一个区间写成两个前缀的差；线段树擅长合并两个子区间的摘要。但如果查询要求“每个值的出现次数先平方，再乘这个值”，一个总和就不够合并了。</p>
+<p>这篇接在<a href="/esblog/76834.html">前缀和与差分</a>、<a href="/esblog/52369.html">树状数组与序列计数</a>之后，换一种复用方式：允许重排查询时，不必独立计算每个区间，可以把上一个区间的统计挪到下一个区间。这就是本篇的莫队算法。</p>
+<span id="more"></span>
+
+<h2 id="官方题目与约束"><a href="#官方题目与约束" class="headerlink" title="官方题目与约束"></a>官方题目与约束</h2><p>题目为 <a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/86/D?locale=en&mobile=true">Codeforces 86D Powerful array</a>。官方页面核对日期为 2026-10-05；以下是中文概括，推导与示例为本站原创。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>官方信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>难度</td>
+<td>2200</td>
+</tr>
+<tr>
+<td>标签</td>
+<td>data structures、implementation、math、two pointers</td>
+</tr>
+<tr>
+<td>数组长度 n 与查询数 q</td>
+<td>均为 1 到 200000；原题将查询数写作 t</td>
+</tr>
+<tr>
+<td>元素范围</td>
+<td>1 到 1000000</td>
+</tr>
+<tr>
+<td>查询</td>
+<td>1 ≤ l ≤ r ≤ n，数组没有修改</td>
+</tr>
+<tr>
+<td>目标</td>
+<td>对每个区间计算所有值 x 的 x × cnt[x]² 之和</td>
+</tr>
+</tbody></table>
+<p>这里的 cnt[x] 只统计当前查询区间。值没有出现时贡献为 0；输出必须保持输入查询的顺序。</p>
+<h2 id="朴素扫描为什么重复太多"><a href="#朴素扫描为什么重复太多" class="headerlink" title="朴素扫描为什么重复太多"></a>朴素扫描为什么重复太多</h2><p>独立扫描每个查询区间，最坏需要 O(nq) 次访问。即使频次数组清零很快，大区间之间相同的元素仍被反复统计。</p>
+<p>普通前缀总和也不能直接相减得到答案。设某个值 x 在两个不相交片段中分别出现 a 次、b 次，合并后的贡献是 x(a+b)²，比两个片段贡献之和多出 2xab。若节点只保存一个总答案，这个交叉项就无从计算。</p>
+<p>这不是说线段树绝对无法处理任何频次问题，而是说本题没有从上述标量摘要直接得到常数时间合并规则。莫队选择保留整张当前频次表，只要求边界上的一个元素能快速加入和移除。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>保存的信息</th>
+<th>本题遇到的限制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>独立扫描</td>
+<td>每个查询重新统计</td>
+<td>大量重叠区间重复工作</td>
+</tr>
+<tr>
+<td>一个前缀答案</td>
+<td>每个前缀的频次平方和</td>
+<td>相减缺少交叉项</td>
+</tr>
+<tr>
+<td>只有总答案的区间节点</td>
+<td>每段一个数</td>
+<td>不知道相同值在两边的频次</td>
+</tr>
+<tr>
+<td>离线移动窗口</td>
+<td>当前区间的完整频次表</td>
+<td>需要可重排查询和廉价增删</td>
+</tr>
+</tbody></table>
+<h2 id="加入和删除的两个差分公式"><a href="#加入和删除的两个差分公式" class="headerlink" title="加入和删除的两个差分公式"></a>加入和删除的两个差分公式</h2><p>维护闭区间 [L,R]、频次数组 cnt 和答案 power。加入的值为 x，加入前 cnt[x]&#x3D;c，则贡献变化为：</p>
+<p><code>x × ((c+1)²-c²) = x × (2c+1)</code>。</p>
+<p>删除时，删除前 cnt[x]&#x3D;c，贡献减少：</p>
+<p><code>x × (c²-(c-1)²) = x × (2c-1)</code>。</p>
+<p>两式的 c 都是操作之前的频次。先改频次再套旧公式，是最常见的差一错误。其他值的频次没有变化，所以不必重算它们的贡献。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>操作前 c</th>
+<th>答案变化</th>
+<th>操作后频次</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>加入第一个 3</td>
+<td>0</td>
+<td>+3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>再加入一个 3</td>
+<td>1</td>
+<td>+9</td>
+<td>2</td>
+</tr>
+<tr>
+<td>再加入一个 3</td>
+<td>2</td>
+<td>+15</td>
+<td>3</td>
+</tr>
+<tr>
+<td>删除一个 3</td>
+<td>3</td>
+<td>−15</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>前三次增量总和 3+9+15&#x3D;27，恰为 3×3²。删除必须针对当前窗口中真实存在的位置，不能让频次变成负数。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;边界移动一个位置&quot;] --&gt; B[&quot;读取该位置的值 x&quot;]
+  B --&gt; C[&quot;读取操作前频次 c&quot;]
+  C --&gt; D{&quot;加入还是删除&quot;}
+  D --&gt;|&quot;加入&quot;| E[&quot;答案增加 x 乘 2c 加 1&quot;]
+  D --&gt;|&quot;删除&quot;| F[&quot;答案减少 x 乘 2c 减 1&quot;]
+  E --&gt; G[&quot;频次加一&quot;]
+  F --&gt; H[&quot;频次减一&quot;]
+  </pre></div>
+
+<h2 id="为什么先扩张窗口再收缩"><a href="#为什么先扩张窗口再收缩" class="headerlink" title="为什么先扩张窗口再收缩"></a>为什么先扩张窗口再收缩</h2><p>初始窗口设为 L&#x3D;1、R&#x3D;0，表示空区间，全部频次与 power 为 0。对于目标 [l,r]，按下面次序移动：</p>
+<ol>
+<li>L&gt;l 时，先把 L 减一，再加入新位置。</li>
+<li>R&lt;r 时，先把 R 加一，再加入新位置。</li>
+<li>L&lt;l 时，删除 L 位置，再把 L 加一。</li>
+<li>R&gt;r 时，删除 R 位置，再把 R 减一。</li>
+</ol>
+<p>先扩张会暂时覆盖旧区间和目标区间，然后才删除目标以外的端点。这样即使两个查询完全不相交，也不会对一个尚未加入的位置执行删除。空区间起步时也可使用同一套顺序。</p>
+<p>用原创数组 <code>[1,2,1,3,2]</code>，从 [1,3] 移到 [2,5]：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>当前区间</th>
+<th>cnt[1], cnt[2], cnt[3]</th>
+<th>power</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>起点</td>
+<td>[1,3]</td>
+<td>2,1,0</td>
+<td>6</td>
+</tr>
+<tr>
+<td>加入位置 4 的 3</td>
+<td>[1,4]</td>
+<td>2,1,1</td>
+<td>9</td>
+</tr>
+<tr>
+<td>加入位置 5 的 2</td>
+<td>[1,5]</td>
+<td>2,2,1</td>
+<td>15</td>
+</tr>
+<tr>
+<td>删除位置 1 的 1</td>
+<td>[2,5]</td>
+<td>1,2,1</td>
+<td>12</td>
+</tr>
+</tbody></table>
+<p>最终可独立检查：1×1²+2×2²+3×1²&#x3D;12。注意加入第二个 2 只增加 6，不是把新的完整贡献 8 再加一遍。</p>
+<h2 id="分块排序让窗口少走一些路"><a href="#分块排序让窗口少走一些路" class="headerlink" title="分块排序让窗口少走一些路"></a>分块排序让窗口少走一些路</h2><p>仅仅可以移动窗口，还不保证快。若输入查询反复在数组两端跳跃，直接按输入顺序执行，仍可能达到 O(nq)。</p>
+<p>取块长 B，将查询按左端点所属块 <code>(l-1)/B</code> 分组。先按块编号递增；同一块内，偶数块按右端点递增，奇数块按右端点递减。这种蛇形顺序减少相邻块之间右端点回到起点的折返，但它不保证全局最短移动路线。</p>
+<table>
+<thead>
+<tr>
+<th>原查询编号</th>
+<th>区间</th>
+<th>B&#x3D;2 时左端块编号</th>
+<th>排序位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>[4,5]</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>1</td>
+<td>[1,3]</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>[2,5]</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>[3,3]</td>
+<td>1</td>
+<td>4</td>
+</tr>
+</tbody></table>
+<p>排序后先处理 [1,3]、[2,5]，再处理 [4,5]、[3,3]。但是答案写入 <code>answer[原查询编号]</code>，因此最终仍按 0、1、2、3 输出。对上面的五元素数组，输出应为 5、6、12、1。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[&quot;读入所有查询并保存编号&quot;] --&gt; B[&quot;按左端块和右端蛇形排序&quot;]
+  B --&gt; C[&quot;扩张到覆盖目标的窗口&quot;]
+  C --&gt; D[&quot;收缩到精确目标区间&quot;]
+  D --&gt; E[&quot;答案写回原编号&quot;]
+  E --&gt; F{&quot;还有查询吗&quot;}
+  F --&gt;|&quot;有&quot;| C
+  F --&gt;|&quot;无&quot;| G[&quot;按输入编号输出&quot;]
+  </pre></div>
+
+<h2 id="正确性证明"><a href="#正确性证明" class="headerlink" title="正确性证明"></a>正确性证明</h2><p><strong>窗口不变量。</strong> 每次边界操作结束后，cnt[x] 等于当前 [L,R] 内 x 的出现次数，power 等于这些频次的加权平方和。</p>
+<p>初始空区间满足不变量。加入位置时，仅对应值 x 的次数从 c 变成 c+1，增量公式精确补上新旧贡献之差；删除同理。边界变化与加入、删除的位置一致，所以归纳可知不变量始终成立。</p>
+<p><strong>查询正确性。</strong> 四个 while 循环结束后 L&#x3D;l 且 R&#x3D;r，窗口不变量立即给出当前查询所需答案。先扩张后收缩保证删除的位置属于窗口，因此证明中的删除前提成立。</p>
+<p><strong>重排不改变题意。</strong> 数组是静态的，各查询互不依赖。离线排序只改变求值顺序；原编号提供排序前后的对应关系，所以每个输出位置仍得到原查询的正确答案。若后续查询依赖前一个答案解密，就不能直接这样离线重排。</p>
+<h2 id="复杂度与整数范围"><a href="#复杂度与整数范围" class="headerlink" title="复杂度与整数范围"></a>复杂度与整数范围</h2><p>同一个左端块内，L 每次变化不超过 O(B)，累计 O(qB)。跨块时左端块单调前进，总跨块代价为 O(n)。每块中的 R 单调移动，代价 O(n)；最多 O(n&#x2F;B) 块，因此右端总移动 O(n²&#x2F;B+n)。</p>
+<p>总时间为 <code>O(q log q + qB + n²/B + n)</code>，每次增删 O(1)。本实现取 <code>B=max(1,floor(sqrt(n)))</code>，得到常见的 <code>O(q log q + (n+q)sqrt(n))</code> 上界。如果 n、q 差别很大，可以围绕 n&#x2F;sqrt(q) 选择块长并实测常数，但不能省掉正确性与边界检查。</p>
+<p>频次表按最大值 V 直接开数组，空间为 O(n+q+V)。本题 V≤10⁶；若推广到大值域，可以离散化索引，但权重必须保留原值，不能把原值 x 换成压缩编号。</p>
+<p>答案上界为 <code>10⁶ × n² ≤ 4×10¹⁶</code>：因为所有频次非负，频次平方和不超过频次和的平方。<code>long long</code> 足够，<code>int</code> 不够。增量乘法也要在 64 位中完成，不能只把最终结果变量改成 64 位。</p>
+<h2 id="完整-C-17-实现"><a href="#完整-C-17-实现" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cmath&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Query</span> &#123;</span><br><span class="line">    <span class="type">int</span> l, r, id, block;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> n, q;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; q;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">a</span><span class="params">(n + <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="type">int</span> maximum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) &#123;</span><br><span class="line">        cin &gt;&gt; a[i];</span><br><span class="line">        maximum = <span class="built_in">max</span>(maximum, a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> blockSize = <span class="built_in">max</span>(<span class="number">1</span>, <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(<span class="built_in">sqrt</span>(n)));</span><br><span class="line">    <span class="function">vector&lt;Query&gt; <span class="title">queries</span><span class="params">(q)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; q; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> l, r;</span><br><span class="line">        cin &gt;&gt; l &gt;&gt; r;</span><br><span class="line">        queries[i] = &#123;l, r, i, (l - <span class="number">1</span>) / blockSize&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">sort</span>(queries.<span class="built_in">begin</span>(), queries.<span class="built_in">end</span>(), [](<span class="type">const</span> Query&amp; x, <span class="type">const</span> Query&amp; y) &#123;</span><br><span class="line">        <span class="keyword">if</span> (x.block != y.block) <span class="keyword">return</span> x.block &lt; y.block;</span><br><span class="line">        <span class="keyword">if</span> (x.r != y.r) &#123;</span><br><span class="line">            <span class="built_in">return</span> (x.block &amp; <span class="number">1</span>) ? x.r &gt; y.r : x.r &lt; y.r;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> x.id &lt; y.id;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">count</span><span class="params">(maximum + <span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">answer</span><span class="params">(q)</span></span>;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> power = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> add = [&amp;](<span class="type">int</span> position) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> x = a[position];</span><br><span class="line">        power += (<span class="number">2LL</span> * count[x] + <span class="number">1</span>) * x;</span><br><span class="line">        ++count[x];</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">auto</span> remove = [&amp;](<span class="type">int</span> position) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> x = a[position];</span><br><span class="line">        power -= (<span class="number">2LL</span> * count[x] - <span class="number">1</span>) * x;</span><br><span class="line">        --count[x];</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> left = <span class="number">1</span>, right = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">const</span> Query&amp; query : queries) &#123;</span><br><span class="line">        <span class="keyword">while</span> (left &gt; query.l) <span class="built_in">add</span>(--left);</span><br><span class="line">        <span class="keyword">while</span> (right &lt; query.r) <span class="built_in">add</span>(++right);</span><br><span class="line">        <span class="keyword">while</span> (left &lt; query.l) <span class="built_in">remove</span>(left++);</span><br><span class="line">        <span class="keyword">while</span> (right &gt; query.r) <span class="built_in">remove</span>(right--);</span><br><span class="line">        answer[query.id] = power;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">long</span> <span class="type">long</span> value : answer) cout &lt;&lt; value &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="边界与错误清单"><a href="#边界与错误清单" class="headerlink" title="边界与错误清单"></a>边界与错误清单</h2><table>
+<thead>
+<tr>
+<th>情况或错误</th>
+<th>应检查什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>n&#x3D;1，单点查询</td>
+<td>第一个元素从频次 0 正确加入</td>
+</tr>
+<tr>
+<td>全部值相同</td>
+<td>长度 m 的答案是 x×m²，而不是 x×m</td>
+</tr>
+<tr>
+<td>所有值互异</td>
+<td>平方均为 1，答案退化为普通区间和</td>
+</tr>
+<tr>
+<td>多次重复同一区间</td>
+<td>不需要移动，结果应完全一致</td>
+</tr>
+<tr>
+<td>不相交区间</td>
+<td>扩张在前，不能删掉尚未加入的位置</td>
+</tr>
+<tr>
+<td>反复进入和离开同一值</td>
+<td>增删公式使用操作前频次</td>
+</tr>
+<tr>
+<td>相同右端点</td>
+<td>比较器必须满足严格弱序，不能写成 ≤</td>
+</tr>
+<tr>
+<td>离线排序之后</td>
+<td>用 id 还原，不按处理顺序输出</td>
+</tr>
+<tr>
+<td>长区间和大值</td>
+<td>用 64 位计算每一个乘法</td>
+</tr>
+</tbody></table>
+<p>本站测试提取本文代码编译，使用独立的区间频次重算进行小数组穷举与随机对拍；大规模同值、互异与周期数组则使用独立计数公式核验。它检查代码与推导是否一致，不冒充官方在线评测提交记录。</p>
+<h2 id="什么时候选择莫队"><a href="#什么时候选择莫队" class="headerlink" title="什么时候选择莫队"></a>什么时候选择莫队</h2><p>当数组静态、查询可离线、窗口单点增删便宜，而区间摘要又不容易快速合并时，莫队是值得考虑的方法。普通区间和已有 O(1) 前缀查询，就没必要退回 O(sqrt(n)) 量级的移动。</p>
+<p>读完后可以回到<a href="/esblog/65042.html">线段树三题</a>，比较两种问题：一个问“两个摘要能否合并”，另一个问“边界移动一步能否更新”。选择数据结构之前，先明确你真正拥有的局部操作。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/68157.html">https://eulersail.com/esblog/68157.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%8F%8C%E6%8C%87%E9%92%88/">双指针</a><a class="post-meta__tags" href="/tags/%E7%A6%BB%E7%BA%BF%E6%9F%A5%E8%AF%A2/">离线查询</a><a class="post-meta__tags" href="/tags/%E8%8E%AB%E9%98%9F%E7%AE%97%E6%B3%95/">莫队算法</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%9D%97/">分块</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/92746.html" title="莫扎特第四十交响曲 从短句呼吸到小调终点"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">莫扎特第四十交响曲 从短句呼吸到小调终点</div></div></a></div><div class="next-post pull-right"><a href="/esblog/61483.html" title="混合检索与重排 从 RRF 候选融合到可复现的离线评测"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">混合检索与重排 从 RRF 候选融合到可复现的离线评测</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div><div><a href="/esblog/46872.html" title="Codeforces 并查集三题：群组、语言与离线路径查询"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="title">Codeforces 并查集三题：群组、语言与离线路径查询</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div><div><a href="/esblog/60521.html" title="Codeforces 贪心三题：排序、交换论证与局部最优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="title">Codeforces 贪心三题：排序、交换论证与局部最优</div></div></a></div><div><a href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-04</div><div class="title">Codeforces 二分答案三题：可行性、边界与上界</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">74</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">130</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E9%A2%98%E7%9B%AE%E4%B8%8E%E7%BA%A6%E6%9D%9F"><span class="toc-text">官方题目与约束</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%B4%E7%B4%A0%E6%89%AB%E6%8F%8F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E5%A4%8D%E5%A4%AA%E5%A4%9A"><span class="toc-text">朴素扫描为什么重复太多</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A0%E5%85%A5%E5%92%8C%E5%88%A0%E9%99%A4%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%B7%AE%E5%88%86%E5%85%AC%E5%BC%8F"><span class="toc-text">加入和删除的两个差分公式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%85%88%E6%89%A9%E5%BC%A0%E7%AA%97%E5%8F%A3%E5%86%8D%E6%94%B6%E7%BC%A9"><span class="toc-text">为什么先扩张窗口再收缩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E6%8E%92%E5%BA%8F%E8%AE%A9%E7%AA%97%E5%8F%A3%E5%B0%91%E8%B5%B0%E4%B8%80%E4%BA%9B%E8%B7%AF"><span class="toc-text">分块排序让窗口少走一些路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">正确性证明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%B8%8E%E6%95%B4%E6%95%B0%E8%8C%83%E5%9B%B4"><span class="toc-text">复杂度与整数范围</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整 C++17 实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E4%B8%8E%E9%94%99%E8%AF%AF%E6%B8%85%E5%8D%95"><span class="toc-text">边界与错误清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E9%80%89%E6%8B%A9%E8%8E%AB%E9%98%9F"><span class="toc-text">什么时候选择莫队</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/92746.html" title="莫扎特第四十交响曲 从短句呼吸到小调终点">莫扎特第四十交响曲 从短句呼吸到小调终点</a><time datetime="2026-10-05T01:05:00.000Z" title="发表于 2026-10-05 09:05:00">2026-10-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/68157.html" title="Codeforces 86D 莫队算法 从频次平方到离线窗口移动">Codeforces 86D 莫队算法 从频次平方到离线窗口移动</a><time datetime="2026-10-05T01:00:00.000Z" title="发表于 2026-10-05 09:00:00">2026-10-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/61483.html" title="混合检索与重排 从 RRF 候选融合到可复现的离线评测">混合检索与重排 从 RRF 候选融合到可复现的离线评测</a><time datetime="2026-10-04T06:05:00.000Z" title="发表于 2026-10-04 14:05:00">2026-10-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/92517.html" title="勃拉姆斯第三交响曲 从三音格言到安静的终点">勃拉姆斯第三交响曲 从三音格言到安静的终点</a><time datetime="2026-10-04T06:00:00.000Z" title="发表于 2026-10-04 14:00:00">2026-10-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/87314.html" title="Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX">Codeforces Trie 三题 从字符串博弈到最大异或与动态 MEX</a><time datetime="2026-10-04T04:00:00.000Z" title="发表于 2026-10-04 12:00:00">2026-10-04</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
