@@ -1,0 +1,494 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RAG 上下文组装 从权限过滤到预算与引用校验 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="把检索后的候选变成可追踪的生成输入，区分权限、去重、预算和引用检查，附无外部依赖的 Python 实验及越权、重复、版本与伪引用边界验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RAG 上下文组装 从权限过滤到预算与引用校验">
+<meta property="og:url" content="https://eulersail.com/esblog/63594.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="把检索后的候选变成可追踪的生成输入，区分权限、去重、预算和引用检查，附无外部依赖的 Python 实验及越权、重复、版本与伪引用边界验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-05T10:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-05T10:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="RAG">
+<meta property="article:tag" content="上下文工程">
+<meta property="article:tag" content="权限控制">
+<meta property="article:tag" content="引用校验">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/63594.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RAG 上下文组装 从权限过滤到预算与引用校验',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-05 18:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">80</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">136</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">RAG 上下文组装 从权限过滤到预算与引用校验</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-05T10:00:00.000Z" title="发表于 2026-10-05 18:00:00">2026-10-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-05T10:00:00.000Z" title="更新于 2026-10-05 18:00:00">2026-10-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="RAG 上下文组装 从权限过滤到预算与引用校验"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>检索排序正确，不代表可以把结果原样交给模型。一段高分材料可能属于其他租户；同一段落可能重复出现；前几个长段落可能占满预算；回答还可能引用根本没有进入本次上下文的片段。</p>
+<p>这篇接在<a href="/esblog/61483.html">混合检索与重排</a>之后，研究“候选已经找到了，怎样变成生成输入”。用纯 Python 标准库把权限过滤、精确去重、预算装箱和引用回查拆开。实验不调用模型，不能据此宣称回答质量提升，也不把示范过滤器当成生产身份认证系统。</p>
+<span id="more"></span>
+
+
+<section class="reading-brief" data-tone="ai" aria-label="本文实践导航">
+  <div><span class="reading-brief-label">前置知识</span><h3>候选与重排</h3><p>知道排名是相关性的线索，不是权限、内容真实性或完整性的保证。</p></div>
+  <div><span class="reading-brief-label">本次实现</span><h3>冻结证据集合</h3><p>保存片段身份、文档版本与原文，限定本轮能被引用的材料。</p></div>
+  <div><span class="reading-brief-label">验证边界</span><h3>有出处不等于有依据</h3><p>字面引文检查能查出伪引用，却不能证明回答被原文蕴含。</p></div>
+</section>
+
+
+<h2 id="先把四个环节分开"><a href="#先把四个环节分开" class="headerlink" title="先把四个环节分开"></a>先把四个环节分开</h2><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>回答的问题</th>
+<th>不应替它承担的任务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>权限过滤</td>
+<td>当前用户可以看到哪些材料？</td>
+<td>用相似度猜测是否有权访问</td>
+</tr>
+<tr>
+<td>精确去重</td>
+<td>同一身份的片段是否重复返回？</td>
+<td>把不同文档的相同文字误合为同一出处</td>
+</tr>
+<tr>
+<td>预算组装</td>
+<td>哪些完整片段能进入本轮输入？</td>
+<td>把字节数直接当作模型 token 数</td>
+</tr>
+<tr>
+<td>引用回查</td>
+<td>引用是否来自本轮证据，原文是否包含引文？</td>
+<td>证明整个回答的语义一定正确</td>
+</tr>
+</tbody></table>
+<p>权限应该在检索服务返回候选之前生效，不能先把未授权文档交给外部重排服务，再在生成阶段删掉。本地示例再次过滤是防御检查，不替代检索端的访问控制。</p>
+<p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/azure/search/search-security-trimming-for-azure-search">微软的安全过滤文档</a>明确区分字符串过滤模式与真正的身份认证、授权：身份字段只负责匹配，不能证明调用者是谁。生产中的用户、租户和角色应来自已认证服务端会话，不能相信请求体里自填的角色。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[服务端确认身份与权限] --&gt; B[带权限约束的检索与重排]
+  B --&gt; C[本地再次过滤与精确去重]
+  C --&gt; D[按预算保留完整片段]
+  D --&gt; E[冻结本轮证据快照]
+  E --&gt; F[生成后回查引用]
+  </pre></div>
+
+<h2 id="片段身份必须连着文档版本"><a href="#片段身份必须连着文档版本" class="headerlink" title="片段身份必须连着文档版本"></a>片段身份必须连着文档版本</h2><p>示例片段包含 <code>id、tenant、doc、version、text、score</code>，权限表以 <code>(tenant, doc, version)</code> 为键，值是允许访问的角色集合。表中没有记录、角色不相交、租户不相同，全部拒绝。</p>
+<p><code>id</code> 在同一请求的租户内必须唯一。同一 id 重复返回时，文档、版本或正文有冲突就报错；仅分数不同则视为重复，排序靠前的一份保留。生产可使用全局唯一片段键、版本号与内容摘要，并保留页码或原文偏移，不能依靠一个易重复的自然语言标题。</p>
+<p>这里仅做身份去重。不对相似段落做语义合并：相同句子在两份不同文件中仍可能承担不同证据角色。近重复、重叠窗口与同文档配额是后续可比较的策略，不应悄悄混进本次基线。</p>
+<h2 id="预算的单位比数字更重要"><a href="#预算的单位比数字更重要" class="headerlink" title="预算的单位比数字更重要"></a>预算的单位比数字更重要</h2><p>实际模型输入需要使用目标模型匹配的 tokenizer，并预留系统规则、问题、对话历史、工具定义及输出空间。不同接口的窗口与输出计费规则要按对应官方资料核对，本文不提供通用模型窗口数字。</p>
+<p>为了让实验无依赖、可精确复算，这里使用 <strong>序列化证据 JSON 的 UTF-8 字节预算</strong>，包括字段名、标点、引号、转义与正文；它不是 token 预算，也不覆盖完整模型请求。空列表 <code>[]</code> 本身需要 2 字节。中文字符、表情与引号都会影响真实字节数，不能拿 <code>len(text)</code> 代替。</p>
+<p>序列化使用 <code>json.dumps(..., ensure_ascii=False, separators=(&quot;,&quot;, &quot;:&quot;))</code> 再编码为 UTF-8；相关参数见 <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/json.html">Python 官方 JSON 文档</a>。生产替换计量器时，必须重新计量实际发送的完整结构，不能只把字节预算变量改名为 token 预算。</p>
+<h2 id="按排名扫描不等于最优装箱"><a href="#按排名扫描不等于最优装箱" class="headerlink" title="按排名扫描不等于最优装箱"></a>按排名扫描不等于最优装箱</h2><p>策略是：权限过滤后按分数降序排列；相同分数按文档、版本和片段 id 排列，确保可复现；重复身份只处理一次；每次尝试加入一个完整片段，若超过预算就跳过，继续检查后面的片段。</p>
+<p>这比“遇到首个超长片段就停止”更容易保留后面较短的材料，但不是背包最优解，也没有证明它最大化回答相关性。分数不是收益的精确值，多段证据之间还可能存在互补或重复。</p>
+<table>
+<thead>
+<tr>
+<th>原创示例中的候选</th>
+<th>处理</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>其他租户的高分片段</td>
+<td>丢弃</td>
+<td>分数再高也不能越过租户边界</td>
+</tr>
+<tr>
+<td>c1 排障说明</td>
+<td>尝试加入</td>
+<td>有权访问且身份有效</td>
+</tr>
+<tr>
+<td>同一 c1 再次返回</td>
+<td>跳过</td>
+<td>同一原文身份，不重复占预算</td>
+</tr>
+<tr>
+<td>c2 很长的背景材料</td>
+<td>可能跳过</td>
+<td>超过剩余预算，不能截成不完整句子</td>
+</tr>
+<tr>
+<td>c3 较短的重试说明</td>
+<td>继续尝试</td>
+<td>前面超长不代表后面也超长</td>
+</tr>
+</tbody></table>
+<p>没有任何片段入选时，应走“证据不足”分支，而不是强迫生成一个有出处的答案。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[下一条有权候选] --&gt; B{身份是否已经出现}
+  B -- 是且内容一致 --&gt; A
+  B -- 是但内容冲突 --&gt; C[停止并报告数据冲突]
+  B -- 否 --&gt; D[序列化当前证据加候选]
+  D --&gt; E{是否在预算内}
+  E -- 是 --&gt; F[纳入本轮证据]
+  E -- 否 --&gt; G[跳过而不截断]
+  F --&gt; A
+  G --&gt; A
+  </pre></div>
+
+<h2 id="可直接运行的-Python-标准库实验"><a href="#可直接运行的-Python-标准库实验" class="headerlink" title="可直接运行的 Python 标准库实验"></a>可直接运行的 Python 标准库实验</h2><p>使用 Python 3.9 或更新版本，保存为 <code>context_demo.py</code> 后运行 <code>python context_demo.py</code>。正文与身份均为合成数据，无网络请求、不读凭据、不调用语言模型。<code>Principal</code> 和权限表在实验中直接构造，生产必须改由可信服务端提供。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Principal</span>:</span><br><span class="line">    tenant: <span class="built_in">str</span></span><br><span class="line">    roles: <span class="built_in">frozenset</span>[<span class="built_in">str</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Chunk</span>:</span><br><span class="line">    <span class="built_in">id</span>: <span class="built_in">str</span></span><br><span class="line">    tenant: <span class="built_in">str</span></span><br><span class="line">    doc: <span class="built_in">str</span></span><br><span class="line">    version: <span class="built_in">str</span></span><br><span class="line">    text: <span class="built_in">str</span></span><br><span class="line">    score: <span class="built_in">float</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">allowed</span>(<span class="params">chunk, principal, acl</span>):</span><br><span class="line">    grants = acl.get((chunk.tenant, chunk.doc, chunk.version), <span class="built_in">frozenset</span>())</span><br><span class="line">    <span class="keyword">return</span> chunk.tenant == principal.tenant <span class="keyword">and</span> <span class="built_in">bool</span>(principal.roles &amp; grants)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">wire</span>(<span class="params">chunks</span>):</span><br><span class="line">    records = [<span class="built_in">dict</span>(<span class="built_in">id</span>=c.<span class="built_in">id</span>, doc=c.doc, version=c.version, text=c.text)</span><br><span class="line">               <span class="keyword">for</span> c <span class="keyword">in</span> chunks]</span><br><span class="line">    <span class="keyword">return</span> json.dumps(records, ensure_ascii=<span class="literal">False</span>,</span><br><span class="line">                      separators=(<span class="string">&quot;,&quot;</span>, <span class="string">&quot;:&quot;</span>)).encode(<span class="string">&quot;utf-8&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pack</span>(<span class="params">candidates, principal, acl, budget_bytes</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(budget_bytes) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> budget_bytes &lt; <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;budget must be an integer of at least 2 bytes&quot;</span>)</span><br><span class="line">    eligible = []</span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> candidates:</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> allowed(c, principal, acl):</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">any</span>(<span class="keyword">not</span> <span class="built_in">isinstance</span>(v, <span class="built_in">str</span>) <span class="keyword">or</span> <span class="keyword">not</span> v.strip()</span><br><span class="line">               <span class="keyword">for</span> v <span class="keyword">in</span> (c.<span class="built_in">id</span>, c.tenant, c.doc, c.version, c.text)):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid authorized chunk metadata&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(c.score) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;score must be finite&quot;</span>)</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            finite = math.isfinite(c.score)</span><br><span class="line">        <span class="keyword">except</span> OverflowError:</span><br><span class="line">            finite = <span class="literal">False</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> finite:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;score must be finite&quot;</span>)</span><br><span class="line">        eligible.append(c)</span><br><span class="line">    eligible.sort(key=<span class="keyword">lambda</span> c: (-c.score, c.doc, c.version, c.<span class="built_in">id</span>))</span><br><span class="line">    selected, seen = [], &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> eligible:</span><br><span class="line">        identity = (c.doc, c.version, c.text)</span><br><span class="line">        <span class="keyword">if</span> c.<span class="built_in">id</span> <span class="keyword">in</span> seen:</span><br><span class="line">            <span class="keyword">if</span> seen[c.<span class="built_in">id</span>] != identity:</span><br><span class="line">                <span class="keyword">raise</span> ValueError(<span class="string">&quot;conflicting chunk identity&quot;</span>)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        seen[c.<span class="built_in">id</span>] = identity</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(wire(selected + [c])) &lt;= budget_bytes:</span><br><span class="line">            selected.append(c)</span><br><span class="line">    frozen = <span class="built_in">tuple</span>(selected)</span><br><span class="line">    <span class="keyword">return</span> frozen, wire(frozen)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">check_citations</span>(<span class="params">citations, selected, principal, current_acl</span>):</span><br><span class="line">    evidence = &#123;c.<span class="built_in">id</span>: c <span class="keyword">for</span> c <span class="keyword">in</span> selected&#125;</span><br><span class="line">    issues = []</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(citations, <span class="built_in">list</span>) <span class="keyword">or</span> <span class="keyword">not</span> citations:</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">dict</span>(ok=<span class="literal">False</span>, issues=[<span class="string">&quot;missing_citations&quot;</span>])</span><br><span class="line">    <span class="keyword">for</span> ref <span class="keyword">in</span> citations:</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(ref, <span class="built_in">dict</span>) <span class="keyword">or</span> <span class="built_in">set</span>(ref) != &#123;<span class="string">&quot;id&quot;</span>, <span class="string">&quot;version&quot;</span>, <span class="string">&quot;quote&quot;</span>&#125;:</span><br><span class="line">            issues.append(<span class="string">&quot;schema&quot;</span>)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">any</span>(<span class="keyword">not</span> <span class="built_in">isinstance</span>(v, <span class="built_in">str</span>) <span class="keyword">or</span> <span class="keyword">not</span> v.strip() <span class="keyword">for</span> v <span class="keyword">in</span> ref.values()):</span><br><span class="line">            issues.append(<span class="string">&quot;schema&quot;</span>)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        c = evidence.get(ref[<span class="string">&quot;id&quot;</span>])</span><br><span class="line">        <span class="keyword">if</span> c <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            issues.append(<span class="string">&quot;not_in_context&quot;</span>)</span><br><span class="line">        <span class="keyword">elif</span> <span class="keyword">not</span> allowed(c, principal, current_acl):</span><br><span class="line">            issues.append(<span class="string">&quot;permission_revoked&quot;</span>)</span><br><span class="line">        <span class="keyword">elif</span> ref[<span class="string">&quot;version&quot;</span>] != c.version:</span><br><span class="line">            issues.append(<span class="string">&quot;version_mismatch&quot;</span>)</span><br><span class="line">        <span class="keyword">elif</span> ref[<span class="string">&quot;quote&quot;</span>] <span class="keyword">not</span> <span class="keyword">in</span> c.text:</span><br><span class="line">            issues.append(<span class="string">&quot;quote_not_found&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(ok=<span class="keyword">not</span> issues, issues=issues)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">demo</span>():</span><br><span class="line">    user = Principal(<span class="string">&quot;t1&quot;</span>, <span class="built_in">frozenset</span>(&#123;<span class="string">&quot;ops&quot;</span>&#125;))</span><br><span class="line">    acl = &#123;(<span class="string">&quot;t1&quot;</span>, <span class="string">&quot;guide&quot;</span>, <span class="string">&quot;v1&quot;</span>): <span class="built_in">frozenset</span>(&#123;<span class="string">&quot;ops&quot;</span>&#125;),</span><br><span class="line">           (<span class="string">&quot;t2&quot;</span>, <span class="string">&quot;guide&quot;</span>, <span class="string">&quot;v1&quot;</span>): <span class="built_in">frozenset</span>(&#123;<span class="string">&quot;ops&quot;</span>&#125;)&#125;</span><br><span class="line">    candidates = [</span><br><span class="line">        Chunk(<span class="string">&quot;other&quot;</span>, <span class="string">&quot;t2&quot;</span>, <span class="string">&quot;guide&quot;</span>, <span class="string">&quot;v1&quot;</span>, <span class="string">&quot;其他租户的材料&quot;</span>, <span class="number">0.99</span>),</span><br><span class="line">        Chunk(<span class="string">&quot;c1&quot;</span>, <span class="string">&quot;t1&quot;</span>, <span class="string">&quot;guide&quot;</span>, <span class="string">&quot;v1&quot;</span>, <span class="string">&quot;缓存有效期为 30 分钟。&quot;</span>, <span class="number">0.95</span>),</span><br><span class="line">        Chunk(<span class="string">&quot;c1&quot;</span>, <span class="string">&quot;t1&quot;</span>, <span class="string">&quot;guide&quot;</span>, <span class="string">&quot;v1&quot;</span>, <span class="string">&quot;缓存有效期为 30 分钟。&quot;</span>, <span class="number">0.94</span>),</span><br><span class="line">        Chunk(<span class="string">&quot;c2&quot;</span>, <span class="string">&quot;t1&quot;</span>, <span class="string">&quot;guide&quot;</span>, <span class="string">&quot;v1&quot;</span>, <span class="string">&quot;背景说明。&quot;</span> * <span class="number">100</span>, <span class="number">0.90</span>),</span><br><span class="line">        Chunk(<span class="string">&quot;c3&quot;</span>, <span class="string">&quot;t1&quot;</span>, <span class="string">&quot;guide&quot;</span>, <span class="string">&quot;v1&quot;</span>, <span class="string">&quot;超时后最多重试 2 次。&quot;</span>, <span class="number">0.85</span>),</span><br><span class="line">    ]</span><br><span class="line">    selected, payload = pack(candidates, user, acl, <span class="number">240</span>)</span><br><span class="line">    good = [<span class="built_in">dict</span>(<span class="built_in">id</span>=<span class="string">&quot;c1&quot;</span>, version=<span class="string">&quot;v1&quot;</span>, quote=<span class="string">&quot;缓存有效期为 30 分钟。&quot;</span>)]</span><br><span class="line">    outside = [<span class="built_in">dict</span>(<span class="built_in">id</span>=<span class="string">&quot;c2&quot;</span>, version=<span class="string">&quot;v1&quot;</span>, quote=<span class="string">&quot;背景说明。&quot;</span>)]</span><br><span class="line">    fake = [<span class="built_in">dict</span>(<span class="built_in">id</span>=<span class="string">&quot;c1&quot;</span>, version=<span class="string">&quot;v1&quot;</span>, quote=<span class="string">&quot;缓存永不失效。&quot;</span>)]</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(ids=[c.<span class="built_in">id</span> <span class="keyword">for</span> c <span class="keyword">in</span> selected], evidence_bytes=<span class="built_in">len</span>(payload),</span><br><span class="line">                good=check_citations(good, selected, user, acl),</span><br><span class="line">                outside=check_citations(outside, selected, user, acl),</span><br><span class="line">                fake=check_citations(fake, selected, user, acl),</span><br><span class="line">                revoked=check_citations(good, selected, user, &#123;&#125;))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(demo(), ensure_ascii=<span class="literal">False</span>, indent=<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+<p>样例会保留 c1 与 c3；c2 没有进入本轮证据，因此引用 c2 仍不合法，即使它确实来自知识库。代码记录错误类别，不把未授权正文或引文写入日志。</p>
+<table>
+<thead>
+<tr>
+<th>实际运行项</th>
+<th>输出</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ids</code></td>
+<td><code>[&quot;c1&quot;, &quot;c3&quot;]</code></td>
+<td>去重并跳过超长材料后仍继续扫描</td>
+</tr>
+<tr>
+<td><code>evidence_bytes</code></td>
+<td>164</td>
+<td>完整证据 JSON 的 UTF-8 字节数，低于 240</td>
+</tr>
+<tr>
+<td><code>good</code></td>
+<td><code>ok=true</code></td>
+<td>原文确实包含本轮引文</td>
+</tr>
+<tr>
+<td><code>outside</code></td>
+<td><code>not_in_context</code></td>
+<td>c2 虽在候选里，却不在本轮上下文</td>
+</tr>
+<tr>
+<td><code>fake</code></td>
+<td><code>quote_not_found</code></td>
+<td>伪造句子不是 c1 的子串</td>
+</tr>
+<tr>
+<td><code>revoked</code></td>
+<td><code>permission_revoked</code></td>
+<td>复核时权限表已不再允许访问</td>
+</tr>
+</tbody></table>
+<h2 id="引文存在不代表回答被支持"><a href="#引文存在不代表回答被支持" class="headerlink" title="引文存在不代表回答被支持"></a>引文存在不代表回答被支持</h2><p>当前校验只检查结构、片段入选、权限仍有效、版本一致，以及引文是否为正文的精确子串。它不处理同义改写、空白规范化或 Unicode 等价形式，也没有把答案正文传入校验器。</p>
+<p>例如原文说“缓存有效期为 30 分钟”，回答却说“缓存每 30 分钟必然自动刷新”。即便引用原句，字面检查仍会通过，答案却增加了原文没有说的自动刷新机制。要检查这类错误，需要拆分回答断言、核对适用范围与限定词，并做人工抽检或经过独立评估的蕴含校验。</p>
+<table>
+<thead>
+<tr>
+<th>错误</th>
+<th>这个实验能否发现</th>
+<th>需要补充的环节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>引用未入选的 c2</td>
+<td>能</td>
+<td>本轮证据集合回查</td>
+</tr>
+<tr>
+<td>引用旧版本号</td>
+<td>能</td>
+<td>版本身份校验</td>
+</tr>
+<tr>
+<td>编造一句不存在的原文</td>
+<td>能</td>
+<td>精确子串检查</td>
+</tr>
+<tr>
+<td>正文加上来源没有说的机制</td>
+<td>不能</td>
+<td>断言与来源的语义核验</td>
+</tr>
+<tr>
+<td>来源本身已经过时或错误</td>
+<td>不能</td>
+<td>数据治理、时效与来源可靠性检查</td>
+</tr>
+<tr>
+<td>缺少引用的拒答</td>
+<td>不能按引用成功计入</td>
+<td>拒答应有独立响应与评测分支</td>
+</tr>
+</tbody></table>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[引用有可追踪身份] --&gt; B[引文确实存在]
+  B --&gt; C[回答断言是否被支持]
+  C --&gt; D[来源是否可靠且仍适用]
+  A -. 本例检查 .-&gt; E[结构与本轮成员]
+  B -. 本例检查 .-&gt; F[精确子串]
+  C -. 另需评测 .-&gt; G[语义与限定条件]
+  </pre></div>
+
+<h2 id="权限撤销与缓存不能只看第一次请求"><a href="#权限撤销与缓存不能只看第一次请求" class="headerlink" title="权限撤销与缓存不能只看第一次请求"></a>权限撤销与缓存不能只看第一次请求</h2><p>示例在引用检查时重新读取当前权限表。如果权限已撤销，不继续展示依赖该证据的回答。生产还必须把权限版本或身份范围纳入检索、上下文和答案缓存策略，避免不同租户或角色共享敏感结果；对整个响应作权限复核，而不只是对引用标签作复核。</p>
+<p>这个 Python 片段只是静态快照实验，没有解决权限变化与响应发送之间的竞态。应在系统中定义复核边界和失效机制，不能从一次函数调用推导出完整的访问控制保证。</p>
+<h2 id="检索材料仍然是不可信输入"><a href="#检索材料仍然是不可信输入" class="headerlink" title="检索材料仍然是不可信输入"></a>检索材料仍然是不可信输入</h2><p>片段中可能出现“忽略上面的规则”等指令。结构化 JSON、分隔符与引用检查都不是提示注入的完整防护；字面引用检查甚至会允许引用这段指令，只要它真实存在。<a target="_blank" rel="noopener" href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/">OWASP 提示注入资料</a>说明外部内容也可能成为注入入口。</p>
+<p>工程上应限制工具权限与副作用，将外部文本作为证据而非更高优先级指令，验证结构化输出，建立注入测试集，并隔离高风险操作。本篇只实现输入组装与引用回查，不宣称已经防住提示注入。</p>
+
+<details class="reflection-panel" data-tone="ai">
+  <summary>实践自测 引用回查通过后还能发生什么错误</summary>
+  <div><p>把示例答案改成“缓存每 30 分钟必然自动刷新”，保留真实引文。字面检查依然可能通过，这正好说明它没有读取、理解答案断言。</p><p>分别为身份伪造、上下文越权、伪造引文、错误推断与过期来源建立测试，不要用一个“引用准确率”合并所有失败。</p></div>
+</details>
+
+
+<h2 id="回归指标应分别报告"><a href="#回归指标应分别报告" class="headerlink" title="回归指标应分别报告"></a>回归指标应分别报告</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>本例或生产检查对象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>未授权入选数</td>
+<td>必须为 0，覆盖跨租户、缺 ACL、角色不匹配</td>
+</tr>
+<tr>
+<td>预算超限数</td>
+<td>按实际序列化结果计量，必须为 0</td>
+</tr>
+<tr>
+<td>身份冲突拒绝数</td>
+<td>同一 id 的不同正文、文档或版本不能静默覆盖</td>
+</tr>
+<tr>
+<td>引用结构通过率</td>
+<td>不等于语义支持率，也不是模型真实效果</td>
+</tr>
+<tr>
+<td>证据覆盖率</td>
+<td>需要独立标注相关证据，本例没有估计</td>
+</tr>
+<tr>
+<td>空上下文与拒答表现</td>
+<td>不能通过随意补一句话假装任务成功</td>
+</tr>
+</tbody></table>
+<p>预算组装每次重新序列化已选列表，最坏存在二次累计成本；这是可读性优先的小实验，不是高吞吐实现。优化时可以增量计算字节增量，但必须覆盖 JSON 转义、数组逗号与 UTF-8，保持与完整序列化一致。</p>
+<h2 id="与已有-AI-工程文章接起来"><a href="#与已有-AI-工程文章接起来" class="headerlink" title="与已有 AI 工程文章接起来"></a>与已有 AI 工程文章接起来</h2><ul>
+<li><a href="/esblog/68429.html">embedding 与语义检索</a>解释近邻召回与真实相关性为何不同。</li>
+<li><a href="/esblog/61483.html">混合检索与重排</a>解释多路排名、候选窗口与重排截断。</li>
+<li><a href="/esblog/58241.html">RAG 知识库评测</a>把失败拆到召回、排序、生成与拒答。</li>
+<li><a href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程专题</a>提供完整路线与可筛选文章库。</li>
+</ul>
+<p>资料核对日期为 2026-10-05。本文中的缓存、重试、权限与分数都是原创合成示例，不能当作任何真实系统的配置或效果数据。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/63594.html">https://eulersail.com/esblog/63594.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/RAG/">RAG</a><a class="post-meta__tags" href="/tags/%E4%B8%8A%E4%B8%8B%E6%96%87%E5%B7%A5%E7%A8%8B/">上下文工程</a><a class="post-meta__tags" href="/tags/%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6/">权限控制</a><a class="post-meta__tags" href="/tags/%E5%BC%95%E7%94%A8%E6%A0%A1%E9%AA%8C/">引用校验</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/93871.html" title="舒伯特第五交响曲 从轻编制到旋律转色"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">舒伯特第五交响曲 从轻编制到旋律转色</div></div></a></div><div class="next-post pull-right"><a href="/esblog/95386.html" title="贝多芬第四交响曲 从慢引子到持续运动"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">贝多芬第四交响曲 从慢引子到持续运动</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/43018.html" title="从文档到可检索知识库：RAGFlow 搭建与调优实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-29</div><div class="title">从文档到可检索知识库：RAGFlow 搭建与调优实战</div></div></a></div><div><a href="/esblog/58241.html" title="RAG 知识库评测：从检索命中到可信回答"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">RAG 知识库评测：从检索命中到可信回答</div></div></a></div><div><a href="/esblog/68429.html" title="从 embedding 到语义检索：向量相似度、召回与独立评测"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-29</div><div class="title">从 embedding 到语义检索：向量相似度、召回与独立评测</div></div></a></div><div><a href="/esblog/61483.html" title="混合检索与重排 从 RRF 候选融合到可复现的离线评测"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-04</div><div class="title">混合检索与重排 从 RRF 候选融合到可复现的离线评测</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">80</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">136</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">候选与重排</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">冻结证据集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">有出处不等于有依据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E5%9B%9B%E4%B8%AA%E7%8E%AF%E8%8A%82%E5%88%86%E5%BC%80"><span class="toc-text">先把四个环节分开</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%87%E6%AE%B5%E8%BA%AB%E4%BB%BD%E5%BF%85%E9%A1%BB%E8%BF%9E%E7%9D%80%E6%96%87%E6%A1%A3%E7%89%88%E6%9C%AC"><span class="toc-text">片段身份必须连着文档版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%84%E7%AE%97%E7%9A%84%E5%8D%95%E4%BD%8D%E6%AF%94%E6%95%B0%E5%AD%97%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="toc-text">预算的单位比数字更重要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%89%E6%8E%92%E5%90%8D%E6%89%AB%E6%8F%8F%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%9C%80%E4%BC%98%E8%A3%85%E7%AE%B1"><span class="toc-text">按排名扫描不等于最优装箱</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AF%E7%9B%B4%E6%8E%A5%E8%BF%90%E8%A1%8C%E7%9A%84-Python-%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E9%AA%8C"><span class="toc-text">可直接运行的 Python 标准库实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E6%96%87%E5%AD%98%E5%9C%A8%E4%B8%8D%E4%BB%A3%E8%A1%A8%E5%9B%9E%E7%AD%94%E8%A2%AB%E6%94%AF%E6%8C%81"><span class="toc-text">引文存在不代表回答被支持</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E6%92%A4%E9%94%80%E4%B8%8E%E7%BC%93%E5%AD%98%E4%B8%8D%E8%83%BD%E5%8F%AA%E7%9C%8B%E7%AC%AC%E4%B8%80%E6%AC%A1%E8%AF%B7%E6%B1%82"><span class="toc-text">权限撤销与缓存不能只看第一次请求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E7%B4%A2%E6%9D%90%E6%96%99%E4%BB%8D%E7%84%B6%E6%98%AF%E4%B8%8D%E5%8F%AF%E4%BF%A1%E8%BE%93%E5%85%A5"><span class="toc-text">检索材料仍然是不可信输入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E5%BD%92%E6%8C%87%E6%A0%87%E5%BA%94%E5%88%86%E5%88%AB%E6%8A%A5%E5%91%8A"><span class="toc-text">回归指标应分别报告</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8E%E5%B7%B2%E6%9C%89-AI-%E5%B7%A5%E7%A8%8B%E6%96%87%E7%AB%A0%E6%8E%A5%E8%B5%B7%E6%9D%A5"><span class="toc-text">与已有 AI 工程文章接起来</span></a></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/93871.html" title="舒伯特第五交响曲 从轻编制到旋律转色">舒伯特第五交响曲 从轻编制到旋律转色</a><time datetime="2026-10-05T10:05:00.000Z" title="发表于 2026-10-05 18:05:00">2026-10-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验">RAG 上下文组装 从权限过滤到预算与引用校验</a><time datetime="2026-10-05T10:00:00.000Z" title="发表于 2026-10-05 18:00:00">2026-10-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/95386.html" title="贝多芬第四交响曲 从慢引子到持续运动">贝多芬第四交响曲 从慢引子到持续运动</a><time datetime="2026-10-05T09:05:00.000Z" title="发表于 2026-10-05 17:05:00">2026-10-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86471.html" title="Codeforces 438D 区间取模 从最大值剪枝到均摊线段树">Codeforces 438D 区间取模 从最大值剪枝到均摊线段树</a><time datetime="2026-10-05T09:00:00.000Z" title="发表于 2026-10-05 17:00:00">2026-10-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/95128.html" title="贝多芬第八交响曲 从节拍预期到音乐幽默">贝多芬第八交响曲 从节拍预期到音乐幽默</a><time datetime="2026-10-05T02:35:00.000Z" title="发表于 2026-10-05 10:35:00">2026-10-05</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
