@@ -223,6 +223,114 @@
   margin: 0 auto;
 }
 
+/* Keep comparison columns readable; scroll inside the content, not the page. */
+#article-container .table-wrap {
+  max-width: 100%;
+  margin: 1.4em 0 0.45em;
+  overflow-x: auto;
+  border: 1px solid var(--sail-border);
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sail-accent) transparent;
+}
+
+#article-container .table-wrap > table {
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+#article-container .table-wrap > table th,
+#article-container .table-wrap > table td {
+  min-width: 8.5em;
+  padding: 0.7em 0.9em;
+  line-height: 1.65;
+  vertical-align: top;
+}
+
+#article-container .table-wrap > table th {
+  color: var(--font-color);
+  font-weight: 700;
+}
+
+#article-container .table-wrap > table tbody tr:nth-child(even) {
+  background: var(--sail-accent-soft);
+}
+
+#article-container .reading-scroll-hint {
+  margin: 0.35em 0 1.35em;
+  color: var(--font-color);
+  font-size: 0.8em;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+#article-container .reading-scroll-hint[hidden] {
+  display: none !important;
+}
+
+#article-container .table-wrap:focus-visible,
+#article-container .mermaid-wrap:focus-visible,
+#article-container figure.highlight:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 3px;
+}
+
+#article-container figure.highlight {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+#article-container figure.highlight > table {
+  width: max-content;
+  min-width: 100%;
+}
+
+#article-container .diagram-tools {
+  position: sticky;
+  left: 0;
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 0.85em;
+  align-items: center;
+  gap: 0.65em;
+  color: var(--font-color);
+  font-size: 0.8em;
+}
+
+#article-container .diagram-tools button {
+  min-height: 40px;
+  padding: 0.4em 0.85em;
+  border: 1px solid var(--sail-border);
+  border-radius: 8px;
+  color: var(--sail-accent);
+  background: var(--sail-accent-soft);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#article-container .diagram-tools button:focus-visible {
+  outline: 2px solid var(--sail-accent);
+  outline-offset: 2px;
+}
+
+#article-container .diagram-tools span {
+  line-height: 1.5;
+}
+
+#article-container .mermaid-wrap.is-diagram-expanded svg {
+  width: max(100%, var(--sail-diagram-width, 640px)) !important;
+  max-width: none !important;
+  height: auto;
+}
+
+#article-container h2,
+#article-container h3 {
+  scroll-margin-top: 90px;
+}
+
 .tag-cloud-list a {
   display: inline-flex;
   align-items: center;

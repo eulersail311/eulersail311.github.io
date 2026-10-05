@@ -261,7 +261,90 @@
     update();
   }
 
+  function initializeReadableVisuals(container) {
+    const initialized = new WeakSet();
+    const updates = new Set();
+    let scheduled = false;
+
+    function registerScroll(element, label, hintText) {
+      const hint = document.createElement('p');
+      hint.className = 'reading-scroll-hint';
+      hint.textContent = hintText;
+      hint.hidden = true;
+      element.after(hint);
+      const update = () => {
+        const overflowing = element.scrollWidth > element.clientWidth + 2;
+        hint.hidden = !overflowing;
+        if (overflowing) {
+          element.tabIndex = 0;
+          element.setAttribute('role', 'region');
+          element.setAttribute('aria-label', label);
+        } else {
+          element.removeAttribute('tabindex');
+          element.removeAttribute('role');
+          element.removeAttribute('aria-label');
+        }
+      };
+      updates.add(update);
+      return update;
+    }
+
+    function scan() {
+      scheduled = false;
+      container.querySelectorAll('.table-wrap, figure.highlight, .mermaid-wrap').forEach(element => {
+        if (initialized.has(element)) return;
+        if (element.classList.contains('table-wrap') && element.closest('figure.highlight')) return;
+        if (element.classList.contains('mermaid-wrap') && !element.querySelector('svg')) return;
+        initialized.add(element);
+
+        const diagram = element.classList.contains('mermaid-wrap');
+        const code = element.matches('figure.highlight');
+        const update = registerScroll(element,
+          diagram ? '可横向滚动的图示' : code ? '可横向滚动的代码示例' : '可横向滚动的表格',
+          '内容较宽，可左右滑动；键盘聚焦后可用左右方向键滚动。');
+        if (diagram) {
+          const tools = document.createElement('div');
+          tools.className = 'diagram-tools';
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = '放大图示';
+          button.setAttribute('aria-pressed', 'false');
+          const note = document.createElement('span');
+          note.textContent = '按需放大，查看图中细节';
+          tools.append(button, note);
+          // Butterfly uses the first child as Mermaid source during theme changes.
+          element.firstElementChild.after(tools);
+          button.addEventListener('click', () => {
+            const expanded = element.classList.toggle('is-diagram-expanded');
+            const nativeWidth = element.querySelector('svg')?.viewBox.baseVal.width || 640;
+            element.style.setProperty('--sail-diagram-width', `${Math.max(560, nativeWidth)}px`);
+            button.setAttribute('aria-pressed', String(expanded));
+            button.textContent = expanded ? '适应宽度' : '放大图示';
+            note.textContent = expanded ? '宽图可左右滑动查看' : '按需放大，查看图中细节';
+            if (!expanded) element.scrollLeft = 0;
+            update();
+          });
+        }
+        if (resizeObserver) resizeObserver.observe(element);
+      });
+      updates.forEach(update => update());
+    }
+    function schedule() {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(scan);
+    }
+    const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;
+    // Tables are wrapped by the theme; diagrams arrive asynchronously after rendering.
+    const mutationObserver = new MutationObserver(schedule);
+    mutationObserver.observe(container, { childList: true, subtree: true });
+    window.addEventListener('resize', schedule);
+    scan();
+  }
+
   function initializeSiteComponents() {
+    const container = document.querySelector('#article-container');
+    if (container) initializeReadableVisuals(container);
     const article = document.querySelector('#post > #article-container');
     if (!article) return;
     initializeReadingOverview(article);
