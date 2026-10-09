@@ -1,0 +1,460 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 600E 子树众数 从频次合并到小并大证明 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="子树众数不能只合并孩子的答案；保留完整颜色频次，按子树顶点数选择大袋，再用质量翻倍证明 O(n log² n)，附非递归 C++17 与独立子树枚举验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 600E 子树众数 从频次合并到小并大证明">
+<meta property="og:url" content="https://eulersail.com/esblog/70482.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="子树众数不能只合并孩子的答案；保留完整颜色频次，按子树顶点数选择大袋，再用质量翻倍证明 O(n log² n)，附非递归 C++17 与独立子树枚举验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-09T09:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T09:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="均摊分析">
+<meta property="article:tag" content="树上统计">
+<meta property="article:tag" content="启发式合并">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/70482.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 600E 子树众数 从频次合并到小并大证明',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-09 17:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">140</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 600E 子树众数 从频次合并到小并大证明</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-09T09:00:00.000Z" title="发表于 2026-10-09 17:00:00">2026-10-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-09T09:00:00.000Z" title="更新于 2026-10-09 17:00:00">2026-10-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 600E 子树众数 从频次合并到小并大证明"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>每个顶点都要回答：自己的子树里，哪些颜色出现得最多？把这些颜色的编号相加。对子树反复遍历会做许多重复工作，但直接把孩子的答案相加也不对；真正需要复用的是颜色频次。</p>
+<p>这篇接在<a href="/esblog/43827.html">树上 DFS</a>、<a href="/esblog/70146.html">子树区间</a>与<a href="/esblog/78362.html">子树染色</a>之后。620E 有在线修改，600E 的树和颜色完全静态，因此可以自底向上合并袋子；我们选择迭代遍历，避免十万点长链带来的递归栈风险。</p>
+<span id="more"></span>
+
+
+<section class="reading-brief" data-tone="algorithm" aria-label="本文学习导航">
+  <div><span class="reading-brief-label">阅读前</span><h3>会划分父子关系</h3><p>子树互不重叠，父节点的统计由自己的颜色与各孩子的统计组成。</p></div>
+  <div><span class="reading-brief-label">关键问题</span><h3>频次不能丢</h3><p>众数答案不是可直接相加的摘要；小袋里的计数必须进入大袋。</p></div>
+  <div><span class="reading-brief-label">完成标志</span><h3>说清谁在翻倍</h3><p>被收费的是源子树中的顶点，而不是可能发生碰撞的颜色键。</p></div>
+</section>
+
+
+<h2 id="官方题目与范围"><a href="#官方题目与范围" class="headerlink" title="官方题目与范围"></a>官方题目与范围</h2><p>题目为 <a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/600/E">Codeforces 600E Lomsat gelral</a>，以下信息于 2026-10-09 按官方题目页核对。题意只做概括，下面的推导、例子和代码为本站原创。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>官方信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>难度</td>
+<td>2300</td>
+</tr>
+<tr>
+<td>标签</td>
+<td>data structures、dfs and similar、dsu、trees</td>
+</tr>
+<tr>
+<td>顶点数 n</td>
+<td>1 到 100000</td>
+</tr>
+<tr>
+<td>颜色编号</td>
+<td>1 到 n</td>
+</tr>
+<tr>
+<td>结构</td>
+<td>n−1 条无向边构成树，根为 1</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>按顶点编号输出每棵子树的所有最高频颜色编号之和</td>
+</tr>
+<tr>
+<td>限制</td>
+<td>2 秒；256 MB</td>
+</tr>
+</tbody></table>
+<p>并列最高频的颜色全部计入，每个颜色编号只加一次，不乘出现次数。答案可能超过 32 位：当所有颜色 1 到 100000 各出现一次，根的答案为 <code>100000×100001/2 = 5000050000</code>。频次可以用 <code>int</code>，答案使用 <code>long long</code>。</p>
+<h2 id="只保存孩子的众数会漏掉什么"><a href="#只保存孩子的众数会漏掉什么" class="headerlink" title="只保存孩子的众数会漏掉什么"></a>只保存孩子的众数会漏掉什么</h2><p>朴素做法对每个顶点重新扫描整棵子树。长链的工作量为 <code>n+(n−1)+…+1</code>，最坏 O(n²)。</p>
+<p>但把每个孩子的“最高频次与众数和”当作节点摘要也不够。设 n 至少为 7，父节点自己的颜色为 7：</p>
+<table>
+<thead>
+<tr>
+<th>子树</th>
+<th>各颜色频次</th>
+<th>子树的最高频颜色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>孩子 A</td>
+<td>1 出现 3 次；3 出现 2 次</td>
+<td>1</td>
+</tr>
+<tr>
+<td>孩子 B</td>
+<td>2 出现 3 次；3 出现 2 次</td>
+<td>2</td>
+</tr>
+<tr>
+<td>合并 A、B 和父节点</td>
+<td>1：3；2：3；3：4；7：1</td>
+<td>3</td>
+</tr>
+</tbody></table>
+<p>颜色 3 在两个孩子里都不是众数，在父节点却成为唯一众数。仅保留两个孩子的答案会永久丢失它的频次。与<a href="/esblog/89264.html">区间异或</a>的固定 20 位摘要不同，这里保留一个 <code>颜色 → 次数</code> 的完整映射。</p>
+<h2 id="袋子保存什么，怎样增量维护答案"><a href="#袋子保存什么，怎样增量维护答案" class="headerlink" title="袋子保存什么，怎样增量维护答案"></a>袋子保存什么，怎样增量维护答案</h2><p>每个当前袋子维护三个量：<code>freq[c]</code> 为颜色 c 的次数；<code>best</code> 为最高频次；<code>sum</code> 为达到 best 的所有颜色编号之和。空袋 <code>best=0, sum=0</code>。</p>
+<p>把颜色 c 的次数增加 delta，设更新后的频次为 k。其他颜色没有变化：</p>
+<table>
+<thead>
+<tr>
+<th>k 与旧 best 的关系</th>
+<th>新 best</th>
+<th>新 sum</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>k 小于 best</td>
+<td>不变</td>
+<td>不变</td>
+</tr>
+<tr>
+<td>k 等于 best</td>
+<td>不变</td>
+<td>加上 c</td>
+</tr>
+<tr>
+<td>k 大于 best</td>
+<td>改为 k</td>
+<td>重置为 c</td>
+</tr>
+</tbody></table>
+<p>delta 必须为正。第二行不会重复加入同一颜色：次数严格增加，更新前它还没有达到这个最高频次。若它原先就处于最高频次，增加后必然进入第三行。</p>
+<p>合并整个孩子时，对孩子袋中的每个 <code>(c,count)</code> 调用一次增量更新，<strong>不是只增加 1</strong>。不能把两个袋子的 <code>best</code> 取最大、<code>sum</code> 相加，因为相同颜色在两边的频次会叠加。</p>
+<h2 id="先接管最大子树，再合并其余袋子"><a href="#先接管最大子树，再合并其余袋子" class="headerlink" title="先接管最大子树，再合并其余袋子"></a>先接管最大子树，再合并其余袋子</h2><p>这里的“大”按<strong>袋子代表的顶点数</strong>衡量，具体就是孩子的子树大小，不是 <code>map.size()</code>。即使一棵大子树只有一种颜色，仍然可以直接接管它的袋子。</p>
+<ol>
+<li>先得到每个孩子的袋子与答案。</li>
+<li>找子树顶点数最多的孩子，移动其袋子的所有权给父节点，不复制映射。</li>
+<li>加入父节点自己的颜色一次。</li>
+<li>遍历其余孩子的颜色频次，合并到当前袋子；释放这些已被吸收的袋子。</li>
+<li>保存当前 <code>sum</code> 为父节点答案。以后袋子可能继续变化，但这个数值快照不变。</li>
+</ol>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[父子顺序的逆序处理] --&gt; B[孩子袋子已经完成]
+  B --&gt; C[接管顶点数最多的孩子袋子]
+  C --&gt; D[加入自己的颜色]
+  D --&gt; E[把其他孩子的完整频次并入]
+  E --&gt; F[保存当前众数编号和]
+  F --&gt; G[袋子继续交给祖先复用]
+  </pre></div>
+
+<p>本实现属于 small-to-large 容器合并。官方标签里的 dsu 不意味着一定要写 <code>find/unite</code>；它也不等同于另一种“保留重子树、清空轻子树贡献”的 sack 写法。两种方法都复用树上统计，但代码与复杂度证明应分别说明。</p>
+<h2 id="为什么重复合并总量可控"><a href="#为什么重复合并总量可控" class="headerlink" title="为什么重复合并总量可控"></a>为什么重复合并总量可控</h2><p>设一个轻孩子的子树有 s 个顶点。合并它时，目标袋子至少含有最大孩子的全部顶点，最大孩子大小不小于 s，因此合并后的袋子至少代表 2s 个顶点。</p>
+<p>一次遍历源袋的条目数不超过 s：不同颜色数不会超过它代表的顶点数。我们把这次遍历的成本上界收费到源子树的 s 个顶点，每个顶点收取常数费用。某个顶点再次作为源袋被收费时，所在袋子质量已至少翻倍；从 1 增长到 n，它至多被收费 O(log n) 次。因此总遍历条目数为 O(n log n)。</p>
+<p>这份证明不声称“每个颜色键迁移后，不同颜色数一定翻倍”。相同颜色会碰撞，例如两个大小为 100 的单色子树合并后仍只有一个键。<strong>翻倍的是代表的顶点数</strong>；按源顶点收费正好绕开键碰撞问题。父节点自己的一次插入，另计 n 次。</p>
+<p>代码使用 <code>std::map</code>，单次颜色查找与更新 O(log n)，所以总时间 **O(n log² n)**，不是 O(n log n)。<code>unordered_map</code> 的查找有期望界而非同样的确定性最坏界，本文不据此改写复杂度。</p>
+<p>活跃袋子代表的顶点集合互不重叠。合并期间源映射与目标中的新条目短暂并存，总条目仍为 O(n)；合并后立即释放源袋。邻接表、遍历顺序、大小和答案数组也为 O(n)，总额外空间 O(n)。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[轻子树有 s 个顶点] --&gt; B[目标至少已有 s 个顶点]
+  B --&gt; C[合并后质量至少为二倍]
+  C --&gt; D[每个顶点被收费对数次]
+  D --&gt; E[条目更新总数为 n log n]
+  E --&gt; F[有序映射再乘 log n]
+  </pre></div>
+
+<h2 id="手工合并一次并列众数"><a href="#手工合并一次并列众数" class="headerlink" title="手工合并一次并列众数"></a>手工合并一次并列众数</h2><p>树边为 <code>1−2、1−3、2−4、2−5</code>，颜色依次为 <code>[2,1,3,3,1]</code>。子树 2 有三个顶点，是根的最大孩子；它的袋子为 <code>&#123;1:2,3:1&#125;</code>，best 为 2，sum 为 1。</p>
+<table>
+<thead>
+<tr>
+<th>处理动作</th>
+<th>当前频次</th>
+<th>best</th>
+<th>sum</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>根接管子树 2</td>
+<td>1：2；3：1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>加入根的颜色 2</td>
+<td>1：2；2：1；3：1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>并入子树 3 的颜色 3 一次</td>
+<td>1：2；2：1；3：2</td>
+<td>2</td>
+<td>4</td>
+</tr>
+</tbody></table>
+<p>最终按顶点编号输出 <code>4 1 3 3 1</code>。子树 2 的答案仍是 1，尽管它原来的袋子已经被根接管并修改。把所有节点的答案存成指向袋子的引用会破坏这个快照。</p>
+<h2 id="正确性：频次、最高频与遍历顺序"><a href="#正确性：频次、最高频与遍历顺序" class="headerlink" title="正确性：频次、最高频与遍历顺序"></a>正确性：频次、最高频与遍历顺序</h2><p>对处理顺序归纳。叶子的空袋加入自身颜色后，频次和答案显然正确。假设一个节点的所有孩子袋子均正确；每个孩子的顶点集合互不重叠，也不含父节点。接管一个孩子、加入父节点、并入其余孩子，恰好把父子树的所有顶点计入一次，所以最终每种颜色的频次正确。</p>
+<p>每次增量只改变一种颜色；上述三种比较分别覆盖全部可能，并正确维护最高频次与众数和。因此合并完成时 <code>sum</code> 就是目标答案。</p>
+<p>代码先从根构造父节点早于孩子的 <code>order</code>。逆序处理保证每个孩子已经完成；这里不依赖孩子之间的顺序，也不要求 order 是先序 DFS。所有权移动只改变数据存放位置，不改变孩子已经保存的答案。于是每个顶点的输出正确。</p>
+<h2 id="完整-C-17-实现"><a href="#完整-C-17-实现" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h2><p>使用显式顺序替代递归，链形树也不会增加调用栈深度。<code>unique_ptr</code> 的 <code>move</code> 是袋子所有权转移，<code>reset</code> 释放的是内存，不涉及任何文件操作。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;memory&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;utility&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Bag</span> &#123;</span><br><span class="line">    map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; freq;</span><br><span class="line">    <span class="type">int</span> best = <span class="number">0</span>;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> sum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> color, <span class="type">int</span> delta)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> now = (freq[color] += delta);</span><br><span class="line">        <span class="keyword">if</span> (now &gt; best) &#123;</span><br><span class="line">            best = now;</span><br><span class="line">            sum = color;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (now == best) &#123;</span><br><span class="line">            sum += color;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    <span class="keyword">if</span> (!(cin &gt;&gt; n)) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">color</span><span class="params">(n + <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; ++i) cin &gt;&gt; color[i];</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">graph</span>(n + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n - <span class="number">1</span>; ++i) &#123;</span><br><span class="line">        <span class="type">int</span> u, v;</span><br><span class="line">        cin &gt;&gt; u &gt;&gt; v;</span><br><span class="line">        graph[u].<span class="built_in">push_back</span>(v);</span><br><span class="line">        graph[v].<span class="built_in">push_back</span>(u);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">parent</span><span class="params">(n + <span class="number">1</span>, <span class="number">0</span>)</span>, order</span>&#123;<span class="number">1</span>&#125;;</span><br><span class="line">    parent[<span class="number">1</span>] = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; order.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">        <span class="type">int</span> u = order[i];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v : graph[u]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (v == parent[u]) <span class="keyword">continue</span>;</span><br><span class="line">            parent[v] = u;</span><br><span class="line">            order.<span class="built_in">push_back</span>(v);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">size</span><span class="params">(n + <span class="number">1</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">answer</span><span class="params">(n + <span class="number">1</span>)</span></span>;</span><br><span class="line">    vector&lt;unique_ptr&lt;Bag&gt;&gt; <span class="built_in">bags</span>(n + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n - <span class="number">1</span>; i &gt;= <span class="number">0</span>; --i) &#123;</span><br><span class="line">        <span class="type">int</span> u = order[i], heavy = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v : graph[u]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (parent[v] != u) <span class="keyword">continue</span>;</span><br><span class="line">            size[u] += size[v];</span><br><span class="line">            <span class="keyword">if</span> (heavy == <span class="number">0</span> || size[v] &gt; size[heavy]) heavy = v;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (heavy != <span class="number">0</span>) bags[u] = <span class="built_in">move</span>(bags[heavy]);</span><br><span class="line">        <span class="keyword">else</span> bags[u] = <span class="built_in">make_unique</span>&lt;Bag&gt;();</span><br><span class="line">        bags[u]-&gt;<span class="built_in">add</span>(color[u], <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v : graph[u]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (parent[v] != u || v == heavy) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">const</span> <span class="keyword">auto</span> &amp;entry : bags[v]-&gt;freq) &#123;</span><br><span class="line">                bags[u]-&gt;<span class="built_in">add</span>(entry.first, entry.second);</span><br><span class="line">            &#125;</span><br><span class="line">            bags[v].<span class="built_in">reset</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        answer[u] = bags[u]-&gt;sum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> u = <span class="number">1</span>; u &lt;= n; ++u) &#123;</span><br><span class="line">        <span class="keyword">if</span> (u &gt; <span class="number">1</span>) cout &lt;&lt; <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">        cout &lt;&lt; answer[u];</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="边界与错误清单"><a href="#边界与错误清单" class="headerlink" title="边界与错误清单"></a>边界与错误清单</h2><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>需要检查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>n&#x3D;1</td>
+<td>没有边，答案为唯一颜色编号</td>
+</tr>
+<tr>
+<td>全部同色</td>
+<td>众数和为该编号，不是编号乘子树大小</td>
+</tr>
+<tr>
+<td>全部不同色</td>
+<td>所有颜色并列；根答案可能超过 int</td>
+</tr>
+<tr>
+<td>新颜色超过旧最高频</td>
+<td>sum 必须重置，不能保留旧众数</td>
+</tr>
+<tr>
+<td>大小相同的孩子</td>
+<td>任意选择一个接管，不影响答案与翻倍下界</td>
+</tr>
+<tr>
+<td>长链</td>
+<td>不使用递归树遍历；不要复制最大孩子的 map</td>
+</tr>
+<tr>
+<td>保存历史答案</td>
+<td>存数值快照，不能随着袋子复用继续改变</td>
+</tr>
+<tr>
+<td>静态限制被改变</td>
+<td>若加入改色操作，本解不能原样在线维护所有祖先</td>
+</tr>
+</tbody></table>
+<p>验证脚本位于 <code>tests/verify-subtree-modes-article.cjs</code>：提取本文唯一 C++17 程序，无警告编译，使用独立的逐子树遍历计数核验小树，并测试十万点链、星形树和颜色碰撞。压力测试通过不等于承诺所有评测机器的墙钟时间；复杂度仍按上面的确定性界解释。</p>
+
+<details class="reflection-panel"><summary>复盘：如果只想知道不同颜色数量呢？</summary><p>完整频次仍可合并，但摘要的增量规则可以简化。先确定查询需要的信息，再区分接管成本、轻袋遍历成本和字典查找成本；不要看到“小并大”就直接写 O(n log n)。</p></details>
+
+
+<p>继续比较<a href="/esblog/78362.html">620E 在线子树染色</a>和<a href="/esblog/68157.html">86D 离线窗口频次</a>：三题都统计颜色或数值，复用单位却分别是子树袋子、区间摘要和可移动窗口。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/70482.html">https://eulersail.com/esblog/70482.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%9D%87%E6%91%8A%E5%88%86%E6%9E%90/">均摊分析</a><a class="post-meta__tags" href="/tags/%E6%A0%91%E4%B8%8A%E7%BB%9F%E8%AE%A1/">树上统计</a><a class="post-meta__tags" href="/tags/%E5%90%AF%E5%8F%91%E5%BC%8F%E5%90%88%E5%B9%B6/">启发式合并</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/96942.html" title="勃拉姆斯第一交响曲 从开场压力到终曲的抵达"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">勃拉姆斯第一交响曲 从开场压力到终曲的抵达</div></div></a></div><div class="next-post pull-right"><a href="/esblog/96735.html" title="海顿第九十四交响曲惊愕 从突然强奏到变奏中的期待"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">海顿第九十四交响曲惊愕 从突然强奏到变奏中的期待</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/86471.html" title="Codeforces 438D 区间取模 从最大值剪枝到均摊线段树"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">Codeforces 438D 区间取模 从最大值剪枝到均摊线段树</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div><div><a href="/esblog/76834.html" title="Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-01</div><div class="title">Codeforces 前缀和与差分四题：区间查询、覆盖与双层离线</div></div></a></div><div><a href="/esblog/60521.html" title="Codeforces 贪心三题：排序、交换论证与局部最优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="title">Codeforces 贪心三题：排序、交换论证与局部最优</div></div></a></div><div><a href="/esblog/51672.html" title="Codeforces 二分答案三题：可行性、边界与上界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-04</div><div class="title">Codeforces 二分答案三题：可行性、边界与上界</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">140</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">会划分父子关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">频次不能丢</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">说清谁在翻倍</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E9%A2%98%E7%9B%AE%E4%B8%8E%E8%8C%83%E5%9B%B4"><span class="toc-text">官方题目与范围</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AA%E4%BF%9D%E5%AD%98%E5%AD%A9%E5%AD%90%E7%9A%84%E4%BC%97%E6%95%B0%E4%BC%9A%E6%BC%8F%E6%8E%89%E4%BB%80%E4%B9%88"><span class="toc-text">只保存孩子的众数会漏掉什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A2%8B%E5%AD%90%E4%BF%9D%E5%AD%98%E4%BB%80%E4%B9%88%EF%BC%8C%E6%80%8E%E6%A0%B7%E5%A2%9E%E9%87%8F%E7%BB%B4%E6%8A%A4%E7%AD%94%E6%A1%88"><span class="toc-text">袋子保存什么，怎样增量维护答案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8E%A5%E7%AE%A1%E6%9C%80%E5%A4%A7%E5%AD%90%E6%A0%91%EF%BC%8C%E5%86%8D%E5%90%88%E5%B9%B6%E5%85%B6%E4%BD%99%E8%A2%8B%E5%AD%90"><span class="toc-text">先接管最大子树，再合并其余袋子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E5%A4%8D%E5%90%88%E5%B9%B6%E6%80%BB%E9%87%8F%E5%8F%AF%E6%8E%A7"><span class="toc-text">为什么重复合并总量可控</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%8B%E5%B7%A5%E5%90%88%E5%B9%B6%E4%B8%80%E6%AC%A1%E5%B9%B6%E5%88%97%E4%BC%97%E6%95%B0"><span class="toc-text">手工合并一次并列众数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%A1%AE%E6%80%A7%EF%BC%9A%E9%A2%91%E6%AC%A1%E3%80%81%E6%9C%80%E9%AB%98%E9%A2%91%E4%B8%8E%E9%81%8D%E5%8E%86%E9%A1%BA%E5%BA%8F"><span class="toc-text">正确性：频次、最高频与遍历顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整 C++17 实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E4%B8%8E%E9%94%99%E8%AF%AF%E6%B8%85%E5%8D%95"><span class="toc-text">边界与错误清单</span></a></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/96942.html" title="勃拉姆斯第一交响曲 从开场压力到终曲的抵达">勃拉姆斯第一交响曲 从开场压力到终曲的抵达</a><time datetime="2026-10-09T09:05:00.000Z" title="发表于 2026-10-09 17:05:00">2026-10-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/70482.html" title="Codeforces 600E 子树众数 从频次合并到小并大证明">Codeforces 600E 子树众数 从频次合并到小并大证明</a><time datetime="2026-10-09T09:00:00.000Z" title="发表于 2026-10-09 17:00:00">2026-10-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/96735.html" title="海顿第九十四交响曲惊愕 从突然强奏到变奏中的期待">海顿第九十四交响曲惊愕 从突然强奏到变奏中的期待</a><time datetime="2026-10-06T09:05:00.000Z" title="发表于 2026-10-06 17:05:00">2026-10-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/89264.html" title="Codeforces 242E 区间异或 从按位计数到懒标记组合">Codeforces 242E 区间异或 从按位计数到懒标记组合</a><time datetime="2026-10-06T09:00:00.000Z" title="发表于 2026-10-06 17:00:00">2026-10-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/93871.html" title="舒伯特第五交响曲 从轻编制到旋律转色">舒伯特第五交响曲 从轻编制到旋律转色</a><time datetime="2026-10-05T10:05:00.000Z" title="发表于 2026-10-05 18:05:00">2026-10-05</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
