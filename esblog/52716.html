@@ -1,0 +1,402 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Git 差异审查 从工作区到暂存区与提交 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用一个文件的三版内容区分工作区、暂存区与 HEAD，手算三种 diff 和短状态，并建立按明确路径暂存与提交前审查的流程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git 差异审查 从工作区到暂存区与提交">
+<meta property="og:url" content="https://eulersail.com/esblog/52716.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用一个文件的三版内容区分工作区、暂存区与 HEAD，手算三种 diff 和短状态，并建立按明确路径暂存与提交前审查的流程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-10T08:05:00.000Z">
+<meta property="article:modified_time" content="2026-10-10T08:05:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="版本控制">
+<meta property="article:tag" content="代码审查">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/52716.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Git 差异审查 从工作区到暂存区与提交',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-10 16:05:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">88</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">147</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Git 差异审查 从工作区到暂存区与提交</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-10T08:05:00.000Z" title="发表于 2026-10-10 16:05:00">2026-10-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-10T08:05:00.000Z" title="更新于 2026-10-10 16:05:00">2026-10-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Git 差异审查 从工作区到暂存区与提交"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>你先暂存了一次改动，又继续编辑同一个文件。此时提交会带走哪一版？为什么 <code>git diff</code> 只显示后半段，而 <code>git diff --cached</code> 显示另一段？</p>
+<p>答案取决于三个不同位置：工作区是正在编辑的文件，暂存区是下一次提交准备采用的快照，HEAD 在本文的普通分支场景中指向当前提交。本文用一个文件把它们分开，练习只读检查、按明确路径暂存和提交前审查。不涉及删除、清理、强推或历史重写。</p>
+<span id="more"></span>
+
+
+<section class="reading-brief" data-tone="tools" aria-label="Git 实践导航">
+  <div><span class="reading-brief-label">先建立模型</span><h3>三个位置不是三份备份</h3><p>编辑不会自动更新暂存区；暂存也没有产生历史提交。</p></div>
+  <div><span class="reading-brief-label">再审查差异</span><h3>每条 diff 有两个端点</h3><p>先说清比较什么，再解释空输出代表什么。</p></div>
+  <div><span class="reading-brief-label">最后提交</span><h3>审查下一次快照</h3><p>提交前检查暂存区内容、相关测试与敏感信息，不只看编辑器。</p></div>
+</section>
+<div class="concept-ribbon" aria-label="Git 三个位置"><span>HEAD 当前提交</span><span>暂存区 下一次快照</span><span>工作区 正在编辑</span></div>
+
+
+<h2 id="三个位置怎样改变"><a href="#三个位置怎样改变" class="headerlink" title="三个位置怎样改变"></a>三个位置怎样改变</h2><p><a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository">Pro Git 的基础章节</a>说明，修改后的文件可以被选择性暂存，然后写入提交。<code>git add</code> 保存的是执行那一刻的内容；之后再编辑，暂存区不会跟着变化。</p>
+<p>以下假设仓库已经有一次提交，文件 <code>note.txt</code> 已被跟踪，使用普通分支，没有合并冲突或子模块。HEAD 是当前提交的引用，不是一个普通文件目录；暂存区是 Git 的索引，不应手动编辑其内部文件。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  W[工作区 当前文件] --&gt;|git add 明确路径| I[暂存区 下一次提交快照]
+  I --&gt;|git commit| C[新提交 并移动当前分支]
+  C --&gt; H[HEAD 指向当前提交]
+  W --&gt;|后续编辑不会自动同步| W2[工作区继续变化]
+  </pre></div>
+
+<h2 id="一个文件的三版内容"><a href="#一个文件的三版内容" class="headerlink" title="一个文件的三版内容"></a>一个文件的三版内容</h2><p>通过编辑器创建和修改练习文件，不在命令中覆盖已有项目文件。初始提交的两行是 <code>title=demo</code> 和 <code>mode=basic</code>。</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>HEAD 中的 mode</th>
+<th>暂存区中的 mode</th>
+<th>工作区中的 mode</th>
+<th>短状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始提交后</td>
+<td>basic</td>
+<td>basic</td>
+<td>basic</td>
+<td>无输出</td>
+</tr>
+<tr>
+<td>编辑为 staged</td>
+<td>basic</td>
+<td>basic</td>
+<td>staged</td>
+<td>空格 M</td>
+</tr>
+<tr>
+<td>对 note.txt 执行 add</td>
+<td>basic</td>
+<td>staged</td>
+<td>staged</td>
+<td>M 空格</td>
+</tr>
+<tr>
+<td>再编辑为 working</td>
+<td>basic</td>
+<td>staged</td>
+<td>working</td>
+<td>MM</td>
+</tr>
+<tr>
+<td>普通 commit 后</td>
+<td>staged</td>
+<td>staged</td>
+<td>working</td>
+<td>空格 M</td>
+</tr>
+</tbody></table>
+<p>最后一步的提交内容是 <code>mode=staged</code>，不是编辑器里当前的 <code>mode=working</code>。普通 <code>git commit -m ...</code> 使用暂存区；本文不使用会改变暂存行为的 <code>-a</code> 或路径限定提交形式。</p>
+<h2 id="三种-diff-的比较端点"><a href="#三种-diff-的比较端点" class="headerlink" title="三种 diff 的比较端点"></a>三种 diff 的比较端点</h2><p>在表中 <code>MM</code> 的那一刻运行下面三条命令。<code>--</code> 分隔选项与路径；练习只涉及这个明确的文件名。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">diff</span> <span class="literal">--</span> note.txt</span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--cached</span> <span class="literal">--</span> note.txt</span><br><span class="line">git <span class="built_in">diff</span> HEAD <span class="literal">--</span> note.txt</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>左侧旧内容</th>
+<th>右侧新内容</th>
+<th>本例中的变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>git diff</td>
+<td>暂存区</td>
+<td>工作区</td>
+<td>staged → working</td>
+</tr>
+<tr>
+<td>git diff –cached</td>
+<td>HEAD</td>
+<td>暂存区</td>
+<td>basic → staged</td>
+</tr>
+<tr>
+<td>git diff HEAD</td>
+<td>HEAD</td>
+<td>工作区</td>
+<td>basic → working</td>
+</tr>
+</tbody></table>
+<p>这些语义见<a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-diff">Git diff 官方文档</a>。<code>--staged</code> 是 <code>--cached</code> 的同义选项。普通 <code>git diff</code> 为空，只说明工作区与索引的这一类差异为空，并不表示暂存区没有改动；尚未跟踪的新文件通常也不会出现在普通 diff 中。</p>
+<p>差异中的减号和加号表示旧行与新行，不表示程序运行时会“先删文件再建文件”。但删除路径确实可能被暂存，所以在真实项目中仍要检查状态和变更类型。</p>
+<h2 id="短状态的两列不要交换"><a href="#短状态的两列不要交换" class="headerlink" title="短状态的两列不要交换"></a>短状态的两列不要交换</h2><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git status <span class="literal">--short</span></span><br><span class="line">git status <span class="literal">--porcelain</span>=v1 <span class="literal">--untracked-files</span>=all</span><br></pre></td></tr></table></figure>
+
+<p>在本文无冲突的跟踪文件场景，第一列表示索引相对 HEAD 的变化，第二列表示工作区相对索引的变化。因此 <code>MM note.txt</code> 的意思是已经暂存了一版修改，工作区又有尚未暂存的修改。</p>
+<table>
+<thead>
+<tr>
+<th>状态记号</th>
+<th>本文场景下的意思</th>
+<th>接下来先检查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>空格 M</td>
+<td>工作区修改，索引未修改</td>
+<td>git diff</td>
+</tr>
+<tr>
+<td>M 空格</td>
+<td>已暂存修改，工作区与索引一致</td>
+<td>git diff –cached</td>
+</tr>
+<tr>
+<td>MM</td>
+<td>两个位置都有修改</td>
+<td>分别看两份 diff</td>
+</tr>
+<tr>
+<td>??</td>
+<td>未跟踪文件</td>
+<td>文件正文及是否应纳入版本控制</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-status">Git status 文档</a>还定义了未合并、重命名、子模块和忽略文件等状态，不能把这张简表扩展成所有场景的解释。<code>--porcelain=v1</code> 适合稳定的机器处理；若程序要解析任意文件名，应进一步使用 <code>-z</code> 的 NUL 分隔输出，而不是按空格切割。</p>
+<h2 id="提交前的安全检查顺序"><a href="#提交前的安全检查顺序" class="headerlink" title="提交前的安全检查顺序"></a>提交前的安全检查顺序</h2><p>先使用只读命令确认当前仓库、分支和差异。将 <code>note.txt</code> 换成经过确认的目标路径；这组命令不是让你在未知仓库直接照抄提交。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">git rev<span class="literal">-parse</span> <span class="literal">--show-toplevel</span></span><br><span class="line">git branch <span class="literal">--show-current</span></span><br><span class="line">git status <span class="literal">--short</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--stat</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--check</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--</span> note.txt</span><br><span class="line">git add <span class="literal">--</span> note.txt</span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--cached</span> <span class="literal">--stat</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--cached</span> <span class="literal">--check</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--cached</span> <span class="literal">--</span> note.txt</span><br></pre></td></tr></table></figure>
+
+<p><code>git diff --check</code> 可以检查某些空白错误和冲突标记，但不是语法检查、测试或敏感信息扫描。还要执行项目约定的测试，核查所有已暂存路径的正文；不要因为本次只 add 一个文件，就忽略原先已经暂存的其他文件。</p>
+<p>通过检查后才执行普通提交，并核对历史快照与剩余工作区改动：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git commit <span class="literal">-m</span> <span class="string">&quot;Explain staging snapshot&quot;</span></span><br><span class="line">git log <span class="literal">-1</span> <span class="literal">--oneline</span></span><br><span class="line">git show <span class="literal">--stat</span> <span class="literal">--oneline</span> HEAD</span><br><span class="line">git show HEAD:note.txt</span><br><span class="line">git status <span class="literal">--short</span></span><br></pre></td></tr></table></figure>
+
+<p>如果刚才是在 <code>MM</code> 状态提交，最后仍会看到 <code>note.txt</code> 的未暂存改动。这不是提交失败，而是提交保存了你审查过的暂存快照。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[核对仓库与分支] --&gt; B[检查状态和工作区差异]
+  B --&gt; C[按明确路径暂存]
+  C --&gt; D[审查所有已暂存改动]
+  D --&gt; E[相关测试与敏感信息检查]
+  E --&gt; F[提交后核对历史和剩余状态]
+  </pre></div>
+
+<h2 id="测试通过也要看测试的是哪一版"><a href="#测试通过也要看测试的是哪一版" class="headerlink" title="测试通过也要看测试的是哪一版"></a>测试通过也要看测试的是哪一版</h2><p>大多数本地测试读取工作区，不直接读取索引。若文件处于 <code>MM</code>，测试可能验证的是 <code>working</code> 版，提交却包含 <code>staged</code> 版，不能直接说“提交内容已测试通过”。</p>
+<p>一个易执行的习惯是完成目标修改后重新暂存明确路径，再检查相关路径没有未暂存差异，运行相关测试并复核暂存 diff。它不是让你把其他人的改动一并暂存。部分暂存、多文件依赖或测试会修改文件时，应采用团队认可的独立验证环境，验证实际提交快照。</p>
+<h2 id="本地提交不等于远端发布"><a href="#本地提交不等于远端发布" class="headerlink" title="本地提交不等于远端发布"></a>本地提交不等于远端发布</h2><p>本文的实验不访问远端，不推送，也不修改凭据。<code>git commit</code> 只产生本地提交，<code>git log</code> 看到的本地记录不能证明远端已更新。真实发布应遵循项目规定的构建、扫描、远端分歧检查、推送和线上验证顺序。</p>
+<p>不要为了让状态“变干净”而清理目录、批量删除文件或强制改写历史。遇到不属于本次任务的改动，先保留并确认归属。状态是需要解释的信息，不是必须消灭的提示。</p>
+
+<details class="reflection-panel"><summary>复盘练习 预测提交会保存哪一版</summary><p>在独立练习仓库中走完三版内容的步骤。提交前用三种 diff 预测结果，提交后用 git show HEAD:note.txt 检查。再解释：为什么普通 diff 为空和工作区完全干净不是同一句话？为什么 MM 时运行工作区测试不能证明暂存快照通过？</p></details>
+
+
+<h2 id="继续阅读"><a href="#继续阅读" class="headerlink" title="继续阅读"></a>继续阅读</h2><p>配合<a href="/esblog/1.html">Visual Studio 编辑与调试快捷键</a>，把编辑、验证与审查连成习惯；若在维护评测题集，接着阅读<a href="/esblog/64928.html">RAG 回归评测</a>。更多入口见<a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具分类</a>和<a href="/resources/#reading-paths">资源阅读路径</a>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/52716.html">https://eulersail.com/esblog/52716.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Git/">Git</a><a class="post-meta__tags" href="/tags/%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/">版本控制</a><a class="post-meta__tags" href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5/">代码审查</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">88</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">147</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">三个位置不是三份备份</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">每条 diff 有两个端点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text">审查下一次快照</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E4%B8%AA%E4%BD%8D%E7%BD%AE%E6%80%8E%E6%A0%B7%E6%94%B9%E5%8F%98"><span class="toc-text">三个位置怎样改变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%89%E7%89%88%E5%86%85%E5%AE%B9"><span class="toc-text">一个文件的三版内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D-diff-%E7%9A%84%E6%AF%94%E8%BE%83%E7%AB%AF%E7%82%B9"><span class="toc-text">三种 diff 的比较端点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9F%AD%E7%8A%B6%E6%80%81%E7%9A%84%E4%B8%A4%E5%88%97%E4%B8%8D%E8%A6%81%E4%BA%A4%E6%8D%A2"><span class="toc-text">短状态的两列不要交换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E5%89%8D%E7%9A%84%E5%AE%89%E5%85%A8%E6%A3%80%E6%9F%A5%E9%A1%BA%E5%BA%8F"><span class="toc-text">提交前的安全检查顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E9%80%9A%E8%BF%87%E4%B9%9F%E8%A6%81%E7%9C%8B%E6%B5%8B%E8%AF%95%E7%9A%84%E6%98%AF%E5%93%AA%E4%B8%80%E7%89%88"><span class="toc-text">测试通过也要看测试的是哪一版</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%8F%90%E4%BA%A4%E4%B8%8D%E7%AD%89%E4%BA%8E%E8%BF%9C%E7%AB%AF%E5%8F%91%E5%B8%83"><span class="toc-text">本地提交不等于远端发布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%A7%E7%BB%AD%E9%98%85%E8%AF%BB"><span class="toc-text">继续阅读</span></a></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/52716.html" title="Git 差异审查 从工作区到暂存区与提交">Git 差异审查 从工作区到暂存区与提交</a><time datetime="2026-10-10T08:05:00.000Z" title="发表于 2026-10-10 16:05:00">2026-10-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛">RAG 回归评测 从逐题对比到发布门槛</a><time datetime="2026-10-10T08:00:00.000Z" title="发表于 2026-10-10 16:00:00">2026-10-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/97526.html" title="西贝柳斯第五交响曲 从速度生长到终场留白">西贝柳斯第五交响曲 从速度生长到终场留白</a><time datetime="2026-10-10T06:05:00.000Z" title="发表于 2026-10-10 14:05:00">2026-10-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/71853.html" title="Codeforces 343D Water Tree 从子树区间到重链剖分">Codeforces 343D Water Tree 从子树区间到重链剖分</a><time datetime="2026-10-10T06:00:00.000Z" title="发表于 2026-10-10 14:00:00">2026-10-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/96942.html" title="勃拉姆斯第一交响曲 从开场压力到终曲的抵达">勃拉姆斯第一交响曲 从开场压力到终曲的抵达</a><time datetime="2026-10-09T09:05:00.000Z" title="发表于 2026-10-09 17:05:00">2026-10-09</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
