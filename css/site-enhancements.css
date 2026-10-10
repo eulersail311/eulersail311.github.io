@@ -127,10 +127,14 @@
 #article-container .about-principle-list h3 { margin-bottom: 8px; font-size: 17px; }
 #article-container .about-principle-list p { color: var(--about-muted); font-size: 14px; }
 #article-container .about-coda { margin-top: 26px; padding: 28px 30px; border: 1px solid var(--sail-border); border-radius: 20px; background: var(--about-soft); }
-#article-container .about-coda blockquote { margin: 15px 0 23px; padding: 0; border: 0; border-radius: 0; background: none; }
+#article-container .about-quotation { margin: 0; }
+#article-container .about-coda blockquote { margin: 15px 0 14px; padding: 0; border: 0; border-radius: 0; background: none; }
 #article-container .about-coda blockquote p { color: var(--sail-reading-ink); font: italic clamp(20px, 2.2vw, 25px)/1.65 Georgia, serif; }
-#article-container .about-signoff { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 15px; font-weight: 700; }
-#article-container .about-signoff span { color: var(--about-cyan); font: italic 22px/1.4 Georgia, serif; }
+#article-container .about-quote-source { color: var(--about-muted); font-size: 13px; line-height: 1.95; overflow-wrap: anywhere; }
+#article-container .about-quote-source cite { font-style: normal; }
+#article-container .about-quote-source a { display: inline-block; margin-left: 8px; padding: 4px 0; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+#article-container .about-personal-note { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--sail-border); }
+#article-container .about-personal-note .about-signoff { margin-top: 8px; font-size: 15px; font-weight: 700; }
 #article-container .about-footer-links { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--sail-border); }
 #article-container .about-footer-links a { padding: 5px 0; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 700px) {
