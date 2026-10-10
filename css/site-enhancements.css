@@ -1,3 +1,50 @@
+/* Evidence figures keep original labels and offer a native full-size link. */
+#article-container .evidence-figure {
+  margin: 1.8em 0;
+  overflow: hidden;
+  border: 1px solid var(--sail-border);
+  border-radius: 16px;
+  background: var(--sail-surface-strong);
+  box-shadow: var(--sail-shadow);
+}
+#article-container .evidence-figure img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+  background: #fff;
+}
+#article-container .evidence-figure figcaption {
+  padding: 15px 18px;
+  border-top: 1px solid var(--sail-border);
+  color: var(--sail-reading-ink);
+  font-size: 14px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+#article-container .evidence-figure figcaption strong { color: var(--sail-reading-ink); }
+#article-container .evidence-figure figcaption a {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 0;
+  color: var(--sail-reading-cyan);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#article-container .evidence-figure figcaption a:focus-visible {
+  outline: 3px solid var(--sail-reading-cyan);
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  #article-container .evidence-figure figcaption { padding: 13px 14px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #article-container .evidence-figure * { transition: none !important; }
+}
+
 /* Resource routes are static links: useful with or without JavaScript. */
 #article-container .resource-paths {
   --route-ink: #1d4ed8;
