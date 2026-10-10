@@ -70,18 +70,26 @@
 #article-container .about-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 18px; margin-top: 25px; }
 #article-container .about-actions a { padding: 10px 2px; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 #article-container .about-actions .about-action-primary { padding: 11px 15px; border: 1px solid var(--sail-border); border-radius: 10px; background: var(--about-soft); text-decoration: none; }
-#article-container .about-emblem { position: relative; width: 180px; height: 220px; color: var(--about-blue); }
-#article-container .about-orbit { position: absolute; top: 10px; left: 0; width: 180px; height: 180px; border: 1px solid var(--sail-border); border-radius: 50%; }
-#article-container .about-orbit::before,
-#article-container .about-orbit::after { content: ''; position: absolute; top: 50%; left: -10%; width: 120%; border-top: 1px solid var(--sail-border); transform: rotate(-35deg); }
-#article-container .about-orbit::after { transform: rotate(55deg); }
-#article-container .about-orbit-inner { top: 30px; left: 20px; width: 140px; height: 140px; background: var(--about-soft); }
-#article-container .about-orbit-inner::before,
-#article-container .about-orbit-inner::after { display: none; }
-#article-container .about-monogram { position: absolute; inset: 37px 0 auto; text-align: center; font: italic 88px/1.4 Georgia, serif; }
-#article-container .about-monogram span { color: var(--about-cyan); }
-#article-container .about-star { position: absolute; top: 20px; right: 26px; width: 12px; height: 12px; border: 3px solid var(--about-bg); border-radius: 50%; background: var(--about-cyan); box-shadow: 0 0 0 1px var(--sail-border); }
-#article-container .about-emblem-label { position: absolute; bottom: 0; width: 100%; text-align: center; color: var(--about-muted); font-size: 10px; font-weight: 700; letter-spacing: .22em; }
+#article-container .about-portrait { position: relative; width: 180px; height: 220px; }
+#article-container .about-avatar-float { position: absolute; top: 10px; width: 180px; height: 180px; animation: about-avatar-float 6s ease-in-out infinite; }
+#article-container .about-avatar-ring { position: relative; box-sizing: border-box; width: 100%; height: 100%; border: 6px solid var(--about-bg); border-radius: 50%; background: var(--about-bg); box-shadow: var(--sail-shadow); }
+#article-container .about-avatar-ring::before { content: ''; position: absolute; inset: -12px; border: 2px solid var(--about-cyan); border-radius: 50%; opacity: .3; pointer-events: none; animation: about-avatar-breathe 5s ease-in-out infinite; }
+#article-container .about-avatar-ring img { display: block; width: 100%; height: 100%; margin: 0; border-radius: 50%; object-fit: cover; object-position: center 35%; transition: transform .35s ease; }
+#article-container .about-portrait-label { position: absolute; bottom: 0; width: 100%; text-align: center; color: var(--about-muted); font-size: 10px; font-weight: 700; letter-spacing: .22em; }
+#article-container .about-hero:focus-within .about-avatar-float { animation-play-state: paused; }
+#article-container .about-hero:focus-within .about-avatar-ring img { transform: scale(1.035) rotate(-2deg); }
+@media (hover: hover) {
+  #article-container .about-portrait:hover .about-avatar-float { animation-play-state: paused; }
+  #article-container .about-portrait:hover .about-avatar-ring img { transform: scale(1.035) rotate(-2deg); }
+}
+@keyframes about-avatar-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes about-avatar-breathe {
+  0%, 100% { opacity: .3; transform: scale(1); }
+  50% { opacity: .6; transform: scale(1.045); }
+}
 #article-container .about-topics,
 #article-container .about-principles { margin-top: 44px; }
 #article-container .about-section-heading { margin-bottom: 22px; }
@@ -127,7 +135,10 @@
 #article-container .about-footer-links a { padding: 5px 0; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 700px) {
   #article-container .about-hero { grid-template-columns: 1fr; padding: 26px; }
-  #article-container .about-emblem { display: none; }
+  #article-container .about-portrait { grid-row: 1; width: 104px; height: 104px; margin: 5px 0; }
+  #article-container .about-avatar-float { top: 0; width: 104px; height: 104px; }
+  #article-container .about-avatar-ring { border-width: 4px; }
+  #article-container .about-portrait-label { display: none; }
   #article-container .about-topic-grid,
   #article-container .about-principle-list { grid-template-columns: 1fr; }
   #article-container .about-topic { padding: 22px; }
@@ -144,6 +155,8 @@
   #article-container .about-garden *::before,
   #article-container .about-garden *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   #article-container .about-topic:hover { transform: none; }
+  #article-container .about-hero:focus-within .about-avatar-ring img,
+  #article-container .about-portrait:hover .about-avatar-ring img { transform: none; }
 }
 
 /* Evidence figures keep original labels and offer a native full-size link. */
