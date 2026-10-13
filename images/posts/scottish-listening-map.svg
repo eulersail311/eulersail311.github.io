@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480" role="img" aria-labelledby="title desc">
+<title id="title">Scottish Symphony listening map</title><desc id="desc">Four original listening prompts: introduction and return, light short-note handoffs, song and march contrast, and fast motion giving way to a new broad closing theme. Not a score, waveform or measured timeline.</desc>
+<rect width="900" height="480" rx="22" fill="#fff"/>
+<g font-family="Microsoft YaHei,Arial,sans-serif" fill="#243449">
+<text x="36" y="49" font-size="30" font-weight="700">聆听的四个窗口，不是四段实测时长</text>
+<text x="36" y="84" font-size="21">门德尔松第三交响曲：辨认返回、织体与结尾变化</text>
+<g fill="#eff6ff" stroke="#bfdbfe"><rect x="36" y="108" width="402" height="142" rx="16"/><rect x="462" y="108" width="402" height="142" rx="16"/></g>
+<g fill="#ecfeff" stroke="#a5f3fc"><rect x="36" y="270" width="402" height="142" rx="16"/><rect x="462" y="270" width="402" height="142" rx="16"/></g>
+<g font-size="25" font-weight="700"><text x="58" y="146">Ⅰ 引子与回归</text><text x="484" y="146">Ⅱ 短音的接续</text><text x="58" y="307">Ⅲ 歌唱与行进</text><text x="484" y="307">Ⅳ 新主题重塑结尾</text></g>
+<g stroke="#1d4ed8" stroke-width="4" fill="none"><path d="M64 200Q100 160 136 200T208 200"/><path d="M304 200Q340 160 376 200"/><path d="M490 185L520 185M530 203L560 203M570 185L600 185M610 203L640 203M650 185L680 185M690 203L720 203M730 185L760 185M770 203L800 203M810 185L840 185"/></g>
+<text x="218" y="204" font-size="23">回归</text>
+<path d="M64 356Q120 321 176 356T288 356" fill="none" stroke="#0e7490" stroke-width="4"/>
+<g fill="#0e7490"><circle cx="323" cy="356" r="5"/><circle cx="345" cy="356" r="5"/><circle cx="367" cy="356" r="5"/><circle cx="389" cy="356" r="5"/></g>
+<g stroke="#1d4ed8" stroke-width="3"><path d="M493 346V371M508 346V371M523 346V371M538 346V371M553 346V371M568 346V371"/></g>
+<text x="589" y="363" font-size="28">→</text><path d="M644 359Q740 315 835 359" fill="none" stroke="#0e7490" stroke-width="5"/>
+<g font-size="18" fill="#52637b"><text x="58" y="234">辨认已经记住的轮廓</text><text x="484" y="234">听下一句由谁接过</text><text x="58" y="397">比较歌唱长句与较重步态</text><text x="484" y="397">比较音符密度、句长与新材料</text></g>
+<text x="36" y="449" font-size="20" fill="#52637b">原创聆听示意，不标示音高、响度、拍数或时间。</text>
+</g></svg>

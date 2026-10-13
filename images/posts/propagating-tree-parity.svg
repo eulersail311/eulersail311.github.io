@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="title desc">
+<title id="title">Subtree update and depth signs</title><desc id="desc">Original six-vertex example. Updating vertex 2 by 7 produces plus 7 at 2 and minus 7 at 4 and 5. After multiplying by depth signs, DFS positions 2 through 4 all receive minus 7.</desc>
+<rect width="900" height="560" rx="22" fill="#fff"/>
+<g font-family="Microsoft YaHei,Arial,sans-serif" fill="#243449">
+<text x="40" y="49" font-size="30" font-weight="700">深度符号把交替增减转成一次区间加</text>
+<text x="40" y="87" font-size="22">顶点 2 加 7；根深度为 0</text>
+<rect x="85" y="192" width="450" height="182" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-dasharray="8 6"/>
+<g stroke="#94a3b8" stroke-width="3"><path d="M450 138L300 235M450 138L675 235M300 235L180 322M300 235L420 322M675 235L675 322"/></g>
+<g fill="#ecfeff" stroke="#0e7490" stroke-width="3"><circle cx="450" cy="138" r="30"/><circle cx="180" cy="322" r="30"/><circle cx="420" cy="322" r="30"/><circle cx="675" cy="322" r="30"/></g>
+<g fill="#eff6ff" stroke="#1d4ed8" stroke-width="3"><circle cx="300" cy="235" r="30"/><circle cx="675" cy="235" r="30"/></g>
+<g text-anchor="middle" font-size="27" font-weight="700"><text x="450" y="147">1</text><text x="300" y="244">2</text><text x="675" y="244">3</text><text x="180" y="331">4</text><text x="420" y="331">5</text><text x="675" y="331">6</text></g>
+<g font-size="22"><text x="494" y="147">s = +1</text><text x="343" y="229">s = -1；实际 +7</text><text x="718" y="244">s = -1</text><text x="124" y="365">实际 -7</text><text x="362" y="365">实际 -7</text><text x="718" y="331">s = +1</text></g>
+<text x="40" y="416" font-size="23" font-weight="700">DFS 顺序与变换后的增量</text>
+<g stroke="#cbd5e1" fill="#f8fafc"><rect x="40" y="435" width="136" height="82" rx="10"/><rect x="180" y="435" width="136" height="82" rx="10" fill="#eff6ff"/><rect x="320" y="435" width="136" height="82" rx="10" fill="#eff6ff"/><rect x="460" y="435" width="136" height="82" rx="10" fill="#eff6ff"/><rect x="600" y="435" width="136" height="82" rx="10"/><rect x="740" y="435" width="120" height="82" rx="10"/></g>
+<g text-anchor="middle" font-size="23"><text x="108" y="466">顶点 1</text><text x="248" y="466">顶点 2</text><text x="388" y="466">顶点 4</text><text x="528" y="466">顶点 5</text><text x="668" y="466">顶点 3</text><text x="800" y="466">顶点 6</text></g>
+<g text-anchor="middle" font-size="27" fill="#1d4ed8" font-weight="700"><text x="108" y="501">0</text><text x="248" y="501">-7</text><text x="388" y="501">-7</text><text x="528" y="501">-7</text><text x="668" y="501">0</text><text x="800" y="501">0</text></g>
+<text x="40" y="545" font-size="18" fill="#52637b">闭区间 [2,4] 统一加 -7；符号由树深度决定，不由数组位置决定。</text>
+</g></svg>
