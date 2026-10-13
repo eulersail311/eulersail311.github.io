@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="title desc">
+<title id="title">请求总预算中的尝试与退避</title><desc id="desc">1500毫秒合成预算，尝试400，退避300，再尝试600，到1300停止。剩200不足以等待200并留出100毫秒尝试窗口。</desc>
+<rect width="900" height="500" rx="24" fill="#f1f6fc"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18324d">
+<text x="44" y="52" font-size="26" font-weight="700">两次尝试不只是两段请求时间</text>
+<text x="44" y="88" font-size="17">逻辑时钟合成示例 · 总预算 1500 ms · 单次上限 600 ms</text>
+<rect x="60" y="150" width="208" height="92" rx="10" fill="#185b84"/><rect x="268" y="150" width="156" height="92" fill="#80531b"/><rect x="424" y="150" width="312" height="92" fill="#135b56"/><rect x="736" y="150" width="104" height="92" rx="10" fill="#d8e2ee"/>
+<g text-anchor="middle" font-size="18" fill="#fff"><text x="164" y="186">第一次：503</text><text x="164" y="218">400 ms</text><text x="346" y="186">等待</text><text x="346" y="218">300 ms</text><text x="580" y="186">第二次：超时</text><text x="580" y="218">600 ms</text></g>
+<g text-anchor="middle" font-size="16"><text x="788" y="186">剩余</text><text x="788" y="218">200 ms</text></g>
+<g font-size="16" text-anchor="middle"><text x="60" y="276">0</text><text x="268" y="276">400</text><text x="424" y="276">700</text><text x="736" y="276">1300</text><text x="840" y="276">1500 ms</text></g>
+<path d="M736 287 V315" stroke="#9b3b24" stroke-width="3"/>
+<rect x="44" y="320" width="812" height="105" rx="18" fill="#fff"/>
+<text x="68" y="361" font-size="22" font-weight="700">下一次计划等待 200 ms，但还需 100 ms 尝试窗口</text>
+<text x="68" y="398" font-size="18">剩余 200 &lt; 等待 200 + 尝试 100 → 不再等待，实际结束于 1300 ms</text>
+<text x="44" y="464" font-size="16">非实测、非生产参数建议。迟到的成功响应不算作本次请求成功。</text>
+</g></svg>

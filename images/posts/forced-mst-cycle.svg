@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="title desc">
+<title id="title">指定边的最小生成树：环上的替换</title><desc id="desc">树边权为2、3、5，总费用10。强制加入1到4的权重6的边，删除原路径最大边5，费用变成11。</desc>
+<rect width="900" height="500" rx="24" fill="#f1f6fc"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18324d">
+<text x="44" y="52" font-size="26" font-weight="700">指定边加入后，只替换唯一环中的一条边</text>
+<text x="44" y="88" font-size="17">原创手算示例 · 原树 T：1—2—3—4 · W = 2 + 3 + 5 = 10</text>
+<path d="M130 260 H770" fill="none" stroke="#23678b" stroke-width="8"/>
+<path d="M555 260 H770" fill="none" stroke="#f1f6fc" stroke-width="12"/>
+<path d="M555 260 H770" fill="none" stroke="#9b3b24" stroke-width="7" stroke-dasharray="14 10"/>
+<path d="M130 260 C130 130 770 130 770 260" fill="none" stroke="#b45309" stroke-width="7"/>
+<rect x="329" y="133" width="242" height="42" rx="12" fill="#fff3e1"/>
+<text x="450" y="160" text-anchor="middle" font-size="19" fill="#864006">必须保留：w = 6</text>
+<g fill="#fff" stroke="#23678b" stroke-width="4"><circle cx="130" cy="260" r="28"/><circle cx="342" cy="260" r="28"/><circle cx="555" cy="260" r="28"/><circle cx="770" cy="260" r="28"/></g>
+<g text-anchor="middle" font-size="23" font-weight="700"><text x="130" y="268">1</text><text x="342" y="268">2</text><text x="555" y="268">3</text><text x="770" y="268">4</text></g>
+<g text-anchor="middle" font-size="20"><text x="235" y="308">边权 2</text><text x="449" y="308">边权 3</text><text x="665" y="308" fill="#9b3b24">删除最大边 5</text></g>
+<rect x="44" y="350" width="812" height="108" rx="18" fill="#fff"/>
+<text x="70" y="392" font-size="24" font-weight="700">强制费用 = W + w − M = 10 + 6 − 5 = 11</text>
+<text x="70" y="428" font-size="17">每条边的询问独立：下一次仍从原 MST 出发，不累积替换。</text>
+</g></svg>
