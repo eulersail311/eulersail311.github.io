@@ -1,6 +1,8 @@
 /* Scoped article mechanism cards and native keyboard-operable self checks. */
 #article-container .mechanism-map,
-#article-container .mechanism-check {
+#article-container .mechanism-check,
+#article-container .invariant-steps,
+#article-container .scope-note {
   --mechanism-bg: #f1f6fc;
   --mechanism-ink: #243b55;
   --mechanism-accent: #155d83;
@@ -8,7 +10,9 @@
   color: var(--mechanism-ink);
 }
 [data-theme='dark'] #article-container .mechanism-map,
-[data-theme='dark'] #article-container .mechanism-check {
+[data-theme='dark'] #article-container .mechanism-check,
+[data-theme='dark'] #article-container .invariant-steps,
+[data-theme='dark'] #article-container .scope-note {
   --mechanism-bg: #172a40;
   --mechanism-ink: #dce8f7;
   --mechanism-accent: #8cdbf5;
@@ -61,6 +65,66 @@
 #article-container .mechanism-check[open] summary { border-bottom: 1px solid var(--mechanism-border); }
 #article-container .mechanism-check > div { padding: 16px 20px; }
 #article-container .mechanism-check p { margin: 0; }
+#article-container .invariant-steps {
+  position: relative;
+  margin: 26px 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: invariant;
+}
+#article-container .invariant-steps::before {
+  position: absolute;
+  content: '';
+  top: 17px;
+  bottom: 17px;
+  left: 17px;
+  width: 2px;
+  background: var(--mechanism-border);
+}
+#article-container .invariant-steps > li {
+  position: relative;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 0 22px 54px;
+  counter-increment: invariant;
+  overflow-wrap: anywhere;
+}
+#article-container .invariant-steps > li:last-child { padding-bottom: 0; }
+#article-container .invariant-steps > li::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  content: counter(invariant, decimal-leading-zero);
+  border: 1px solid var(--mechanism-border);
+  border-radius: 50%;
+  background: var(--mechanism-bg);
+  color: var(--mechanism-accent);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+#article-container .invariant-steps strong { color: var(--mechanism-accent); }
+#article-container .invariant-steps p { margin: 4px 0 0; font-size: 14px; line-height: 1.8; }
+#article-container .scope-note {
+  margin: 24px 0;
+  padding: 18px 20px;
+  border: 1px solid var(--mechanism-border);
+  border-left: 5px solid var(--mechanism-accent);
+  border-radius: 0 14px 14px 0;
+  background: var(--mechanism-bg);
+  overflow-wrap: anywhere;
+}
+#article-container .scope-note strong { color: var(--mechanism-accent); }
+#article-container .scope-note p { margin: 8px 0 0; font-size: 14px; line-height: 1.8; }
+#article-container .invariant-steps a:focus-visible,
+#article-container .scope-note a:focus-visible {
+  outline: 3px solid var(--mechanism-accent);
+  outline-offset: 3px;
+}
 @media (max-width: 600px) {
   #article-container .mechanism-map { grid-template-columns: 1fr; }
 }

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">有界准入与排队过期时间线</title><desc id="desc">执行槽两条、排队容量两条。A和B从0执行到100毫秒，C排队到100再执行到150，D排队到90过期，E在0被拒绝。</desc>
+<rect width="900" height="520" rx="24" fill="#f1f6fc"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18324d">
+<text x="44" y="52" font-size="26" font-weight="700">两条执行、两条排队，第五条在入口拒绝</text>
+<text x="44" y="88" font-size="17">合成事件示例 · C = 2，Q = 2 · 所有请求在 0 ms 到达</text>
+<g font-size="18"><text x="48" y="155">A</text><text x="48" y="215">B</text><text x="48" y="275">C</text><text x="48" y="335">D</text><text x="48" y="395">E</text></g>
+<g stroke="#c5d5e4" stroke-width="1" stroke-dasharray="5 5"><path d="M100 115 V412"/><path d="M496 115 V412"/><path d="M540 115 V412"/><path d="M760 115 V412"/></g>
+<rect x="100" y="127" width="440" height="38" rx="8" fill="#185b84"/><rect x="100" y="187" width="440" height="38" rx="8" fill="#185b84"/>
+<rect x="100" y="247" width="440" height="38" rx="8" fill="#80531b"/><rect x="540" y="247" width="220" height="38" rx="8" fill="#17645a"/>
+<rect x="100" y="307" width="396" height="38" rx="8" fill="#80531b"/>
+<circle cx="100" cy="385" r="10" fill="#9b3b24"/>
+<g text-anchor="middle" font-size="17" fill="#fff"><text x="320" y="153">执行 100 ms</text><text x="320" y="213">执行 100 ms</text><text x="320" y="273">等待 100 ms</text><text x="650" y="273">执行 50 ms</text><text x="285" y="333">排队，尚未调用模型</text></g>
+<g font-size="17" fill="#9b3b24"><text x="520" y="334">90 ms：过期移出</text><text x="130" y="391">0 ms：立即拒绝，不进入等待区</text></g>
+<g text-anchor="middle" font-size="16"><text x="100" y="436">0</text><text x="481" y="436">90</text><text x="555" y="436">100</text><text x="760" y="436">150 ms</text></g>
+<text x="44" y="487" font-size="17">容量计数：running ≤ 2，waiting ≤ 2。教学数据，不是服务延迟实测。</text>
+</g></svg>

@@ -1,0 +1,485 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 160D Edges in MST 从等权分组到桥判定 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="按边权分组，先收缩严格更轻边的连通块，再在保留平行边的临时图中找桥，区分所有 MST 必选、部分可选与完全不可选，附证明与非递归 C++17。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 160D Edges in MST 从等权分组到桥判定">
+<meta property="og:url" content="https://eulersail.com/esblog/79264.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="按边权分组，先收缩严格更轻边的连通块，再在保留平行边的临时图中找桥，区分所有 MST 必选、部分可选与完全不可选，附证明与非递归 C++17。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-13T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-13T07:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="并查集">
+<meta property="article:tag" content="最小生成树">
+<meta property="article:tag" content="桥">
+<meta property="article:tag" content="迭代 DFS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/79264.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 160D Edges in MST 从等权分组到桥判定',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-13 15:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">157</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 160D Edges in MST 从等权分组到桥判定</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-13T07:00:00.000Z" title="发表于 2026-10-13 15:00:00">2026-10-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-13T07:00:00.000Z" title="更新于 2026-10-13 15:00:00">2026-10-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 160D Edges in MST 从等权分组到桥判定"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>Kruskal 能找到一棵最小生成树，但它挑中的边不一定是所有最优树都要的边。相同权重可以带来多种选择，任意一个排序顺序只展示了其中一种。</p>
+<p>在 <a href="/esblog/79136.html">609E 指定边最优费用</a>中，答案等于原 MST 费用，说明这条边至少可以进入一棵 MST。160D 再问一步：<strong>它是否在所有 MST 中都不可缺少？</strong> 答案来自等权分组之后的桥，而不是某次 Kruskal 的选边记录。</p>
+<span id="more"></span>
+
+<h2 id="官方题目与三类答案"><a href="#官方题目与三类答案" class="headerlink" title="官方题目与三类答案"></a>官方题目与三类答案</h2><p>题目为 <a target="_blank" rel="noopener" href="https://codeforces.com/contest/160/problem/D">Codeforces 160D Edges in MST</a>。完整输入约定见官方页面，难度与标签也可查询<a target="_blank" rel="noopener" href="https://codeforces.com/api/problemset.problems">官方题库 API</a>。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>官方约定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>难度、标签</td>
+<td>2300；dfs and similar、dsu、graphs、sortings</td>
+</tr>
+<tr>
+<td>图</td>
+<td>连通无向带权图，无自环、无重边</td>
+</tr>
+<tr>
+<td>顶点 n</td>
+<td>2 到 100000</td>
+</tr>
+<tr>
+<td>边数 m</td>
+<td>n−1 ≤ m ≤ min(100000, n(n−1)&#x2F;2)</td>
+</tr>
+<tr>
+<td>权重</td>
+<td>1 到 1000000</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>按输入边顺序，每条边一行</td>
+</tr>
+<tr>
+<td>限制</td>
+<td>2 秒、256 MB</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>输出字符串</th>
+<th>精确含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>any</td>
+<td>在所有 MST 中都会出现</td>
+</tr>
+<tr>
+<td>at least one</td>
+<td>至少出现在一棵 MST 中，但不是所有 MST 都包含它</td>
+</tr>
+<tr>
+<td>none</td>
+<td>不会出现在任何 MST 中</td>
+</tr>
+</tbody></table>
+<p>不要把 any 按日常英语猜成“任选一棵”。它在这道题的输出契约中表示每棵 MST 都包含这条边。</p>
+<h2 id="一次-Kruskal-为什么不能完成分类"><a href="#一次-Kruskal-为什么不能完成分类" class="headerlink" title="一次 Kruskal 为什么不能完成分类"></a>一次 Kruskal 为什么不能完成分类</h2><p>三个顶点组成同权三角形，任何两条边都是 MST。一次 Kruskal 只选两条边，却不能把第三条标成 none；选中的两条也不能标成 any。</p>
+<p>逐边强制加入或删除，再重新计算 MST，能判断分类，但重复扫描的代价过高。我们保留 Kruskal 的排序框架，只改变同权边的处理方式：<strong>同一组全部判定完，再统一合并。</strong></p>
+
+<ol class="invariant-steps" aria-label="等权批次的处理顺序"><li><strong>冻结更轻边的连通关系</strong><p>处理权重 w 时，并查集只能包含权重严格小于 w 的边。</p></li><li><strong>在本组临时图里判定</strong><p>同根边不可选；跨根边先可选，再用桥区分是否必选。</p></li><li><strong>本组结束后统一合并</strong><p>为下一组准备连通关系，不让本组先处理的边抢占选择。</p></li></ol>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[取出所有权重为 w 的边] --&gt; B[查询严格更轻边的并查集根]
+  B --&gt; C{两端已经同根}
+  C -- 是 --&gt; D[分类 none]
+  C -- 否 --&gt; E[跨根边加入临时多重图]
+  E --&gt; F[先标 at least one 并查找桥]
+  F --&gt; G[桥改标 any]
+  D --&gt; H[整组判定完再统一合并]
+  G --&gt; H
+  </pre></div>
+
+<h2 id="更轻边连通的两端为什么不可选"><a href="#更轻边连通的两端为什么不可选" class="headerlink" title="更轻边连通的两端为什么不可选"></a>更轻边连通的两端为什么不可选</h2><p>若 u、v 在权重严格小于 w 的边中已经连通，存在一条全由更轻边组成的路径。加入 e&#x3D;(u,v,w) 会形成一个环，e 是这个环唯一最重的边。</p>
+<p>假设某棵 MST 包含 e，删掉 e 得到一个割。那条更轻路径必有边跨过这个割，可以替换 e 并降低费用，矛盾。因此这样的边一定是 none。</p>
+<p>这里必须是“严格更轻”。若原路径上的边与 e 同权，替换不会降低费用，不能用这个证明排除 e。</p>
+<h2 id="收缩后为什么可能出现平行边"><a href="#收缩后为什么可能出现平行边" class="headerlink" title="收缩后为什么可能出现平行边"></a>收缩后为什么可能出现平行边</h2><p>把严格更轻边的每个连通块压成一个点，只保留本组跨块的边。原图虽然没有重边，<strong>临时图仍可能有平行边</strong>。</p>
+<p>例如先由权重 1 的边连接 1—2、3—4，再处理权重 2 的 1—3 与 2—4。两条边在原图不同，收缩后却都连接 A&#x3D;{1,2} 与 B&#x3D;{3,4}。它们可以互相替代，都不是桥。</p>
+
+<figure class="evidence-figure"><img class="no-lazy" src="/images/posts/mst-weight-group-bridges.svg" alt="权重2的临时图中，A与B之间有两条平行可选边，B到C以及C到D是必选桥" width="900" height="520" loading="lazy" decoding="async"><figcaption>原创六顶点例子的收缩图。这里只显示权重 2 的批次；A、B 内部的更轻边已收缩。两条 A—B 边必须保留各自的边编号。<a href="/images/posts/mst-weight-group-bridges.svg">查看原图</a></figcaption></figure>
+
+
+<p>完整例子的输入边按下表排序编号，但程序不要求输入已经按权重排列。</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>原图边与权重</th>
+<th>处理本组前的两端</th>
+<th>本组角色</th>
+<th>分类</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>e1</td>
+<td>1—2，权重 1</td>
+<td>两个单点</td>
+<td>桥</td>
+<td>any</td>
+</tr>
+<tr>
+<td>e2</td>
+<td>3—4，权重 1</td>
+<td>两个单点</td>
+<td>桥</td>
+<td>any</td>
+</tr>
+<tr>
+<td>e3</td>
+<td>1—3，权重 2</td>
+<td>A—B</td>
+<td>平行边之一</td>
+<td>at least one</td>
+</tr>
+<tr>
+<td>e4</td>
+<td>2—4，权重 2</td>
+<td>A—B</td>
+<td>另一条平行边</td>
+<td>at least one</td>
+</tr>
+<tr>
+<td>e5</td>
+<td>3—5，权重 2</td>
+<td>B—C</td>
+<td>桥</td>
+<td>any</td>
+</tr>
+<tr>
+<td>e6</td>
+<td>5—6，权重 2</td>
+<td>C—D</td>
+<td>桥</td>
+<td>any</td>
+</tr>
+<tr>
+<td>e7</td>
+<td>1—4，权重 3</td>
+<td>已由权重 1、2 连通</td>
+<td>严格更轻路径形成环</td>
+<td>none</td>
+</tr>
+</tbody></table>
+<p>两棵 MST 分别选择 e3 或 e4，并都保留 e1、e2、e5、e6，总权重都是 8。</p>
+<h2 id="临时图中的桥为什么等于必选边"><a href="#临时图中的桥为什么等于必选边" class="headerlink" title="临时图中的桥为什么等于必选边"></a>临时图中的桥为什么等于必选边</h2><p>先说明权重层之间的关系。任意 MST 都必须用更轻边连接每个更轻边连通块；否则沿这些更轻边找一个连接缺口，可以替换树中更重的跨割边并降低费用。到了权重 w，MST 的本组选择必须在临时图的每个连通分量中形成生成树，之后才轮到更重边。</p>
+<p>临时图中一条跨块边不是自环，所以可以先选它，再把选择扩展成该分量的生成树；接着按 Kruskal 完成后续权重组，就得到一棵包含它的 MST。故所有跨块边至少可选。</p>
+<p>如果它是桥，删除后本组连通分量被分开，本组任何生成树都必须使用它，因此所有 MST 必选。如果它不是桥，删除它不改变本组连通性，能构造一棵不含它的本组生成树；也能先选它再扩展。因此它属于部分 MST，而不是全部。</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>依据</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>更轻边已经连接两端</td>
+<td>用更轻跨割边替换能严格降低费用</td>
+<td>none</td>
+</tr>
+<tr>
+<td>临时图中的桥</td>
+<td>同权层无法绕开，更重边不能替代最优选择</td>
+<td>any</td>
+</tr>
+<tr>
+<td>临时图中的非桥跨块边</td>
+<td>同权环允许替换，既可选也可不选</td>
+<td>at least one</td>
+</tr>
+</tbody></table>
+<p>这里找的是<strong>每个权重组收缩图中的桥</strong>，不是原图中的桥。原图不含桥，也可能有 MST 必选边：权重 1、2、3 的三角形中，前两条是必选边。</p>
+<h2 id="桥判定要跳过父边而不是父顶点"><a href="#桥判定要跳过父边而不是父顶点" class="headerlink" title="桥判定要跳过父边而不是父顶点"></a>桥判定要跳过父边而不是父顶点</h2><p>DFS 中，tin[v] 是进入 v 的时间，low[v] 表示从 v 的 DFS 子树经树边以及至多一条非树边，能够回到的最早进入时间。子树返回后更新父亲的 low；对于树边 p—v，判定式是 **low[v] &gt; tin[p]**。</p>
+<p>如果只写“邻点等于父亲就跳过”，A—B 两条平行边都会被跳过，第二条无法作为回到父亲的非树边，程序会把第一条误判为桥。正确做法是只跳过进入当前点的那一条<strong>边编号</strong>。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[迭代 DFS 查看下一条邻边] --&gt; B{是否就是父边编号}
+  B -- 是 --&gt; A
+  B -- 否 --&gt; C{邻点是否尚未访问}
+  C -- 是 --&gt; D[记录父边并进入孩子]
+  C -- 否 --&gt; E[用邻点进入时间更新 low]
+  D --&gt; F[孩子结束时更新父亲 low]
+  F --&gt; G{孩子 low 大于父亲 tin}
+  G -- 是 --&gt; H[这条树边是桥]
+  G -- 否 --&gt; I[存在绕行路径]
+  </pre></div>
+
+
+<details class="mechanism-check"><summary>自检：原图没有重边，能否把临时图的平行边去重？</summary><div><p>不能。每条边都对应一个独立的输入答案，平行边还提供同权替代路径；去重会把原本可替换的连接误判为桥。</p></div></details>
+
+
+<h2 id="完整非递归-C-17-实现"><a href="#完整非递归-C-17-实现" class="headerlink" title="完整非递归 C++17 实现"></a>完整非递归 C++17 实现</h2><p>local 数组为并查集根分配临时编号，只重置本组出现的根，不在每组清空 n 个位置。DFS 用显式栈、邻边游标和回溯阶段记录，避免十万顶点长链触发递归栈溢出。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;numeric&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;utility&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Edge</span> &#123; <span class="type">int</span> u, v, w; &#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">DSU</span> &#123;</span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; p, size;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">DSU</span><span class="params">(<span class="type">int</span> n)</span> : p(n + <span class="number">1</span>), size(n + <span class="number">1</span>, <span class="number">1</span>) &#123;</span></span><br><span class="line">        <span class="built_in">iota</span>(p.<span class="built_in">begin</span>(), p.<span class="built_in">end</span>(), <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">find</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (p[x] != x) &#123; p[x] = p[p[x]]; x = p[x]; &#125;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">unite</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123;</span><br><span class="line">        a = <span class="built_in">find</span>(a); b = <span class="built_in">find</span>(b);</span><br><span class="line">        <span class="keyword">if</span> (a == b) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">if</span> (size[a] &lt; size[b]) <span class="built_in">swap</span>(a, b);</span><br><span class="line">        p[b] = a; size[a] += size[b];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n, m;</span><br><span class="line">    <span class="keyword">if</span> (!(cin &gt;&gt; n &gt;&gt; m)) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="function">vector&lt;Edge&gt; <span class="title">edges</span><span class="params">(m)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;e : edges) cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">order</span><span class="params">(m)</span>, <span class="title">answer</span><span class="params">(m, <span class="number">0</span>)</span>, <span class="title">local</span><span class="params">(n + <span class="number">1</span>, <span class="number">-1</span>)</span></span>;</span><br><span class="line">    <span class="built_in">iota</span>(order.<span class="built_in">begin</span>(), order.<span class="built_in">end</span>(), <span class="number">0</span>);</span><br><span class="line">    <span class="built_in">sort</span>(order.<span class="built_in">begin</span>(), order.<span class="built_in">end</span>(), [&amp;](<span class="type">int</span> a, <span class="type">int</span> b) &#123;</span><br><span class="line">        <span class="keyword">if</span> (edges[a].w != edges[b].w) <span class="keyword">return</span> edges[a].w &lt; edges[b].w;</span><br><span class="line">        <span class="keyword">return</span> a &lt; b;</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="function">DSU <span class="title">dsu</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> left = <span class="number">0</span>; left &lt; m; ) &#123;</span><br><span class="line">        <span class="type">int</span> right = left;</span><br><span class="line">        <span class="keyword">while</span> (right &lt; m &amp;&amp; edges[order[right]].w == edges[order[left]].w) ++right;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; roots;</span><br><span class="line">        vector&lt;vector&lt;pair&lt;<span class="type">int</span>, <span class="type">int</span>&gt;&gt;&gt; graph;</span><br><span class="line">        <span class="keyword">auto</span> index = [&amp;](<span class="type">int</span> root) &#123;</span><br><span class="line">            <span class="keyword">if</span> (local[root] == <span class="number">-1</span>) &#123;</span><br><span class="line">                local[root] = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(graph.<span class="built_in">size</span>());</span><br><span class="line">                roots.<span class="built_in">push_back</span>(root);</span><br><span class="line">                graph.<span class="built_in">emplace_back</span>();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> local[root];</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = left; j &lt; right; ++j) &#123;</span><br><span class="line">            <span class="type">int</span> id = order[j];</span><br><span class="line">            <span class="type">int</span> a = dsu.<span class="built_in">find</span>(edges[id].u), b = dsu.<span class="built_in">find</span>(edges[id].v);</span><br><span class="line">            <span class="keyword">if</span> (a == b) <span class="keyword">continue</span>; <span class="comment">// answer 0: none</span></span><br><span class="line">            answer[id] = <span class="number">1</span>;       <span class="comment">// candidate: at least one</span></span><br><span class="line">            <span class="type">int</span> x = <span class="built_in">index</span>(a), y = <span class="built_in">index</span>(b);</span><br><span class="line">            graph[x].<span class="built_in">push_back</span>(&#123;y, id&#125;);</span><br><span class="line">            graph[y].<span class="built_in">push_back</span>(&#123;x, id&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> k = <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(graph.<span class="built_in">size</span>()), timer = <span class="number">0</span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">tin</span><span class="params">(k, <span class="number">-1</span>)</span>, <span class="title">low</span><span class="params">(k)</span>, <span class="title">parent</span><span class="params">(k, <span class="number">-1</span>)</span>, <span class="title">parent_edge</span><span class="params">(k, <span class="number">-1</span>)</span>, <span class="title">next</span><span class="params">(k, <span class="number">0</span>)</span></span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; stack;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> root = <span class="number">0</span>; root &lt; k; ++root) &#123;</span><br><span class="line">            <span class="keyword">if</span> (tin[root] != <span class="number">-1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            tin[root] = low[root] = timer++;</span><br><span class="line">            stack.<span class="built_in">push_back</span>(root);</span><br><span class="line">            <span class="keyword">while</span> (!stack.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                <span class="type">int</span> v = stack.<span class="built_in">back</span>();</span><br><span class="line">                <span class="keyword">if</span> (next[v] &lt; <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(graph[v].<span class="built_in">size</span>())) &#123;</span><br><span class="line">                    <span class="keyword">auto</span> [to, id] = graph[v][next[v]++];</span><br><span class="line">                    <span class="keyword">if</span> (id == parent_edge[v]) <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">if</span> (tin[to] == <span class="number">-1</span>) &#123;</span><br><span class="line">                        parent[to] = v; parent_edge[to] = id;</span><br><span class="line">                        tin[to] = low[to] = timer++;</span><br><span class="line">                        stack.<span class="built_in">push_back</span>(to);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        low[v] = <span class="built_in">min</span>(low[v], tin[to]);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    stack.<span class="built_in">pop_back</span>();</span><br><span class="line">                    <span class="type">int</span> p = parent[v];</span><br><span class="line">                    <span class="keyword">if</span> (p != <span class="number">-1</span>) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (low[v] &gt; tin[p]) answer[parent_edge[v]] = <span class="number">2</span>; <span class="comment">// any</span></span><br><span class="line">                        low[p] = <span class="built_in">min</span>(low[p], low[v]);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> root : roots) local[root] = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = left; j &lt; right; ++j) &#123;</span><br><span class="line">            <span class="type">const</span> <span class="keyword">auto</span> &amp;e = edges[order[j]];</span><br><span class="line">            dsu.<span class="built_in">unite</span>(e.u, e.v);</span><br><span class="line">        &#125;</span><br><span class="line">        left = right;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *labels[] = &#123;<span class="string">&quot;none&quot;</span>, <span class="string">&quot;at least one&quot;</span>, <span class="string">&quot;any&quot;</span>&#125;;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> value : answer) cout &lt;&lt; labels[value] &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="边界与复杂度"><a href="#边界与复杂度" class="headerlink" title="边界与复杂度"></a>边界与复杂度</h2><table>
+<thead>
+<tr>
+<th>情况或错误</th>
+<th>检查方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原图本来就是树</td>
+<td>所有边为 any，与边权是否相同无关</td>
+</tr>
+<tr>
+<td>同权三角形或同权环</td>
+<td>环上的边均为 at least one</td>
+</tr>
+<tr>
+<td>提前合并本组一条边</td>
+<td>会错误排除后面的同权替代边</td>
+</tr>
+<tr>
+<td>收缩产生平行边</td>
+<td>保留不同边编号，只跳过父边</td>
+</tr>
+<tr>
+<td>临时图不连通</td>
+<td>对每个未访问临时顶点启动 DFS</td>
+</tr>
+<tr>
+<td>low 条件写成 ≥</td>
+<td>回到父亲的替代边被误判成桥</td>
+</tr>
+<tr>
+<td>每组重新初始化 n 个位置</td>
+<td>不同权重很多时退化；只维护本组出现的根</td>
+</tr>
+<tr>
+<td>输入编号与排序编号混用</td>
+<td>输出必须沿原始边顺序</td>
+</tr>
+</tbody></table>
+<p>排序 O(m log m)，并查集 O(m α(n))，所有临时图的边总数不超过 m、出现的点总数不超过 2m，桥 DFS 总计 O(m)。总时间 **O(m log m+m α(n)+n)**，空间 **O(n+m)**。代码不计算总树权重，官方边权、时间戳与编号均可由 int 保存；若扩展到计算总费用，则应使用 long long。</p>
+<p>项目 tests&#x2F;verify-mst-edge-classification-article.cjs 从正文提取并无警告编译代码。小图穷举所有生成树，收集全部最小树并按出现次数分类；较大图则逐边用删除与端点收缩后的 Prim 检查，不把桥算法自身当成标准答案。另含十万顶点长链、大同权环和大量权重组。</p>
+<p>回到<a href="/algorithms/">算法路线</a>，把 <a href="/esblog/79136.html">609E 的可选性与代价</a>、本题的必选性，与<a href="/esblog/46872.html">离线连通性</a>比较：并查集维护的时刻不同，得到的信息就不同。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/79264.html">https://eulersail.com/esblog/79264.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E6%9F%A5%E9%9B%86/">并查集</a><a class="post-meta__tags" href="/tags/%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91/">最小生成树</a><a class="post-meta__tags" href="/tags/%E6%A1%A5/">桥</a><a class="post-meta__tags" href="/tags/%E8%BF%AD%E4%BB%A3-DFS/">迭代 DFS</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div class="next-post pull-right"><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">AI 服务超时与重试 从总预算到安全重放</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/94673.html" title="Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-10</div><div class="title">Codeforces 1245D：虚拟源点、Kruskal 与电网最小生成树</div></div></a></div><div><a href="/esblog/79136.html" title="Codeforces 609E 指定边的最小生成树 从环替换到路径最大值"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">Codeforces 609E 指定边的最小生成树 从环替换到路径最大值</div></div></a></div><div><a href="/esblog/82541.html" title="Codeforces 25D：并查集、生成森林与最少改路方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 25D：并查集、生成森林与最少改路方案</div></div></a></div><div><a href="/esblog/46872.html" title="Codeforces 并查集三题：群组、语言与离线路径查询"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="title">Codeforces 并查集三题：群组、语言与离线路径查询</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">157</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E9%A2%98%E7%9B%AE%E4%B8%8E%E4%B8%89%E7%B1%BB%E7%AD%94%E6%A1%88"><span class="toc-text">官方题目与三类答案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1-Kruskal-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%AE%8C%E6%88%90%E5%88%86%E7%B1%BB"><span class="toc-text">一次 Kruskal 为什么不能完成分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E8%BD%BB%E8%BE%B9%E8%BF%9E%E9%80%9A%E7%9A%84%E4%B8%A4%E7%AB%AF%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E5%8F%AF%E9%80%89"><span class="toc-text">更轻边连通的两端为什么不可选</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B6%E7%BC%A9%E5%90%8E%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E5%87%BA%E7%8E%B0%E5%B9%B3%E8%A1%8C%E8%BE%B9"><span class="toc-text">收缩后为什么可能出现平行边</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%B4%E6%97%B6%E5%9B%BE%E4%B8%AD%E7%9A%84%E6%A1%A5%E4%B8%BA%E4%BB%80%E4%B9%88%E7%AD%89%E4%BA%8E%E5%BF%85%E9%80%89%E8%BE%B9"><span class="toc-text">临时图中的桥为什么等于必选边</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%A5%E5%88%A4%E5%AE%9A%E8%A6%81%E8%B7%B3%E8%BF%87%E7%88%B6%E8%BE%B9%E8%80%8C%E4%B8%8D%E6%98%AF%E7%88%B6%E9%A1%B6%E7%82%B9"><span class="toc-text">桥判定要跳过父边而不是父顶点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E9%9D%9E%E9%80%92%E5%BD%92-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整非递归 C++17 实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-text">边界与复杂度</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算">AI 服务并发与背压 从有界准入到排队预算</a><time datetime="2026-10-13T07:05:00.000Z" title="发表于 2026-10-13 15:05:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79264.html" title="Codeforces 160D Edges in MST 从等权分组到桥判定">Codeforces 160D Edges in MST 从等权分组到桥判定</a><time datetime="2026-10-13T07:00:00.000Z" title="发表于 2026-10-13 15:00:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放">AI 服务超时与重试 从总预算到安全重放</a><time datetime="2026-10-13T03:05:00.000Z" title="发表于 2026-10-13 11:05:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79136.html" title="Codeforces 609E 指定边的最小生成树 从环替换到路径最大值">Codeforces 609E 指定边的最小生成树 从环替换到路径最大值</a><time datetime="2026-10-13T03:00:00.000Z" title="发表于 2026-10-13 11:00:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98261.html" title="门德尔松第三交响曲苏格兰 从引子回归到终曲转色">门德尔松第三交响曲苏格兰 从引子回归到终曲转色</a><time datetime="2026-10-13T02:05:00.000Z" title="发表于 2026-10-13 10:05:00">2026-10-13</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

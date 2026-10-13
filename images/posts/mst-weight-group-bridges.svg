@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">同权批次收缩后的桥与平行边</title><desc id="desc">严格更轻的边把1和2收缩为A，把3和4收缩为B。权重2的A到B有两条平行边，可替换；B到C与C到D为桥，必选。</desc>
+<rect width="900" height="520" rx="24" fill="#f1f6fc"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18324d">
+<text x="44" y="52" font-size="26" font-weight="700">同权边不能抢先合并：先在本组图里找桥</text>
+<text x="44" y="88" font-size="17">原创例子 · 当前权重 w = 2 · 更轻连通块先收缩，保留平行边</text>
+<path d="M140 254 C195 160 295 160 350 254" stroke="#a04b0b" stroke-width="6" fill="none"/>
+<path d="M140 266 C195 360 295 360 350 266" stroke="#23678b" stroke-width="6" fill="none"/>
+<path d="M350 260 H770" stroke="#17645a" stroke-width="7" fill="none"/>
+<g fill="#fff" stroke="#23678b" stroke-width="4"><circle cx="140" cy="260" r="34"/><circle cx="350" cy="260" r="34"/><circle cx="560" cy="260" r="34"/><circle cx="770" cy="260" r="34"/></g>
+<g text-anchor="middle" font-size="25" font-weight="700"><text x="140" y="269">A</text><text x="350" y="269">B</text><text x="560" y="269">C</text><text x="770" y="269">D</text></g>
+<g text-anchor="middle" font-size="17"><text x="140" y="320">{1, 2}</text><text x="350" y="320">{3, 4}</text><text x="560" y="320">{5}</text><text x="770" y="320">{6}</text><text x="245" y="161" fill="#864006">e3：部分可选</text><text x="245" y="360" fill="#155d83">e4：部分可选</text><text x="455" y="232" fill="#17645a">e5：必选桥</text><text x="665" y="232" fill="#17645a">e6：必选桥</text></g>
+<rect x="44" y="396" width="812" height="88" rx="18" fill="#fff"/>
+<text x="66" y="433" font-size="21" font-weight="700">A—B 的两条边互为替代，删除任意一条仍连通。</text>
+<text x="66" y="465" font-size="17">所有分类完成后，再把权重 2 的整组边加入并查集。</text>
+</g></svg>
