@@ -1,0 +1,457 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>DQN 原理 从神经 Q 网络到经验回放与目标网络 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用1→2→2的神经Q网络手算一个TD训练步，解释回放池、冻结目标、动作选择与终止掩码，附纯Python前向反向实现和独立梯度验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DQN 原理 从神经 Q 网络到经验回放与目标网络">
+<meta property="og:url" content="https://eulersail.com/esblog/90652.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用1→2→2的神经Q网络手算一个TD训练步，解释回放池、冻结目标、动作选择与终止掩码，附纯Python前向反向实现和独立梯度验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-13T08:10:00.000Z">
+<meta property="article:modified_time" content="2026-10-13T08:10:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="强化学习">
+<meta property="article:tag" content="神经网络">
+<meta property="article:tag" content="DQN">
+<meta property="article:tag" content="经验回放">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/90652.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DQN 原理 从神经 Q 网络到经验回放与目标网络',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-13 16:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">164</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">DQN 原理 从神经 Q 网络到经验回放与目标网络</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-13T08:10:00.000Z" title="发表于 2026-10-13 16:10:00">2026-10-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-13T08:10:00.000Z" title="更新于 2026-10-13 16:10:00">2026-10-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/33417.html">表格 Q-learning</a>为每个状态、动作保存一个数。状态很多、观察是图像时，这张表难以直接列全；DQN 用神经网络根据观察估计每个离散动作的 Q 值，再沿 TD 误差更新参数。</p>
+<p>把 Q 表换成网络还不够：相邻经验高度相关，当前网络又参与生成自己的学习目标，训练可能变成追逐不断移动的数值。<strong>经验回放复用并打散样本，目标网络延迟学习目标的变化。</strong> 它们是稳定化设计，不是任何环境都保证收敛的证明。</p>
+<span id="more"></span>
+
+<h2 id="Q-值不是动作概率"><a href="#Q-值不是动作概率" class="headerlink" title="Q 值不是动作概率"></a>Q 值不是动作概率</h2><p>网络输入是状态或观察的表示，输出维度等于动作数。Q(s,a) 估计采取动作 a 后的折扣回报，可以为负，也不要求各动作值之和为 1。不要给输出加 Softmax，误把动作价值当作概率。</p>
+<p>动作可按 <a href="/esblog/86140.html">ε-greedy</a>选择；训练时只对实际执行动作的输出计算这一条经验的损失。共享隐藏层更新仍可能影响其他动作的输出，不等于“未选动作永远不变”。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>网络或表输出</th>
+<th>学习信号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>表格 Q-learning</td>
+<td>每个状态、动作的独立数值</td>
+<td>直接更新这个表项</td>
+</tr>
+<tr>
+<td>DQN</td>
+<td>所有离散动作的 Q 值</td>
+<td>固定 TD 目标下的回归误差</td>
+</tr>
+<tr>
+<td><a href="/esblog/90426.html">策略梯度</a></td>
+<td>动作分布的参数</td>
+<td>用回报或优势更新策略</td>
+</tr>
+</tbody></table>
+<p>这里的“神经”指函数近似器，不规定一定用卷积。<a href="/esblog/72516.html">CNN</a>适合某些具有空间结构的输入；本文用只有一个输入数的微型多层感知机，让参数与梯度可以逐项手算。</p>
+<h2 id="经验回放与目标网络分别解决什么"><a href="#经验回放与目标网络分别解决什么" class="headerlink" title="经验回放与目标网络分别解决什么"></a>经验回放与目标网络分别解决什么</h2><p><a target="_blank" rel="noopener" href="https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf">Mnih 等人的原始论文</a>描述了容量有限的经验回放和独立目标网络。回放保存旧策略采集的转移并抽取小批次；目标网络定期复制在线参数，在两次复制之间固定。</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>本文实现</th>
+<th>不要误解成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>回放池</td>
+<td>保存最近 N 条转移，均匀无放回抽样</td>
+<td>采样后完全独立，或自动覆盖从未探索的状态</td>
+</tr>
+<tr>
+<td>在线网络 θ</td>
+<td>当前 Q 预测与动作选择；梯度更新它</td>
+<td>每条经验有自己独立的一套参数</td>
+</tr>
+<tr>
+<td>目标网络 θ⁻</td>
+<td>生成下一状态的目标值，固定到下次同步</td>
+<td>另一个会同时接受同一损失梯度的网络</td>
+</tr>
+<tr>
+<td>同步周期</td>
+<td>本文按优化器更新次数计</td>
+<td>忘记区分环境步、批次更新与 episode</td>
+</tr>
+</tbody></table>
+<p>回放数据来自旧的行为策略，所以 DQN 是 off-policy 方法；并不意味着任意过期、非平稳数据都同样合适。</p>
+
+<ol class="invariant-steps" aria-label="一个 DQN 训练步"><li><strong>抽取已经发生的转移</strong><p>状态、动作、奖励、下一状态与终止标志必须匹配同一步。</p></li><li><strong>先用目标网络冻结学习目标</strong><p>本次梯度只走在线预测路径，不穿过下一状态的最大值。</p></li><li><strong>更新在线参数，再按计划同步</strong><p>深复制参数，不能让两个网络共享同一组可变列表。</p></li></ol>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[行为策略采集转移] --&gt; B[有界经验回放池]
+  B --&gt; C[随机抽取小批次]
+  C --&gt; D[在线网络计算已执行动作的 Q]
+  C --&gt; E[目标网络计算下一状态最大 Q]
+  E --&gt; F[结合奖励与终止标志 冻结 TD 目标]
+  D --&gt; G[回归损失与在线网络梯度]
+  F --&gt; G
+  G --&gt; H[更新在线参数]
+  H --&gt; I[到达同步周期再复制给目标网络]
+  </pre></div>
+
+<h2 id="一个训练步的数字从哪里来"><a href="#一个训练步的数字从哪里来" class="headerlink" title="一个训练步的数字从哪里来"></a>一个训练步的数字从哪里来</h2><p>设在线网络为 1→2→2：输入 x&#x3D;1，隐藏层权重为 1、2，偏置均 0，经 ReLU 得隐藏值 [1,2]。两个动作的输出权重分别为 [1,0.5]、[−1,0]，偏置 0，所以 Q&#x3D;[2,−1]。</p>
+<p>本条经验采取动作 0，奖励 1，下一状态输入仍为 1。目标网络的输出偏置为 [1,2]，其余参数与初始在线网络相同，因此下一状态 Q⁻&#x3D;[3,1]。取 γ&#x3D;0.9、未终止，目标 y&#x3D;1+0.9×3&#x3D;3.7。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>计算</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>实际动作的预测</td>
+<td>Q(s,0)</td>
+<td>2</td>
+</tr>
+<tr>
+<td>固定目标</td>
+<td>1+0.9×max(3,1)</td>
+<td>3.7</td>
+</tr>
+<tr>
+<td>本例半平方损失</td>
+<td>0.5×(2−3.7)²</td>
+<td>1.445</td>
+</tr>
+<tr>
+<td>对预测的梯度</td>
+<td>2−3.7</td>
+<td>−1.7</td>
+</tr>
+<tr>
+<td>动作 0 输出权重梯度</td>
+<td>−1.7×[1,2]</td>
+<td>[−1.7,−3.4]</td>
+</tr>
+<tr>
+<td>动作 1 输出层参数的直接梯度</td>
+<td>没有作为本条经验的预测</td>
+<td>0</td>
+</tr>
+</tbody></table>
+
+<figure class="evidence-figure"><img class="no-lazy" src="/images/posts/dqn-frozen-target.svg" alt="在线预测2与冻结目标3.7构成损失1.445，梯度只流向在线网络，目标网络由延迟复制更新" width="900" height="520" loading="lazy" decoding="async"><figcaption>原创合成训练步示意。网络和转移均为教学设定，不是 Atari 训练或性能实测。<a href="/images/posts/dqn-frozen-target.svg">查看原图</a></figcaption></figure>
+
+
+<p>小批次损失取半平方误差的平均值，因此每条预测的梯度是 (Q−y)&#x2F;B，不能漏掉批次大小 B。目标 y 在这个训练步内被当作常数，这通常称为半梯度更新。</p>
+<h2 id="真正终止与外部截断不能混成一个-done"><a href="#真正终止与外部截断不能混成一个-done" class="headerlink" title="真正终止与外部截断不能混成一个 done"></a>真正终止与外部截断不能混成一个 done</h2><p>目标为 **y&#x3D;r+γ×(1−terminated)×max_a Q⁻(s′,a)**。真正终止不再自举；外部截断使采样停止，但不必意味着 MDP 已进入终止状态。<a target="_blank" rel="noopener" href="https://gymnasium.farama.org/tutorials/gymnasium_basics/handling_time_limits/">Gymnasium 的时间限制说明</a>明确区分这两种情况。</p>
+<table>
+<thead>
+<tr>
+<th>当前转移</th>
+<th>本例目标</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>未终止</td>
+<td>3.7</td>
+<td>保留后续价值</td>
+</tr>
+<tr>
+<td>真正终止</td>
+<td>1</td>
+<td>没有后续回报</td>
+</tr>
+<tr>
+<td>只有外部截断</td>
+<td>3.7</td>
+<td>本例继续自举，使用截断时的最终观察</td>
+</tr>
+<tr>
+<td>任务本身的有限时域结束</td>
+<td>按任务的终止定义处理</td>
+<td>不能仅看它也叫“时间上限”；状态还应表达所需剩余时间</td>
+</tr>
+</tbody></table>
+<p>外部截断后的下一状态不能偷换成 reset 返回的新回合初始观察。实际环境或自动重置包装器需要核对最终观察的提供方式；本文只使用明确给出的合成转移。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[读取一条转移] --&gt; B{真正终止}
+  B -- 是 --&gt; C[目标只有即时奖励]
+  B -- 否 --&gt; D[从实际最终观察计算下一状态价值]
+  D --&gt; E[奖励加折扣后的目标网络最大值]
+  E --&gt; F[冻结目标 只更新在线预测]
+  C --&gt; F
+  </pre></div>
+
+<h2 id="纯-Python-神经网络与回放实验"><a href="#纯-Python-神经网络与回放实验" class="headerlink" title="纯 Python 神经网络与回放实验"></a>纯 Python 神经网络与回放实验</h2><p>依赖 Python 3.10 或更新版本的标准库，固定一个输入、两个隐藏单元、两个离散动作。实现前向、手写反向、小批次平均、有界回放与硬同步；使用半平方误差和简单 SGD，不实现原论文的误差裁剪、图像预处理或 Atari 交互训练。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> deque</span><br><span class="line"><span class="keyword">from</span> copy <span class="keyword">import</span> deepcopy</span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">finite</span>(<span class="params">value</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(value) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>) <span class="keyword">or</span> <span class="keyword">not</span> math.isfinite(value):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid number&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Transition</span>:</span><br><span class="line">    state: <span class="built_in">tuple</span></span><br><span class="line">    action: <span class="built_in">int</span></span><br><span class="line">    reward: <span class="built_in">float</span></span><br><span class="line">    next_state: <span class="built_in">tuple</span></span><br><span class="line">    terminated: <span class="built_in">bool</span></span><br><span class="line">    truncated: <span class="built_in">bool</span> = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">validate</span>(<span class="params">t</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(t, Transition):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid transition&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> state <span class="keyword">in</span> (t.state, t.next_state):</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(state) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">tuple</span> <span class="keyword">or</span> <span class="built_in">len</span>(state) != <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected one-feature tuple&quot;</span>)</span><br><span class="line">        finite(state[<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(t.action) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= t.action &lt; <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid action&quot;</span>)</span><br><span class="line">    finite(t.reward)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(t.terminated) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">bool</span> <span class="keyword">or</span> <span class="built_in">type</span>(t.truncated) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">bool</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid stop flags&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">make_net</span>():</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;w1&quot;</span>: [[<span class="number">1.0</span>], [<span class="number">2.0</span>]], <span class="string">&quot;b1&quot;</span>: [<span class="number">0.0</span>, <span class="number">0.0</span>],</span><br><span class="line">            <span class="string">&quot;w2&quot;</span>: [[<span class="number">1.0</span>, <span class="number">0.5</span>], [-<span class="number">1.0</span>, <span class="number">0.0</span>]], <span class="string">&quot;b2&quot;</span>: [<span class="number">0.0</span>, <span class="number">0.0</span>]&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">net, state</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(state) != <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected one feature&quot;</span>)</span><br><span class="line">    finite(state[<span class="number">0</span>])</span><br><span class="line">    z = [net[<span class="string">&quot;w1&quot;</span>][j][<span class="number">0</span>] * state[<span class="number">0</span>] + net[<span class="string">&quot;b1&quot;</span>][j] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>)]</span><br><span class="line">    hidden = [<span class="built_in">max</span>(<span class="number">0.0</span>, value) <span class="keyword">for</span> value <span class="keyword">in</span> z]</span><br><span class="line">    q = [<span class="built_in">sum</span>(net[<span class="string">&quot;w2&quot;</span>][a][j] * hidden[j] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>)) + net[<span class="string">&quot;b2&quot;</span>][a]</span><br><span class="line">         <span class="keyword">for</span> a <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> q, (state[<span class="number">0</span>], z, hidden)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">targets</span>(<span class="params">target, batch, gamma=<span class="number">0.9</span></span>):</span><br><span class="line">    finite(gamma)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= gamma &lt;= <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid discount&quot;</span>)</span><br><span class="line">    values = []</span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> batch:</span><br><span class="line">        validate(t)</span><br><span class="line">        values.append(t.reward <span class="keyword">if</span> t.terminated <span class="keyword">else</span></span><br><span class="line">                      t.reward + gamma * <span class="built_in">max</span>(forward(target, t.next_state)[<span class="number">0</span>]))</span><br><span class="line">    <span class="keyword">return</span> values</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">loss_grad</span>(<span class="params">online, batch, values</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> batch <span class="keyword">or</span> <span class="built_in">len</span>(batch) != <span class="built_in">len</span>(values):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid batch&quot;</span>)</span><br><span class="line">    grad = &#123;<span class="string">&quot;w1&quot;</span>: [[<span class="number">0.0</span>], [<span class="number">0.0</span>]], <span class="string">&quot;b1&quot;</span>: [<span class="number">0.0</span>, <span class="number">0.0</span>],</span><br><span class="line">            <span class="string">&quot;w2&quot;</span>: [[<span class="number">0.0</span>, <span class="number">0.0</span>], [<span class="number">0.0</span>, <span class="number">0.0</span>]], <span class="string">&quot;b2&quot;</span>: [<span class="number">0.0</span>, <span class="number">0.0</span>]&#125;</span><br><span class="line">    loss = <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">for</span> t, y <span class="keyword">in</span> <span class="built_in">zip</span>(batch, values):</span><br><span class="line">        validate(t)</span><br><span class="line">        finite(y)</span><br><span class="line">        q, (x, z, hidden) = forward(online, t.state)</span><br><span class="line">        error = q[t.action] - y</span><br><span class="line">        loss += <span class="number">0.5</span> * error * error / <span class="built_in">len</span>(batch)</span><br><span class="line">        dq = error / <span class="built_in">len</span>(batch)</span><br><span class="line">        grad[<span class="string">&quot;b2&quot;</span>][t.action] += dq</span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>):</span><br><span class="line">            grad[<span class="string">&quot;w2&quot;</span>][t.action][j] += dq * hidden[j]</span><br><span class="line">            dz = dq * online[<span class="string">&quot;w2&quot;</span>][t.action][j] <span class="keyword">if</span> z[j] &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="number">0.0</span></span><br><span class="line">            grad[<span class="string">&quot;w1&quot;</span>][j][<span class="number">0</span>] += dz * x</span><br><span class="line">            grad[<span class="string">&quot;b1&quot;</span>][j] += dz</span><br><span class="line">    <span class="keyword">return</span> loss, grad</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train_step</span>(<span class="params">online, target, batch, *, gamma=<span class="number">0.9</span>, lr=<span class="number">0.01</span></span>):</span><br><span class="line">    finite(lr)</span><br><span class="line">    <span class="keyword">if</span> lr &lt;= <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid learning rate&quot;</span>)</span><br><span class="line">    values = targets(target, batch, gamma)</span><br><span class="line">    loss, grad = loss_grad(online, batch, values)</span><br><span class="line">    <span class="keyword">for</span> name, parameter <span class="keyword">in</span> online.items():</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(parameter)):</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">isinstance</span>(parameter[i], <span class="built_in">list</span>):</span><br><span class="line">                <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(parameter[i])):</span><br><span class="line">                    parameter[i][j] -= lr * grad[name][i][j]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                parameter[i] -= lr * grad[name][i]</span><br><span class="line">    <span class="keyword">return</span> loss</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Replay</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, capacity</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(capacity) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> capacity &lt; <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid capacity&quot;</span>)</span><br><span class="line">        self.data = deque(maxlen=capacity)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">self, transition</span>):</span><br><span class="line">        validate(transition)</span><br><span class="line">        self.data.append(transition)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">sample</span>(<span class="params">self, size, rng</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(size) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> <span class="keyword">not</span> <span class="number">1</span> &lt;= size &lt;= <span class="built_in">len</span>(self.data):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid sample size&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> rng.sample(<span class="built_in">list</span>(self.data), size)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    online = make_net()</span><br><span class="line">    target = deepcopy(online)</span><br><span class="line">    target[<span class="string">&quot;b2&quot;</span>] = [<span class="number">1.0</span>, <span class="number">2.0</span>]</span><br><span class="line">    before_target = deepcopy(target)</span><br><span class="line">    continuing = Transition((<span class="number">1.0</span>,), <span class="number">0</span>, <span class="number">1.0</span>, (<span class="number">1.0</span>,), <span class="literal">False</span>)</span><br><span class="line">    terminal = Transition((<span class="number">1.0</span>,), <span class="number">0</span>, <span class="number">1.0</span>, (<span class="number">1.0</span>,), <span class="literal">True</span>)</span><br><span class="line">    truncated = Transition((<span class="number">1.0</span>,), <span class="number">0</span>, <span class="number">1.0</span>, (<span class="number">1.0</span>,), <span class="literal">False</span>, <span class="literal">True</span>)</span><br><span class="line">    memory = Replay(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> (continuing, terminal, truncated):</span><br><span class="line">        memory.add(item)</span><br><span class="line">    sample = memory.sample(<span class="number">2</span>, random.Random(<span class="number">7</span>))</span><br><span class="line">    frozen = targets(target, [continuing])</span><br><span class="line">    before = train_step(online, target, [continuing])</span><br><span class="line">    after = loss_grad(online, [continuing], frozen)[<span class="number">0</span>]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;targets&quot;</span>: targets(target, [continuing, terminal, truncated]),</span><br><span class="line">                      <span class="string">&quot;before&quot;</span>: before, <span class="string">&quot;after&quot;</span>: after,</span><br><span class="line">                      <span class="string">&quot;target_unchanged&quot;</span>: target == before_target,</span><br><span class="line">                      <span class="string">&quot;sample_size&quot;</span>: <span class="built_in">len</span>(sample)&#125;, indent=<span class="number">2</span>))</span><br><span class="line">    target = deepcopy(online)  <span class="comment"># Hard synchronization, when the chosen update period is reached.</span></span><br></pre></td></tr></table></figure>
+
+<p>运行可核对 targets 为 [3.7,1,3.7]、首次损失 1.445、固定目标下更新后的损失下降，且同步前目标参数不变。回放容量为 2，第三条加入后最旧一条被替换。这个结果只检验合成训练步，不证明学会了一个环境的最优策略。</p>
+<p>对批次大小 B，这个固定小网络的训练时间 O(B)、目标列表占 O(B)，回放容量 N 的存储 O(N)。本例抽样会把 deque 转成列表，因此一次 sample 还需要 O(N) 时间与临时空间；不能把它当作大型训练回放池的最优实现。</p>
+<h2 id="训练和评估的边界"><a href="#训练和评估的边界" class="headerlink" title="训练和评估的边界"></a>训练和评估的边界</h2><table>
+<thead>
+<tr>
+<th>易错点</th>
+<th>检查方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标和在线网络浅复制</td>
+<td>修改在线参数后，目标参数必须保持不变</td>
+</tr>
+<tr>
+<td>对目标值反向求导</td>
+<td>冻结目标后再做数值差分，不把目标也随在线参数一起变化</td>
+</tr>
+<tr>
+<td>漏掉实际动作索引</td>
+<td>本条经验只直接回归所执行动作的 Q 输出</td>
+</tr>
+<tr>
+<td>把截断视为终止</td>
+<td>对照三种目标值，并检查最终观察来源</td>
+</tr>
+<tr>
+<td>用 Softmax 输出 Q</td>
+<td>Q 是价值，不是概率，允许负数</td>
+</tr>
+<tr>
+<td>缓冲池不足批大小</td>
+<td>先完成采样条件检查，不用无效空批次更新</td>
+</tr>
+<tr>
+<td>训练损失降低</td>
+<td>另做环境回报评估，多随机种子，不能替代策略质量指标</td>
+</tr>
+<tr>
+<td>隐藏单元恰在 ReLU 零点</td>
+<td>代码采用零导数约定，中心差分在不可微点不一定一致</td>
+</tr>
+</tbody></table>
+
+<details class="mechanism-check"><summary>自检：因外部时间上限停止这一回合，就一定要把下一状态 Q 值清零吗？</summary><div><p>不一定。本例的外部截断不等于真正终止，仍使用最终观察自举。如果时间上限本来就是任务定义的一部分，则按该 MDP 的终止与状态定义处理。</p></div></details>
+
+
+<p>项目 tests&#x2F;verify-dqn-principles-article.cjs 用冻结目标的中心差分检查所有在线参数梯度，核验批次平均、未选动作的直接梯度、回放覆盖与采样，以及目标深复制。继续比较<a href="/esblog/90426.html">策略梯度与 Actor-Critic</a>，可以分清“先回归动作价值再选动作”和“直接优化动作分布”的差别。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/90652.html">https://eulersail.com/esblog/90652.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a><a class="post-meta__tags" href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">神经网络</a><a class="post-meta__tags" href="/tags/DQN/">DQN</a><a class="post-meta__tags" href="/tags/%E7%BB%8F%E9%AA%8C%E5%9B%9E%E6%94%BE/">经验回放</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/66382.html" title="标注一致性 从双人混淆矩阵到 Cohen kappa"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">标注一致性 从双人混淆矩阵到 Cohen kappa</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">164</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Q-%E5%80%BC%E4%B8%8D%E6%98%AF%E5%8A%A8%E4%BD%9C%E6%A6%82%E7%8E%87"><span class="toc-text">Q 值不是动作概率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%8F%E9%AA%8C%E5%9B%9E%E6%94%BE%E4%B8%8E%E7%9B%AE%E6%A0%87%E7%BD%91%E7%BB%9C%E5%88%86%E5%88%AB%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88"><span class="toc-text">经验回放与目标网络分别解决什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E6%AD%A5%E7%9A%84%E6%95%B0%E5%AD%97%E4%BB%8E%E5%93%AA%E9%87%8C%E6%9D%A5"><span class="toc-text">一个训练步的数字从哪里来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9C%9F%E6%AD%A3%E7%BB%88%E6%AD%A2%E4%B8%8E%E5%A4%96%E9%83%A8%E6%88%AA%E6%96%AD%E4%B8%8D%E8%83%BD%E6%B7%B7%E6%88%90%E4%B8%80%E4%B8%AA-done"><span class="toc-text">真正终止与外部截断不能混成一个 done</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%AF-Python-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%B8%8E%E5%9B%9E%E6%94%BE%E5%AE%9E%E9%AA%8C"><span class="toc-text">纯 Python 神经网络与回放实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E5%92%8C%E8%AF%84%E4%BC%B0%E7%9A%84%E8%BE%B9%E7%95%8C"><span class="toc-text">训练和评估的边界</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络">DQN 原理 从神经 Q 网络到经验回放与目标网络</a><time datetime="2026-10-13T08:10:00.000Z" title="发表于 2026-10-13 16:10:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度">卷积神经网络 从局部连接到共享权重的梯度</a><time datetime="2026-10-13T08:05:00.000Z" title="发表于 2026-10-13 16:05:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66382.html" title="标注一致性 从双人混淆矩阵到 Cohen kappa">标注一致性 从双人混淆矩阵到 Cohen kappa</a><time datetime="2026-10-13T08:00:00.000Z" title="发表于 2026-10-13 16:00:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算">AI 服务并发与背压 从有界准入到排队预算</a><time datetime="2026-10-13T07:05:00.000Z" title="发表于 2026-10-13 15:05:00">2026-10-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79264.html" title="Codeforces 160D Edges in MST 从等权分组到桥判定">Codeforces 160D Edges in MST 从等权分组到桥判定</a><time datetime="2026-10-13T07:00:00.000Z" title="发表于 2026-10-13 15:00:00">2026-10-13</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

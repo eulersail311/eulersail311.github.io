@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">共享卷积核的前向与梯度</title><desc id="desc">输入1到9组成3乘3矩阵，核为1、0、0、负1，不翻转地移动产生四个负4。输出和作为损失时，左上核权重梯度为1加2加4加5等于12。</desc>
+<rect width="900" height="520" rx="24" fill="#f1f6fc"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18324d">
+<text x="44" y="52" font-size="26" font-weight="700">同一个核用于四个窗口，梯度汇总四条路径</text><text x="44" y="88" font-size="17">原创合成例子 · 单通道 · 步幅 1、填充 0、偏置 0 · 核不翻转</text>
+<g font-size="20" font-weight="700"><text x="80" y="134">3×3 输入</text><text x="365" y="134">2×2 共享核</text><text x="650" y="134">2×2 输出</text></g>
+<rect x="80" y="154" width="150" height="150" rx="8" fill="#fff"/><rect x="80" y="154" width="100" height="100" fill="#d6eee8"/>
+<g stroke="#b7cddd"><path d="M130 154 V304 M180 154 V304 M80 204 H230 M80 254 H230"/><rect x="365" y="176" width="112" height="112" rx="8" fill="#fff"/><path d="M421 176 V288 M365 232 H477"/><rect x="650" y="176" width="112" height="112" rx="8" fill="#d6eee8"/><path d="M706 176 V288 M650 232 H762"/></g>
+<g text-anchor="middle" font-size="23"><text x="105" y="188">1</text><text x="155" y="188">2</text><text x="205" y="188">3</text><text x="105" y="238">4</text><text x="155" y="238">5</text><text x="205" y="238">6</text><text x="105" y="288">7</text><text x="155" y="288">8</text><text x="205" y="288">9</text><text x="393" y="211">1</text><text x="449" y="211">0</text><text x="393" y="267">0</text><text x="449" y="267">−1</text><text x="678" y="211">−4</text><text x="734" y="211">−4</text><text x="678" y="267">−4</text><text x="734" y="267">−4</text></g>
+<g stroke="#23678b" stroke-width="3" fill="none"><path d="M260 232 H325 l-10 -7 m10 7 l-10 7"/><path d="M520 232 H610 l-10 -7 m10 7 l-10 7"/></g>
+<text x="365" y="330" font-size="18">移动窗口，仍使用同一组参数</text>
+<rect x="44" y="371" width="812" height="110" rx="18" fill="#fff"/>
+<text x="66" y="412" font-size="23" font-weight="700">若 L 是四个输出之和：∂L/∂K[0,0] = 1 + 2 + 4 + 5 = 12</text>
+<text x="66" y="451" font-size="17">不是只取最后一次贡献，也不因为“共享”就自行除以窗口数。</text>
+</g></svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">DQN 在线预测与冻结目标</title><desc id="desc">在线网络对已执行动作预测Q等于2，目标网络给下一状态最大价值3，奖励1折扣0.9得到冻结目标3.7，半平方误差1.445；梯度负1.7只回到在线网络。</desc>
+<rect width="900" height="520" rx="24" fill="#f1f6fc"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18324d">
+<text x="44" y="52" font-size="26" font-weight="700">目标先冻结：本次梯度只更新在线预测</text><text x="44" y="88" font-size="17">原创合成训练步 · 动作 0、奖励 1、γ = 0.9 · 未真正终止</text>
+<rect x="55" y="151" width="278" height="122" rx="18" fill="#fff" stroke="#23678b" stroke-width="2"/><rect x="565" y="151" width="278" height="122" rx="18" fill="#fff" stroke="#17645a" stroke-width="2"/>
+<text x="80" y="190" font-size="22" font-weight="700">在线网络 θ</text><text x="80" y="232" font-size="22">Q(s,0) = 2</text><text x="590" y="190" font-size="22" font-weight="700">目标网络 θ⁻</text><text x="590" y="232" font-size="20">max Q⁻(s′,a) = 3</text>
+<rect x="305" y="310" width="302" height="105" rx="18" fill="#d6eee8"/>
+<text x="326" y="346" font-size="20">y = 1 + 0.9×3 = 3.7</text><text x="326" y="382" font-size="21" font-weight="700">L = 0.5×(2−3.7)² = 1.445</text>
+<g stroke="#23678b" stroke-width="3" fill="none"><path d="M260 273 V296 H350 V308"/><path d="M305 370 H194 V275 l-7 10 m7 -10 l7 10"/></g>
+<path d="M704 273 V296 H558 V308" stroke="#17645a" stroke-width="3" stroke-dasharray="7 5" fill="none"/>
+<text x="57" y="404" font-size="16" fill="#155d83">梯度：−1.7 → 在线参数</text>
+<text x="44" y="460" font-size="20" font-weight="700">θ⁻ 不接收本次梯度；到达同步周期再深复制在线参数。</text>
+<text x="44" y="497" font-size="15">这里只核验一个微型神经网络训练步，不是 Atari 复现或性能实测。</text>
+</g></svg>

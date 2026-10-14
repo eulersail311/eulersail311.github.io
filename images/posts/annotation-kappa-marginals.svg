@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">相同一致率与不同边际基线</title><desc id="desc">均衡标注矩阵4、1、1、4与偏斜矩阵8、1、1、0的观察一致率都是0.8；预期一致率分别0.5与0.82，κ为0.6与负1/9。</desc>
+<rect width="900" height="520" rx="24" fill="#f1f6fc"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18324d">
+<text x="44" y="52" font-size="26" font-weight="700">同样 80% 一致，类别倾向改变了参照基线</text><text x="44" y="88" font-size="17">原创合成计数 · 行为标注员 A，列为标注员 B · 没有指定金标准</text>
+<rect x="44" y="122" width="392" height="264" rx="18" fill="#fff"/><rect x="464" y="122" width="392" height="264" rx="18" fill="#fff"/>
+<text x="65" y="154" font-size="21" font-weight="700">均衡组</text><text x="485" y="154" font-size="21" font-weight="700">偏斜组</text>
+<g font-size="16" text-anchor="middle"><text x="174" y="184">B 负</text><text x="264" y="184">B 正</text><text x="594" y="184">B 负</text><text x="684" y="184">B 正</text><text x="85" y="227">A 负</text><text x="85" y="283">A 正</text><text x="505" y="227">A 负</text><text x="505" y="283">A 正</text></g>
+<g stroke="#b7cddd"><rect x="130" y="196" width="90" height="56" fill="#d6eee8"/><rect x="220" y="196" width="90" height="56" fill="#f1f6fc"/><rect x="130" y="252" width="90" height="56" fill="#f1f6fc"/><rect x="220" y="252" width="90" height="56" fill="#d6eee8"/><rect x="550" y="196" width="90" height="56" fill="#d6eee8"/><rect x="640" y="196" width="90" height="56" fill="#f1f6fc"/><rect x="550" y="252" width="90" height="56" fill="#f1f6fc"/><rect x="640" y="252" width="90" height="56" fill="#d6eee8"/></g>
+<g text-anchor="middle" font-size="24" font-weight="700"><text x="175" y="233">4</text><text x="265" y="233">1</text><text x="175" y="289">1</text><text x="265" y="289">4</text><text x="595" y="233">8</text><text x="685" y="233">1</text><text x="595" y="289">1</text><text x="685" y="289">0</text></g>
+<text x="65" y="347" font-size="18">两人边际都为 50% 负 / 50% 正</text><text x="485" y="347" font-size="18">两人边际都为 90% 负 / 10% 正</text>
+<g font-size="20" font-weight="700"><text x="65" y="427">p_o = 0.80，p_e = 0.50</text><text x="485" y="427">p_o = 0.80，p_e = 0.82</text><text x="65" y="465" fill="#17645a">κ = 0.60</text><text x="485" y="465" fill="#9b3b24">κ = −1/9 ≈ −0.1111</text></g>
+<text x="44" y="500" font-size="14">κ 不是准确率，也不是可脱离类别分布使用的统一质量等级。</text>
+</g></svg>
