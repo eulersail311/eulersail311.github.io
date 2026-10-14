@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="title desc">
+<title id="title">GAE 的自举门与轨迹门</title><desc id="desc">奖励为一，当前价值为二，下一价值为三，折扣为零点九。外部截断仍计算一点七的残差，但阻止新回合优势传回；真正终止的残差为负一。</desc>
+<rect width="900" height="500" rx="20" fill="#f4f7fb"/>
+<g font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" fill="#17324d">
+<text x="40" y="52" font-size="27" font-weight="700">两道门，两个问题</text>
+<text x="40" y="88" font-size="19">r = 1　V(s) = 2　V(next) = 3　γ = 0.9</text>
+<rect x="40" y="122" width="390" height="172" rx="16" fill="#e0f1ea" stroke="#28725d" stroke-width="2"/>
+<text x="62" y="158" font-size="23" font-weight="700">自举门 b = 1</text>
+<text x="62" y="195" font-size="20">外部截断：未来价值仍存在</text>
+<text x="62" y="236" font-size="24">δ = 1 + 0.9 × 3 − 2 = 1.7</text>
+<text x="62" y="270" font-size="18">使用重置前的实际最后观察</text>
+<rect x="470" y="122" width="390" height="172" rx="16" fill="#e7edf8" stroke="#3e609a" stroke-width="2"/>
+<text x="492" y="158" font-size="23" font-weight="700">轨迹门 c = 0</text>
+<text x="492" y="195" font-size="20">下一条来自重置后的新回合</text>
+<text x="492" y="236" font-size="24">A = δ + γλ × 0 = 1.7</text>
+<text x="492" y="270" font-size="18">阻断新回合的奖励传回旧回合</text>
+<path d="M430 215 H468" fill="none" stroke="#17324d" stroke-width="3"/>
+<path d="M457 208 L468 215 L457 222" fill="none" stroke="#17324d" stroke-width="3"/>
+<rect x="40" y="331" width="820" height="119" rx="16" fill="#fff" stroke="#b0bfd0" stroke-width="2"/>
+<text x="62" y="369" font-size="22" font-weight="700">真正终止：b = 0，c = 0</text>
+<text x="62" y="408" font-size="22">δ = 1 − 2 = −1　｜　既不自举，也不跨回合传播</text>
+<text x="40" y="480" font-size="16">原创教学图 · GAE 估计器边界约定 · 不表示完整训练系统</text>
+</g></svg>
