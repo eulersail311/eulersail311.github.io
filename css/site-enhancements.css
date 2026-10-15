@@ -1,3 +1,10 @@
+/* Counts appear only when a real value is available. */
+[data-statistics-container][hidden],
+[data-statistics-separator][hidden],
+[id^="busuanzi_"][hidden] {
+  display: none !important;
+}
+
 /* Scoped article mechanism cards and native keyboard-operable self checks. */
 #article-container .mechanism-map,
 #article-container .mechanism-check,

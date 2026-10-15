@@ -13,6 +13,14 @@
   const key = canonicalUrl.href
   const fields = ['site_uv', 'site_pv', 'page_pv']
   const validNumber = value => Number.isSafeInteger(value) && value >= 0
+  const setVisible = (element, visible) => {
+    element.hidden = !visible
+    const container = element.closest('[data-statistics-container]')
+    if (!container) return
+    container.hidden = !visible
+    const separator = container.previousElementSibling
+    if (separator?.hasAttribute('data-statistics-separator')) separator.hidden = !visible
+  }
   const storagePrefix = 'euler:statistics:busuanzi:v1:'
   const readCache = name => {
     try { return JSON.parse(localStorage.getItem(storagePrefix + name)) } catch (_) { return null }
@@ -24,16 +32,23 @@
   const cachedPage = readCache(key)
   fields.forEach(field => {
     const element = document.getElementById('busuanzi_' + field)
+    if (!element) return
     const cached = field === 'page_pv' ? cachedPage : cachedSite
-    if (!element || !cached || !validNumber(cached[field])) return
+    const embeddedValue = element.dataset.statisticsValue
+    const embeddedValid = embeddedValue !== undefined && /^\d+$/.test(embeddedValue) && validNumber(Number(embeddedValue))
+    element.textContent = embeddedValid ? embeddedValue : ''
+    element.dataset.counterState = embeddedValid ? 'snapshot' : 'empty'
+    setVisible(element, embeddedValid)
+    if (!cached || !validNumber(cached[field])) return
     const timestamp = Date.parse(cached.updated)
     const embedded = Date.parse(element.dataset.statisticsUpdated || '')
     if (!Number.isFinite(timestamp) || timestamp > Date.now() + 300000 || timestamp <= embedded) return
     element.dataset.statisticsValue = String(cached[field])
     element.dataset.statisticsUpdated = cached.updated
     element.dataset.counterState = 'snapshot'
-    element.textContent = cached[field] + '（快照）'
-    element.title = '最近成功统计：' + cached.updated + '；实时连接成功后自动更新'
+    element.textContent = String(cached[field])
+    element.title = '统计截至 ' + cached.updated
+    setVisible(element, true)
   })
   const render = ({ statistics, error }) => {
     const current = new URL(document.querySelector('link[rel="canonical"]')?.href || window.location.href)
@@ -46,22 +61,16 @@
       if (statistics) {
         element.textContent = String(statistics[field])
         element.dataset.counterState = 'live'
-        element.title = '不蒜子实时统计'
+        element.removeAttribute('title')
+        setVisible(element, true)
       } else {
         const snapshot = element.dataset.statisticsValue
         const available = snapshot !== undefined && /^\d+$/.test(snapshot) && validNumber(Number(snapshot))
-        element.textContent = available ? snapshot + '（快照） ' : '连接失败 '
-        element.dataset.counterState = available ? 'snapshot' : 'error'
-        element.title = available ? '最近成功统计：' + element.dataset.statisticsUpdated + '；' + error : error
-        if (window.location.hostname === canonicalUrl.hostname) {
-          const retry = document.createElement('button')
-          retry.type = 'button'
-          retry.textContent = '重试'
-          retry.style.cssText = 'font:inherit;color:inherit;background:transparent;border:0;padding:0 2px;text-decoration:underline;cursor:pointer'
-          retry.setAttribute('aria-label', '重新获取' + ({ site_uv: '本站访客数', site_pv: '本站总访问量', page_pv: '本文阅读量' })[field])
-          retry.onclick = () => load()
-          element.appendChild(retry)
-        }
+        element.textContent = available ? snapshot : ''
+        element.dataset.counterState = available ? 'snapshot' : 'empty'
+        if (available) element.title = '统计截至 ' + element.dataset.statisticsUpdated
+        else element.removeAttribute('title')
+        setVisible(element, available)
       }
     })
   }
@@ -80,9 +89,10 @@
     fields.forEach(field => {
       const element = document.getElementById('busuanzi_' + field)
       if (!element) return
-      element.querySelectorAll('button').forEach(button => button.remove())
-      if (!element.dataset.statisticsValue) element.textContent = '加载中'
-      element.title = '正在连接统计服务'
+      if (!element.dataset.statisticsValue) {
+        element.textContent = ''
+        setVisible(element, false)
+      }
     })
     const request = new Promise(resolve => {
       let finished = false
