@@ -1,0 +1,399 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>主动学习 从不确定性采样到标注预算 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从三类不确定性分数进入池式主动学习，用有限阈值模型手算三次查询，并精确比较随机选样的平均标签成本，说明噪声、选择偏差与独立评测边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="主动学习 从不确定性采样到标注预算">
+<meta property="og:url" content="https://eulersail.com/esblog/66485.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从三类不确定性分数进入池式主动学习，用有限阈值模型手算三次查询，并精确比较随机选样的平均标签成本，说明噪声、选择偏差与独立评测边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-15T11:20:00.000Z">
+<meta property="article:modified_time" content="2026-10-15T11:20:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="数据标注">
+<meta property="article:tag" content="主动学习">
+<meta property="article:tag" content="信息熵">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/66485.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '主动学习 从不确定性采样到标注预算',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-15 19:20:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261015-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">104</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">175</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">主动学习 从不确定性采样到标注预算</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-15T11:20:00.000Z" title="发表于 2026-10-15 19:20:00">2026-10-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-15T11:20:00.000Z" title="更新于 2026-10-15 19:20:00">2026-10-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="主动学习 从不确定性采样到标注预算" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/66382.html">标注一致性</a>讨论两个人是否按同一套规则判断。规则确定之后，还有另一个问题：候选池有一万条数据，预算只够标注一百条，应该先看哪一条？</p>
+<p>主动学习让当前模型参与选择下一批需要人工标注的数据。目标是提高标签使用效率，但它不承诺“挑最难的样本一定更好”。下面先定义查询分数，再用一个能够完整枚举的阈值实验说明：<strong>选样只看当前模型与未标注特征，真实标签只能通过本轮查询取得。</strong></p>
+<span id="more"></span>
+
+<h2 id="先把训练池和评测集分开"><a href="#先把训练池和评测集分开" class="headerlink" title="先把训练池和评测集分开"></a>先把训练池和评测集分开</h2><p>本文采用 pool-based 设置：有标签集 L、未标注池 U，以及总标注预算 B。每轮训练或更新模型，从 U 选一条或一批，交给标注者，再将结果加入 L、从 U 移除。池式设置与不确定性查询的定义可对照 <a target="_blank" rel="noopener" href="https://burrsettles.com/pub/settles.activelearning.pdf">Settles 的原始综述第 2.3、3.1 节</a>。</p>
+<table>
+<thead>
+<tr>
+<th>集合</th>
+<th>允许的用途</th>
+<th>容易发生的错误</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始有标签集 L</td>
+<td>训练初始模型</td>
+<td>只有一个类别，却认为模型覆盖了全部类别</td>
+</tr>
+<tr>
+<td>未标注池 U</td>
+<td>根据特征与模型输出选择查询</td>
+<td>排序时偷看模拟数据的真实标签</td>
+</tr>
+<tr>
+<td>独立开发集</td>
+<td>比较预先约定的查询方案、确定停止规则</td>
+<td>每轮随意挑最有利指标</td>
+</tr>
+<tr>
+<td>最终测试集</td>
+<td>最终一次报告目标分布上的效果</td>
+<td>把测试样本送去训练或反复据此选策略</td>
+</tr>
+</tbody></table>
+<p>主动选出的训练集通常不是从目标总体独立同分布抽取的。查询集上的准确率不能直接当作线上准确率；查询集上的标注一致性也应说明抽样方式。保留一部分随机审计样本，能帮助观察被当前模型忽略的区域，但不自动消除选择偏差。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[固定独立评测集和预算] --&gt; B[用已标注集训练或更新模型]
+  B --&gt; C[只对未标注特征计算查询分数]
+  C --&gt; D[选样并交给标注者]
+  D --&gt; E[保留原始标签与裁决记录]
+  E --&gt; F[加入训练集并移出候选池]
+  F --&gt; G{预算或预设停止规则满足吗}
+  G --&gt;|否| B
+  G --&gt;|是| H[报告标签成本和独立评测结果]
+  </pre></div>
+
+<h2 id="三种分数各自在比较什么"><a href="#三种分数各自在比较什么" class="headerlink" title="三种分数各自在比较什么"></a>三种分数各自在比较什么</h2><p>对一个 K 类样本，设模型输出概率 p_1,…,p_K，排序后前两大概率为 p_(1)、p_(2)。常见规则是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">least confidence：u_LC = 1 − max_k p_k        取最大</span><br><span class="line">margin：         m = p_(1) − p_(2)          取最小</span><br><span class="line">entropy：        H = −Σ p_k log₂(p_k)       取最大</span><br><span class="line">约定 0 log₂ 0 = 0</span><br></pre></td></tr></table></figure>
+
+<p>LC 只看最可能类别，margin 看两个主要竞争者，熵使用整个分布。三者都依赖模型给出的概率；高熵本身不等于“标完就能显著改善模型”。</p>
+<table>
+<thead>
+<tr>
+<th>三分类输出</th>
+<th>LC</th>
+<th>margin</th>
+<th>熵 bits（约）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A&#x3D;(0.50,0.49,0.01)</td>
+<td>0.50</td>
+<td>0.01</td>
+<td>1.071</td>
+</tr>
+<tr>
+<td>B&#x3D;(0.50,0.25,0.25)</td>
+<td>0.50</td>
+<td>0.25</td>
+<td>1.500</td>
+</tr>
+<tr>
+<td>C&#x3D;(0.80,0.10,0.10)</td>
+<td>0.20</td>
+<td>0.70</td>
+<td>0.922</td>
+</tr>
+</tbody></table>
+<p>LC 无法区分 A、B；margin 偏好 A；熵偏好 B。不能把三分类下不同规则的排序视为同一回事。上述公式对应综述中的查询规则，本表是本站构造的算例。</p>
+<h2 id="二分类为什么会得到相同排序"><a href="#二分类为什么会得到相同排序" class="headerlink" title="二分类为什么会得到相同排序"></a>二分类为什么会得到相同排序</h2><p>令正类概率为 p，负类为 1−p。LC&#x3D;min(p,1−p)，margin&#x3D;|2p−1|。二元熵为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">H(p) = −p log₂p − (1−p)log₂(1−p)</span><br><span class="line">H&#x27;(p) = log₂((1−p)/p)，0 &lt; p &lt; 1</span><br></pre></td></tr></table></figure>
+
+<p>H 在 (0,0.5) 递增、(0.5,1) 递减，并关于 0.5 对称。因此三种规则都偏好接近 0.5 的概率，除并列处理外排序一致。确定性并列规则仍应固定，否则重跑可能选到不同 ID。</p>
+<p>这里的结论只比较<strong>同一组二分类概率</strong>，不能推出不同模型、不同校准方法也给出相同选样。</p>
+
+<figure class="evidence-figure"><img class="no-lazy" src="/images/posts/active-learning-version-space.svg" width="900" height="520" loading="lazy" decoding="async" alt="八个等先验阈值经查询 x 等于 4、6、5，候选模型数从八缩小到四、二、一；独立评测集位于查询环之外"><figcaption>原创版本空间图。每个点代表一个候选阈值，不代表神经网络参数或真实业务样本。<a href="/images/posts/active-learning-version-space.svg">查看完整图</a></figcaption></figure>
+
+
+<h2 id="八个阈值怎样只用三个标签区分"><a href="#八个阈值怎样只用三个标签区分" class="headerlink" title="八个阈值怎样只用三个标签区分"></a>八个阈值怎样只用三个标签区分</h2><p>为了精确核验，用有限假设集合代替神经网络。候选阈值 t 为 0.5、1.5、…、7.5，共八个；模型 h_t(x)&#x3D;1[x≥t]。候选查询位置为整数 1 到 7，隐藏真值设 t*&#x3D;5.5。假定标签无噪声，真实规则包含在候选模型中，初始八个阈值先验等权。</p>
+<p>版本空间 V 是与已查询标签全部一致的阈值集合。对新位置 x，以候选模型投票得到预测概率：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p(y=1 | x,V) = |&#123;t ∈ V : x ≥ t&#125;| / |V|</span><br><span class="line">V_new = &#123;t ∈ V : 1[x≥t] = 查询得到的 y&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该概率是本教学模型在均匀后验下的模型平均，不是已校准的真实业务概率。第一轮 x&#x3D;1、2、3、4 的正类概率依次为 1&#x2F;8、2&#x2F;8、3&#x2F;8、4&#x2F;8；熵依次约为 0.544、0.811、0.954、1.000，故先查 x&#x3D;4。</p>
+
+<div class="table-wrap" tabindex="0" role="region" aria-label="主动学习三次查询手算表"><table><thead><tr><th scope="col">轮次</th><th scope="col">查询 x</th><th scope="col">查询前 p(1)</th><th scope="col">返回 y</th><th scope="col">保留阈值</th><th scope="col">数量</th></tr></thead><tbody><tr><th scope="row">初始</th><td>—</td><td>—</td><td>—</td><td>0.5,…,7.5</td><td>8</td></tr><tr><th scope="row">1</th><td>4</td><td>1/2</td><td>0</td><td>4.5,5.5,6.5,7.5</td><td>4</td></tr><tr><th scope="row">2</th><td>6</td><td>1/2</td><td>1</td><td>4.5,5.5</td><td>2</td></tr><tr><th scope="row">3</th><td>5</td><td>1/2</td><td>0</td><td>5.5</td><td>1</td></tr></tbody></table></div>
+
+
+<p>表格较宽时可以横向滚动；不要把查询前概率误写成看到标签后的概率。每次只调用一次 oracle，已有标签不重复付费。</p>
+<h2 id="熵何时恰好等于期望信息收益"><a href="#熵何时恰好等于期望信息收益" class="headerlink" title="熵何时恰好等于期望信息收益"></a>熵何时恰好等于期望信息收益</h2><p>在这个有限、无噪声、等权版本空间中，设 |V|&#x3D;M，查询把它分成大小 n_0、n_1 的两组，p_y&#x3D;n_y&#x2F;M。结果为 y 后仍是组内均匀后验，因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">E[log₂ |V_new|] = Σ_y p_y log₂ n_y</span><br><span class="line">                = log₂ M + Σ_y p_y log₂ p_y</span><br><span class="line">log₂ M − E[log₂ |V_new|] = H(p)</span><br></pre></td></tr></table></figure>
+
+<p>空分支概率为零，其项按极限取零。此时最大预测熵确实最大化<strong>一步的期望版本空间对数缩减</strong>。离开这些假设，预测熵不再必然等于参数信息增益：例如标签本来就随机，模型即使已经知道这种随机性，输出仍可能接近 0.5。</p>
+<p>区分八个等概率阈值需要至少 log₂8&#x3D;3 个二元答案的平均信息量；本例可以每次等分，八种隐藏真值都恰好查询三次。这个结论来自有限模型的结构，不能外推成“深度模型用三条标签即可训练”。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[当前模型给出高不确定性] --&gt; B{为什么不确定}
+  B --&gt; C[缺少区分模型的标签]
+  B --&gt; D[样本或标注本身有噪声]
+  B --&gt; E[异常数据或重复困难样本]
+  C --&gt; F[查询可能有效缩小候选模型]
+  D --&gt; G[复核规则与噪声而非无限追问]
+  E --&gt; H[检查覆盖与批内冗余]
+  </pre></div>
+
+<h2 id="完整标准库实验"><a href="#完整标准库实验" class="headerlink" title="完整标准库实验"></a>完整标准库实验</h2><p>下面既实现主动查询，也实现无放回随机查询基线。随机方案仍会查询无信息的位置；这是本次比较明确规定的基线，不是所有被动学习策略的上界。停止标准是唯一识别候选阈值，不是准确率达到某个值。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> itertools</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">from</span> fractions <span class="keyword">import</span> Fraction</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">numbers</span>(<span class="params">values, name</span>):</span><br><span class="line">    result = <span class="built_in">tuple</span>(values)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> result <span class="keyword">or</span> <span class="built_in">any</span>(<span class="built_in">type</span>(v) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>) <span class="keyword">or</span></span><br><span class="line">                         <span class="keyword">not</span> math.isfinite(v) <span class="keyword">for</span> v <span class="keyword">in</span> result):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; must be nonempty finite numbers&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(<span class="built_in">set</span>(result)) != <span class="built_in">len</span>(result):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; must be unique&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">tuple</span>(<span class="built_in">sorted</span>(result))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">entropy</span>(<span class="params">p</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(p) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>) <span class="keyword">or</span> <span class="keyword">not</span> math.isfinite(p) <span class="keyword">or</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= p &lt;= <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid probability&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> -<span class="built_in">sum</span>(q * math.log2(q) <span class="keyword">for</span> q <span class="keyword">in</span> (p, <span class="number">1</span>-p) <span class="keyword">if</span> q)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">select</span>(<span class="params">versions, pool</span>):</span><br><span class="line">    <span class="comment"># This function has no access to the oracle or hidden labels.</span></span><br><span class="line">    scored = [(entropy(<span class="built_in">sum</span>(x &gt;= t <span class="keyword">for</span> t <span class="keyword">in</span> versions) / <span class="built_in">len</span>(versions)), x)</span><br><span class="line">              <span class="keyword">for</span> x <span class="keyword">in</span> pool]</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> scored:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">    score, x = <span class="built_in">min</span>(scored, key=<span class="keyword">lambda</span> pair: (-pair[<span class="number">0</span>], pair[<span class="number">1</span>]))</span><br><span class="line">    <span class="keyword">return</span> x <span class="keyword">if</span> score &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">thresholds, pool, oracle, strategy=<span class="string">&quot;entropy&quot;</span>, seed=<span class="number">0</span>, budget=<span class="literal">None</span></span>):</span><br><span class="line">    versions = <span class="built_in">list</span>(numbers(thresholds, <span class="string">&quot;thresholds&quot;</span>))</span><br><span class="line">    remaining = <span class="built_in">list</span>(numbers(pool, <span class="string">&quot;pool&quot;</span>))</span><br><span class="line">    <span class="keyword">if</span> strategy <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&quot;entropy&quot;</span>, <span class="string">&quot;random&quot;</span>) <span class="keyword">or</span> <span class="built_in">type</span>(seed) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid strategy or seed&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> budget <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        budget = <span class="built_in">len</span>(remaining)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(budget) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> budget &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid budget&quot;</span>)</span><br><span class="line">    rng = random.Random(seed)</span><br><span class="line">    trace = []</span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">min</span>(budget, <span class="built_in">len</span>(remaining))):</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(versions) == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        x = select(versions, remaining) <span class="keyword">if</span> strategy == <span class="string">&quot;entropy&quot;</span> <span class="keyword">else</span> rng.choice(remaining)</span><br><span class="line">        <span class="keyword">if</span> x <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">break</span>  <span class="comment"># Different thresholds may agree everywhere in this pool.</span></span><br><span class="line">        p = <span class="built_in">sum</span>(x &gt;= t <span class="keyword">for</span> t <span class="keyword">in</span> versions) / <span class="built_in">len</span>(versions)</span><br><span class="line">        y = oracle(x)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(y) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> y <span class="keyword">not</span> <span class="keyword">in</span> (<span class="number">0</span>, <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;oracle must return integer 0 or 1&quot;</span>)</span><br><span class="line">        kept = [t <span class="keyword">for</span> t <span class="keyword">in</span> versions <span class="keyword">if</span> <span class="built_in">int</span>(x &gt;= t) == y]</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> kept:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;labels contradict the hypothesis class&quot;</span>)</span><br><span class="line">        trace.append(&#123;<span class="string">&quot;x&quot;</span>: x, <span class="string">&quot;p&quot;</span>: p, <span class="string">&quot;y&quot;</span>: y,</span><br><span class="line">                      <span class="string">&quot;before&quot;</span>: <span class="built_in">len</span>(versions), <span class="string">&quot;after&quot;</span>: <span class="built_in">len</span>(kept)&#125;)</span><br><span class="line">        versions = kept</span><br><span class="line">        remaining.remove(x)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;queries&quot;</span>: <span class="built_in">len</span>(trace), <span class="string">&quot;versions&quot;</span>: versions, <span class="string">&quot;trace&quot;</span>: trace&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exact_random_mean</span>(<span class="params">thresholds, pool</span>):</span><br><span class="line">    <span class="comment"># E[T] = sum_k P(T &gt; k); a random prefix has a uniform k-element subset.</span></span><br><span class="line">    <span class="comment"># This exhaustive reference is for tiny synthetic problems only.</span></span><br><span class="line">    thresholds = numbers(thresholds, <span class="string">&quot;thresholds&quot;</span>)</span><br><span class="line">    pool = numbers(pool, <span class="string">&quot;pool&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(pool) &gt; <span class="number">12</span> <span class="keyword">or</span> <span class="built_in">len</span>(thresholds) &gt; <span class="number">16</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;exact reference is limited to tiny problems&quot;</span>)</span><br><span class="line">    result = Fraction(<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">for</span> truth <span class="keyword">in</span> thresholds:</span><br><span class="line">        <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(pool)):</span><br><span class="line">            ambiguous = <span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> subset <span class="keyword">in</span> itertools.combinations(pool, k):</span><br><span class="line">                survivors = <span class="built_in">sum</span>(<span class="built_in">all</span>((x &gt;= t) == (x &gt;= truth) <span class="keyword">for</span> x <span class="keyword">in</span> subset)</span><br><span class="line">                                <span class="keyword">for</span> t <span class="keyword">in</span> thresholds)</span><br><span class="line">                ambiguous += survivors &gt; <span class="number">1</span></span><br><span class="line">            result += Fraction(ambiguous, math.comb(<span class="built_in">len</span>(pool), k) * <span class="built_in">len</span>(thresholds))</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    hypotheses = [i + <span class="number">0.5</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">8</span>)]</span><br><span class="line">    pool = <span class="built_in">list</span>(<span class="built_in">range</span>(<span class="number">1</span>, <span class="number">8</span>))</span><br><span class="line">    active = run(hypotheses, pool, <span class="keyword">lambda</span> x: <span class="built_in">int</span>(x &gt;= <span class="number">5.5</span>))</span><br><span class="line">    costs = [run(hypotheses, pool, <span class="keyword">lambda</span> x, t=t: <span class="built_in">int</span>(x &gt;= t))[<span class="string">&quot;queries&quot;</span>]</span><br><span class="line">             <span class="keyword">for</span> t <span class="keyword">in</span> hypotheses]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;active_truth_5_5&quot;</span>: active, <span class="string">&quot;all_truth_costs&quot;</span>: costs,</span><br><span class="line">                      <span class="string">&quot;random_mean_exact&quot;</span>: <span class="built_in">str</span>(exact_random_mean(hypotheses, pool))&#125;,</span><br><span class="line">                     ensure_ascii=<span class="literal">False</span>, indent=<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+<p>实际输出的三个查询位置为 [4,6,5]，八种真值的主动标签成本均为 3，随机无放回基线的精确平均成本为 5。第二个结果平均了八种等权真值和全部随机排列，不是挑一个有利随机种子。</p>
+<p>还可独立手算随机均值：两端真值只需遇到一个关键位置，其在七个位置随机排列中的平均名次为 4；六个内部真值需要遇到相邻两个关键位置，最后一个出现的平均名次为 2×8&#x2F;3&#x3D;16&#x2F;3。因此总平均为 (2×4+6×16&#x2F;3)&#x2F;8&#x3D;5。这里的平均名次恒等式也由测试中的全排列枚举核验。</p>
+<p>设候选模型数 M、池大小 U、预算 B。选样每轮扫描 U 个位置，每个位置做 M 次投票，时间上界 O(BUM)，额外存储 O(U+M+B)。真实模型还需加入训练、全池推理和人工标注成本；标签省了，不代表总耗时必然省了。精确参考的枚举时间含 2^U 因子，代码限制 U≤12、M≤16，不是生产选样器。</p>
+<h2 id="从小实验走向实际标注要补什么"><a href="#从小实验走向实际标注要补什么" class="headerlink" title="从小实验走向实际标注要补什么"></a>从小实验走向实际标注要补什么</h2><table>
+<thead>
+<tr>
+<th>失败边界</th>
+<th>应检查的东西</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>模型自信但错误</td>
+<td>初始覆盖、独立随机审计、目标分布；熵可能根本不选这些点</td>
+</tr>
+<tr>
+<td>标注冲突或标签噪声</td>
+<td>硬删除可能排除真值；检查确定性位置时还可能得到空集，需噪声模型或复核机制</td>
+</tr>
+<tr>
+<td>批量查询近重复样本</td>
+<td>单点分数的前 B 名可能全在同一区域；批内去重、覆盖和多样性需另外设计</td>
+</tr>
+<tr>
+<td>标注成本不同</td>
+<td>比较相同金额或工时预算；简单“分数除以成本”也不是通用最优算法</td>
+</tr>
+<tr>
+<td>池中无法区分剩余模型</td>
+<td>报告尚未识别，不把预算耗尽当作模型已正确</td>
+</tr>
+<tr>
+<td>反复用测试集决定下一轮</td>
+<td>评测泄漏；预设开发与最终测试职责</td>
+</tr>
+</tbody></table>
+<p>上述实践问题可继续查阅 <a target="_blank" rel="noopener" href="https://proceedings.mlr.press/v16/settles11a.html">Settles 的实践论文</a>。真实任务还要版本化池、模型、规则、查询 ID 和费用，并保留拒标、缺失与裁决记录。本篇没有训练神经网络，也没有给出实际任务上的标签节省比例。</p>
+
+<details class="mechanism-check"><summary>自检：每轮都挑预测概率最接近 0.5 的样本，就能用查询集准确率评估线上效果吗？</summary><div><p>不能。选样改变了数据分布，查询集可能集中在边界、噪声或重复区域。应保留独立目标分布评测；本篇熵与信息收益相等的证明还额外依赖有限、无噪声、等先验模型。</p></div></details>
+
+
+<p>验证程序 tests&#x2F;verify-active-learning-article.cjs 提取并运行全文代码，以穷举排列独立核验随机标签成本，检查 oracle 调用、预算、候选池与非法输入。接下来可对照<a href="/esblog/64973.html">分层指标与总体构成</a>，再用<a href="/esblog/64893.html">配对 Bootstrap</a>处理固定独立评测集上的抽样不确定性。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/66485.html">https://eulersail.com/esblog/66485.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E6%A0%87%E6%B3%A8/">数据标注</a><a class="post-meta__tags" href="/tags/%E4%B8%BB%E5%8A%A8%E5%AD%A6%E4%B9%A0/">主动学习</a><a class="post-meta__tags" href="/tags/%E4%BF%A1%E6%81%AF%E7%86%B5/">信息熵</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/64973.html" title="辛普森悖论 从分组反转到标准化比较"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">辛普森悖论 从分组反转到标准化比较</div></div></a></div><div class="next-post pull-right"><a href="/esblog/64893.html" title="配对 Bootstrap 从模型差值到置信区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">配对 Bootstrap 从模型差值到置信区间</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/66382.html" title="标注一致性 从双人混淆矩阵到 Cohen kappa"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">标注一致性 从双人混淆矩阵到 Cohen kappa</div></div></a></div><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">104</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">175</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E8%AE%AD%E7%BB%83%E6%B1%A0%E5%92%8C%E8%AF%84%E6%B5%8B%E9%9B%86%E5%88%86%E5%BC%80"><span class="toc-text">先把训练池和评测集分开</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E5%88%86%E6%95%B0%E5%90%84%E8%87%AA%E5%9C%A8%E6%AF%94%E8%BE%83%E4%BB%80%E4%B9%88"><span class="toc-text">三种分数各自在比较什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%88%86%E7%B1%BB%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%BE%97%E5%88%B0%E7%9B%B8%E5%90%8C%E6%8E%92%E5%BA%8F"><span class="toc-text">二分类为什么会得到相同排序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E4%B8%AA%E9%98%88%E5%80%BC%E6%80%8E%E6%A0%B7%E5%8F%AA%E7%94%A8%E4%B8%89%E4%B8%AA%E6%A0%87%E7%AD%BE%E5%8C%BA%E5%88%86"><span class="toc-text">八个阈值怎样只用三个标签区分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%86%B5%E4%BD%95%E6%97%B6%E6%81%B0%E5%A5%BD%E7%AD%89%E4%BA%8E%E6%9C%9F%E6%9C%9B%E4%BF%A1%E6%81%AF%E6%94%B6%E7%9B%8A"><span class="toc-text">熵何时恰好等于期望信息收益</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E9%AA%8C"><span class="toc-text">完整标准库实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E5%B0%8F%E5%AE%9E%E9%AA%8C%E8%B5%B0%E5%90%91%E5%AE%9E%E9%99%85%E6%A0%87%E6%B3%A8%E8%A6%81%E8%A1%A5%E4%BB%80%E4%B9%88"><span class="toc-text">从小实验走向实际标注要补什么</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64973.html" title="辛普森悖论 从分组反转到标准化比较">辛普森悖论 从分组反转到标准化比较</a><time datetime="2026-10-15T11:21:00.000Z" title="发表于 2026-10-15 19:21:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66485.html" title="主动学习 从不确定性采样到标注预算">主动学习 从不确定性采样到标注预算</a><time datetime="2026-10-15T11:20:00.000Z" title="发表于 2026-10-15 19:20:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64893.html" title="配对 Bootstrap 从模型差值到置信区间">配对 Bootstrap 从模型差值到置信区间</a><time datetime="2026-10-15T02:05:00.000Z" title="发表于 2026-10-15 10:05:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72684.html" title="BatchNorm 原理 从批次统计到训练推理差异">BatchNorm 原理 从批次统计到训练推理差异</a><time datetime="2026-10-15T02:00:00.000Z" title="发表于 2026-10-15 10:00:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98432.html" title="舒曼第二交响曲 从铜管格言到终曲新主题">舒曼第二交响曲 从铜管格言到终曲新主题</a><time datetime="2026-10-14T08:05:00.000Z" title="发表于 2026-10-14 16:05:00">2026-10-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

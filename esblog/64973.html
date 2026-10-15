@@ -1,0 +1,401 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>辛普森悖论 从分组反转到标准化比较 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用两组成功率手算每组更好而总体更差的反转，固定目标权重进行直接标准化，再精确拆分组内差异和构成变化，说明因果、缺失组与不确定性的边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="辛普森悖论 从分组反转到标准化比较">
+<meta property="og:url" content="https://eulersail.com/esblog/64973.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用两组成功率手算每组更好而总体更差的反转，固定目标权重进行直接标准化，再精确拆分组内差异和构成变化，说明因果、缺失组与不确定性的边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-15T11:21:00.000Z">
+<meta property="article:modified_time" content="2026-10-15T11:21:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="模型评测">
+<meta property="article:tag" content="分层分析">
+<meta property="article:tag" content="辛普森悖论">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/64973.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '辛普森悖论 从分组反转到标准化比较',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-15 19:21:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261015-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">104</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">175</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">辛普森悖论 从分组反转到标准化比较</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-15T11:21:00.000Z" title="发表于 2026-10-15 19:21:00">2026-10-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-15T11:21:00.000Z" title="更新于 2026-10-15 19:21:00">2026-10-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="辛普森悖论 从分组反转到标准化比较" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/64893.html">配对 Bootstrap</a>回答固定比较口径下，样本差值会怎样波动。在计算区间之前，还必须确认比较的到底是不是同一类人、同一种任务。若模型 A 和 B 接到的样本构成不同，总体均值的差异可能主要来自分母。</p>
+<p>本篇用一组完全合成的查询成功率演示：A 在每个用户组中都更好，总体成功率却更低。这是可直接核验的加权平均反转；<strong>计算没有矛盾，改变的是两边使用的权重。</strong></p>
+<span id="more"></span>
+
+<h2 id="两张分组表怎样得到相反结论"><a href="#两张分组表怎样得到相反结论" class="headerlink" title="两张分组表怎样得到相反结论"></a>两张分组表怎样得到相反结论</h2><p>假设“成功”已经有预先固定的二元判定规则。系统把不同流量送给两个固定模型，各收到 100 条查询。用户组在分流之前定义，这里仅作描述性比较，不假定分流是随机实验。</p>
+
+<div class="table-wrap" tabindex="0" role="region" aria-label="两模型分组成功率手算表"><table><thead><tr><th scope="col">用户组</th><th scope="col">A 成功 / 查询</th><th scope="col">A 成功率</th><th scope="col">B 成功 / 查询</th><th scope="col">B 成功率</th></tr></thead><tbody><tr><th scope="row">新用户</th><td>8 / 10</td><td>80%</td><td>63 / 90</td><td>70%</td></tr><tr><th scope="row">回访用户</th><td>36 / 90</td><td>40%</td><td>3 / 10</td><td>30%</td></tr><tr><th scope="row">总体</th><td>44 / 100</td><td>44%</td><td>66 / 100</td><td>66%</td></tr></tbody></table></div>
+
+
+<p>A 的每组成功率均比 B 高 10 个百分点，总体却低 22 个百分点。表中所有数值是教学构造，不是本站模型或真实用户的实验结果。</p>
+<p>不要把最后一行写成两个组百分比的简单平均：A 的 90% 流量在成功率较低的回访组，而 B 的 90% 流量在成功率较高的新用户组。总体计算必须使用各自实际分母。</p>
+<h2 id="总体是条件成功率的加权平均"><a href="#总体是条件成功率的加权平均" class="headerlink" title="总体是条件成功率的加权平均"></a>总体是条件成功率的加权平均</h2><p>用 z 表示分组，r_Az&#x3D;s_Az&#x2F;n_Az 表示 A 在组 z 的成功率，w_Az&#x3D;n_Az&#x2F;Σ_z n_Az 表示该组在 A 中的查询占比。由计数恒等式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">R_A = Σ_z s_Az / Σ_z n_Az</span><br><span class="line">    = Σ_z (n_Az / Σ_j n_Aj) × (s_Az / n_Az)</span><br><span class="line">    = Σ_z w_Az r_Az</span><br></pre></td></tr></table></figure>
+
+<p>同理 R_B&#x3D;Σ_z w_Bz r_Bz。本例的逐项计算是：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>新用户权重 × 率</th>
+<th>回访权重 × 率</th>
+<th>总体</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>0.1×0.8&#x3D;0.08</td>
+<td>0.9×0.4&#x3D;0.36</td>
+<td>0.44</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0.9×0.7&#x3D;0.63</td>
+<td>0.1×0.3&#x3D;0.03</td>
+<td>0.66</td>
+</tr>
+</tbody></table>
+<p>只有当两边使用<strong>同一组非负权重</strong>时，每一组 A 都不差于 B，才必然有加权总体 A 不差于 B，因为 Σ_z q_z(r_Az−r_Bz)≥0。反转例子用的是不同的 w_A 和 w_B，不能套用这个结论。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[看到总体 A 低于 B] --&gt; B[按事先定义的用户组展开分子分母]
+  B --&gt; C[检查每组成功率]
+  B --&gt; D[检查两模型的组占比]
+  C --&gt; E[组内差异]
+  D --&gt; F[样本构成差异]
+  E --&gt; G[固定共同目标权重再比较]
+  F --&gt; G
+  G --&gt; H[同时报告原总体和标准化结果]
+  </pre></div>
+
+
+<figure class="evidence-figure"><img class="no-lazy" src="/images/posts/simpson-standardization.svg" width="900" height="520" loading="lazy" decoding="async" alt="A 的流量由一成新用户和九成回访用户构成，B 相反；改用两组各半的共同权重后，A 成功率六成、B 五成"><figcaption>原创权重示意图。相同颜色代表同一个用户组，两个模型的实际构成不同。<a href="/images/posts/simpson-standardization.svg">查看完整图</a></figcaption></figure>
+
+
+<h2 id="直接标准化是在定义另一项比较"><a href="#直接标准化是在定义另一项比较" class="headerlink" title="直接标准化是在定义另一项比较"></a>直接标准化是在定义另一项比较</h2><p>先选择目标总体的组权重 q_z，要求 q_z≥0、Σq_z&#x3D;1，两边都用它：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">R_A(q) = Σ_z q_z r_Az</span><br><span class="line">R_B(q) = Σ_z q_z r_Bz</span><br><span class="line">Δ(q) = R_A(q) − R_B(q) = Σ_z q_z(r_Az−r_Bz)</span><br></pre></td></tr></table></figure>
+
+<p>取新用户、回访用户各 1&#x2F;2，得到 A 为 0.6、B 为 0.5，差值 +0.1。原总体差值 −0.22 仍然正确，只是回答不同问题：前者比较共同构成下的组内表现，后者描述各自实际接收流量的总体结果。</p>
+<table>
+<thead>
+<tr>
+<th>共同目标构成 q</th>
+<th>A 标准化成功率</th>
+<th>B 标准化成功率</th>
+<th>A−B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新用户 1&#x2F;2，回访 1&#x2F;2</td>
+<td>0.60</td>
+<td>0.50</td>
+<td>+0.10</td>
+</tr>
+<tr>
+<td>新用户 1&#x2F;5，回访 4&#x2F;5</td>
+<td>0.48</td>
+<td>0.38</td>
+<td>+0.10</td>
+</tr>
+<tr>
+<td>新用户 4&#x2F;5，回访 1&#x2F;5</td>
+<td>0.72</td>
+<td>0.62</td>
+<td>+0.10</td>
+</tr>
+</tbody></table>
+<p>本例差值不随共同 q 变化，是因为两组差值恰好都为 0.1。一般数据不会有这个性质；当某些组 A 好、某些组 B 好时，目标权重会影响差值甚至方向。可以报告敏感性分析，但不能看完结果后挑一套最有利权重，当作预先定义的主结论。</p>
+<h2 id="把原总体差异精确拆成两部分"><a href="#把原总体差异精确拆成两部分" class="headerlink" title="把原总体差异精确拆成两部分"></a>把原总体差异精确拆成两部分</h2><p>定义两模型平均组权重 w̄_z&#x3D;(w_Az+w_Bz)&#x2F;2，以及平均组成功率 r̄_z&#x3D;(r_Az+r_Bz)&#x2F;2。对任意一组都有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">w_A r_A − w_B r_B</span><br><span class="line">= [(w_A+w_B)/2](r_A−r_B) + [(r_A+r_B)/2](w_A−w_B)</span><br></pre></td></tr></table></figure>
+
+<p>展开右侧，交叉项相消即可证明。这给出一个对称的算术分解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">R_A − R_B = 组内率差项 + 构成差异项</span><br><span class="line">组内率差项 = Σ_z w̄_z(r_Az−r_Bz)</span><br><span class="line">构成差异项 = Σ_z r̄_z(w_Az−w_Bz)</span><br></pre></td></tr></table></figure>
+
+
+<div class="table-wrap" tabindex="0" role="region" aria-label="总体差异的七列分解手算表"><table><thead><tr><th scope="col">组</th><th scope="col">平均权重</th><th scope="col">组内率差</th><th scope="col">组内项贡献</th><th scope="col">平均率</th><th scope="col">权重差</th><th scope="col">构成项贡献</th></tr></thead><tbody><tr><th scope="row">新用户</th><td>0.5</td><td>+0.1</td><td>+0.05</td><td>0.75</td><td>−0.8</td><td>−0.60</td></tr><tr><th scope="row">回访用户</th><td>0.5</td><td>+0.1</td><td>+0.05</td><td>0.35</td><td>+0.8</td><td>+0.28</td></tr><tr><th scope="row">合计</th><td>1</td><td>—</td><td>+0.10</td><td>—</td><td>0</td><td>−0.32</td></tr></tbody></table></div>
+
+
+<p>因此 −0.22&#x3D;+0.10−0.32。这个对称恒等式不是唯一可能的分解；换一个参照权重也能得到另一种分配。这里的“组内项”“构成项”都只是算术描述，不能直接称作“模型造成的提升”和“分流造成的损失”。</p>
+<p>七列表格使用可聚焦的横向滚动区域，手机上可以左右移动查看，不缩小正文来塞满全部列。</p>
+
+<div class="scope-note"><strong>分层不自动等于因果调整。</strong><p>若分组变量受到模型或分流影响，或者分层会引入选择偏差，直接控制它可能改变要估计的效应。需要先定义时间顺序、目标问题与因果假设，再决定是否调整。不能只因分组结论更好看就宣布它更正确。</p></div>
+
+
+<p>这个区别也是 <a target="_blank" rel="noopener" href="https://ftp.cs.ucla.edu/pub/stat_ser/r414.pdf">Pearl 的《Understanding Simpson’s Paradox》</a>讨论的关键：观察表格本身不足以决定应采用边际关系还是条件关系。本文的合成表与分解只验证加权计算，不承担因果识别证明。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[准备比较两个总体率] --&gt; B{分组和分母口径一致吗}
+  B --&gt;|否| C[先修复数据定义]
+  B --&gt;|是| D{目标权重对应哪个总体}
+  D --&gt; E[预先固定共同权重]
+  E --&gt; F{目标组两边都有观测吗}
+  F --&gt;|否| G[报告缺少支持 不填零]
+  F --&gt;|是| H[计算标准化结果和原始结果]
+  H --&gt; I[另行分析抽样不确定性与因果假设]
+  </pre></div>
+
+<h2 id="完整标准库实现与精确实验"><a href="#完整标准库实现与精确实验" class="headerlink" title="完整标准库实现与精确实验"></a>完整标准库实现与精确实验</h2><p>计数用整数、比例用 Fraction，避免把二进制浮点舍入当成恒等式不成立。输入已按组汇总；若原始数据有同一用户的多条查询，分母仍是查询数，推断时的独立单位则可能是用户，二者不要混淆。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> fractions <span class="keyword">import</span> Fraction</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Cell</span>:</span><br><span class="line">    success: <span class="built_in">int</span></span><br><span class="line">    total: <span class="built_in">int</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">validate_table</span>(<span class="params">table</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(table, <span class="built_in">dict</span>) <span class="keyword">or</span> <span class="keyword">not</span> table:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;table must be a nonempty mapping&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> group, cell <span class="keyword">in</span> table.items():</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(group, <span class="built_in">str</span>) <span class="keyword">or</span> <span class="keyword">not</span> group.strip() <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(cell, Cell):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid group or cell&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(cell.success) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> <span class="built_in">type</span>(cell.total) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;counts must be integers&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> cell.total &lt;= <span class="number">0</span> <span class="keyword">or</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= cell.success &lt;= cell.total:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;missing support or invalid counts&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">compare</span>(<span class="params">a, b, target</span>):</span><br><span class="line">    validate_table(a)</span><br><span class="line">    validate_table(b)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(target, <span class="built_in">dict</span>) <span class="keyword">or</span> a.keys() != b.keys() <span class="keyword">or</span> a.keys() != target.keys():</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;groups must match exactly&quot;</span>)</span><br><span class="line">    q = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> group, weight <span class="keyword">in</span> target.items():</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(weight) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">str</span>, Fraction):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;use exact rational weights&quot;</span>)</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            q[group] = Fraction(weight)</span><br><span class="line">        <span class="keyword">except</span> (ValueError, ZeroDivisionError):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid rational weight&quot;</span>) <span class="keyword">from</span> <span class="literal">None</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">any</span>(v &lt; <span class="number">0</span> <span class="keyword">for</span> v <span class="keyword">in</span> q.values()) <span class="keyword">or</span> <span class="built_in">sum</span>(q.values()) != <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;weights must be nonnegative and sum to one&quot;</span>)</span><br><span class="line">    total_a = <span class="built_in">sum</span>(cell.total <span class="keyword">for</span> cell <span class="keyword">in</span> a.values())</span><br><span class="line">    total_b = <span class="built_in">sum</span>(cell.total <span class="keyword">for</span> cell <span class="keyword">in</span> b.values())</span><br><span class="line">    ra = &#123;g: Fraction(c.success, c.total) <span class="keyword">for</span> g, c <span class="keyword">in</span> a.items()&#125;</span><br><span class="line">    rb = &#123;g: Fraction(c.success, c.total) <span class="keyword">for</span> g, c <span class="keyword">in</span> b.items()&#125;</span><br><span class="line">    wa = &#123;g: Fraction(c.total, total_a) <span class="keyword">for</span> g, c <span class="keyword">in</span> a.items()&#125;</span><br><span class="line">    wb = &#123;g: Fraction(c.total, total_b) <span class="keyword">for</span> g, c <span class="keyword">in</span> b.items()&#125;</span><br><span class="line">    raw_a = Fraction(<span class="built_in">sum</span>(c.success <span class="keyword">for</span> c <span class="keyword">in</span> a.values()), total_a)</span><br><span class="line">    raw_b = Fraction(<span class="built_in">sum</span>(c.success <span class="keyword">for</span> c <span class="keyword">in</span> b.values()), total_b)</span><br><span class="line">    standard_a = <span class="built_in">sum</span>(q[g] * ra[g] <span class="keyword">for</span> g <span class="keyword">in</span> a)</span><br><span class="line">    standard_b = <span class="built_in">sum</span>(q[g] * rb[g] <span class="keyword">for</span> g <span class="keyword">in</span> a)</span><br><span class="line">    within = <span class="built_in">sum</span>((wa[g]+wb[g]) * (ra[g]-rb[g]) / <span class="number">2</span> <span class="keyword">for</span> g <span class="keyword">in</span> a)</span><br><span class="line">    composition = <span class="built_in">sum</span>((ra[g]+rb[g]) * (wa[g]-wb[g]) / <span class="number">2</span> <span class="keyword">for</span> g <span class="keyword">in</span> a)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;raw_a&quot;</span>: raw_a, <span class="string">&quot;raw_b&quot;</span>: raw_b, <span class="string">&quot;raw_delta&quot;</span>: raw_a-raw_b,</span><br><span class="line">            <span class="string">&quot;standard_a&quot;</span>: standard_a, <span class="string">&quot;standard_b&quot;</span>: standard_b,</span><br><span class="line">            <span class="string">&quot;standard_delta&quot;</span>: standard_a-standard_b,</span><br><span class="line">            <span class="string">&quot;within&quot;</span>: within, <span class="string">&quot;composition&quot;</span>: composition&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    a = &#123;<span class="string">&quot;new&quot;</span>: Cell(<span class="number">8</span>, <span class="number">10</span>), <span class="string">&quot;returning&quot;</span>: Cell(<span class="number">36</span>, <span class="number">90</span>)&#125;</span><br><span class="line">    b = &#123;<span class="string">&quot;new&quot;</span>: Cell(<span class="number">63</span>, <span class="number">90</span>), <span class="string">&quot;returning&quot;</span>: Cell(<span class="number">3</span>, <span class="number">10</span>)&#125;</span><br><span class="line">    equal = &#123;<span class="string">&quot;new&quot;</span>: <span class="string">&quot;1/2&quot;</span>, <span class="string">&quot;returning&quot;</span>: <span class="string">&quot;1/2&quot;</span>&#125;</span><br><span class="line">    report = compare(a, b, equal)</span><br><span class="line">    <span class="comment"># Keep group rates fixed while changing only the observed denominators.</span></span><br><span class="line">    changed = &#123;<span class="string">&quot;new&quot;</span>: Cell(<span class="number">72</span>, <span class="number">90</span>), <span class="string">&quot;returning&quot;</span>: Cell(<span class="number">4</span>, <span class="number">10</span>)&#125;</span><br><span class="line">    <span class="keyword">assert</span> compare(changed, b, equal)[<span class="string">&quot;standard_delta&quot;</span>] == report[<span class="string">&quot;standard_delta&quot;</span>]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;original&quot;</span>: &#123;k: <span class="built_in">str</span>(v) <span class="keyword">for</span> k, v <span class="keyword">in</span> report.items()&#125;,</span><br><span class="line">                      <span class="string">&quot;same_mix_raw_delta&quot;</span>: <span class="built_in">str</span>(compare(changed, b, equal)[<span class="string">&quot;raw_delta&quot;</span>])&#125;,</span><br><span class="line">                     ensure_ascii=<span class="literal">False</span>, indent=<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+<p>实际输出 raw_delta&#x3D;−11&#x2F;50、standard_delta&#x3D;1&#x2F;10、within&#x3D;1&#x2F;10、composition&#x3D;−8&#x2F;25。只把 A 的查询构成变成与 B 一样的九成新用户、一成回访用户，保持两组成功率不变，原总体差值就变为 +1&#x2F;10，标准化差值保持不变。</p>
+<p>代码有意拒绝浮点权重，使用 “1&#x2F;2” 或 Fraction(1,2) 明确给出精确比例；缺组、空组和错误分母也直接拒绝。即使某组目标权重是零，这份同时计算原总体和分解的实现也要求该组两边都有合法分母。真正需要合并组或删组时，应先重新定义比较口径。</p>
+<p>设组数为 K，计算使用 O(K) 次有理数运算，存储 O(K)。Fraction 的实际成本还随整数位数增长，这不是固定机器字长下的常数时间承诺；原始 N 行数据若尚未汇总，需先进行 O(N) 的分组聚合。</p>
+<h2 id="数值相等不等于问题已经解决"><a href="#数值相等不等于问题已经解决" class="headerlink" title="数值相等不等于问题已经解决"></a>数值相等不等于问题已经解决</h2><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>不能省略的处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>某模型在目标组没有样本</td>
+<td>无法直接估计该组成功率；不把未知当作 0%</td>
+</tr>
+<tr>
+<td>某组样本极少</td>
+<td>分层率可能波动很大；标准化不是增加样本量</td>
+</tr>
+<tr>
+<td>分组内任务难度仍不同</td>
+<td>标准化只平衡已定义组，组内剩余差异仍在</td>
+</tr>
+<tr>
+<td>用户重复出现</td>
+<td>按独立用户或更合适单位处理推断，不能直接逐行重采样</td>
+</tr>
+<tr>
+<td>目标权重也由样本估计</td>
+<td>若目标是总体权重，需要考虑它的不确定性；本例把 q 当作固定</td>
+</tr>
+<tr>
+<td>组是分流之后才产生</td>
+<td>先明确因果问题；避免把中介或选择机制随意当作控制变量</td>
+</tr>
+</tbody></table>
+<p>还应区分两类量：原始总体率适合描述各自实际流量，标准化率适合描述明确共同构成下的比较。报告时保留分子分母、分组定义、目标权重和差值方向，读者才有机会判断结论适用到哪里。</p>
+<p>若要继续计算区间，可以在每次合法重采样后重算各组率与 Δ(q)，并保持预定的独立单位和目标权重定义；不能简单把总体 Bootstrap 区间搬到标准化差值上。本篇只做精确算术与构成反例，不报告未经验证的覆盖率。</p>
+
+<details class="mechanism-check"><summary>自检：每组 A 都高于 B，是否应该删除那条“总体 A 更差”的结果？</summary><div><p>不应该。两个结果描述不同的构成。应保留实际总体结果，说明权重差异，再报告预先定义的共同目标构成下的比较；是否能作因果解释，需要额外假设。</p></div></details>
+
+
+<p>验证程序 tests&#x2F;verify-simpson-standardization-article.cjs 运行全文代码，以原始二元行展开独立对照计数，并检查随机分组恒等式、模型交换、复制不变性、权重敏感性及非法输入。可接回<a href="/esblog/64893.html">配对 Bootstrap</a>或<a href="/esblog/64928.html">模型回归评测</a>；也可对照<a href="/esblog/66485.html">主动学习</a>，理解模型主动选择的数据为何不宜直接代表目标总体。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/64973.html">https://eulersail.com/esblog/64973.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E6%A8%A1%E5%9E%8B%E8%AF%84%E6%B5%8B/">模型评测</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B1%82%E5%88%86%E6%9E%90/">分层分析</a><a class="post-meta__tags" href="/tags/%E8%BE%9B%E6%99%AE%E6%A3%AE%E6%82%96%E8%AE%BA/">辛普森悖论</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/66485.html" title="主动学习 从不确定性采样到标注预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">主动学习 从不确定性采样到标注预算</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/64893.html" title="配对 Bootstrap 从模型差值到置信区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-15</div><div class="title">配对 Bootstrap 从模型差值到置信区间</div></div></a></div><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">104</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">175</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E5%BC%A0%E5%88%86%E7%BB%84%E8%A1%A8%E6%80%8E%E6%A0%B7%E5%BE%97%E5%88%B0%E7%9B%B8%E5%8F%8D%E7%BB%93%E8%AE%BA"><span class="toc-text">两张分组表怎样得到相反结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E4%BD%93%E6%98%AF%E6%9D%A1%E4%BB%B6%E6%88%90%E5%8A%9F%E7%8E%87%E7%9A%84%E5%8A%A0%E6%9D%83%E5%B9%B3%E5%9D%87"><span class="toc-text">总体是条件成功率的加权平均</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E6%A0%87%E5%87%86%E5%8C%96%E6%98%AF%E5%9C%A8%E5%AE%9A%E4%B9%89%E5%8F%A6%E4%B8%80%E9%A1%B9%E6%AF%94%E8%BE%83"><span class="toc-text">直接标准化是在定义另一项比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%8A%E5%8E%9F%E6%80%BB%E4%BD%93%E5%B7%AE%E5%BC%82%E7%B2%BE%E7%A1%AE%E6%8B%86%E6%88%90%E4%B8%A4%E9%83%A8%E5%88%86"><span class="toc-text">把原总体差异精确拆成两部分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E7%8E%B0%E4%B8%8E%E7%B2%BE%E7%A1%AE%E5%AE%9E%E9%AA%8C"><span class="toc-text">完整标准库实现与精确实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E5%80%BC%E7%9B%B8%E7%AD%89%E4%B8%8D%E7%AD%89%E4%BA%8E%E9%97%AE%E9%A2%98%E5%B7%B2%E7%BB%8F%E8%A7%A3%E5%86%B3"><span class="toc-text">数值相等不等于问题已经解决</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64973.html" title="辛普森悖论 从分组反转到标准化比较">辛普森悖论 从分组反转到标准化比较</a><time datetime="2026-10-15T11:21:00.000Z" title="发表于 2026-10-15 19:21:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66485.html" title="主动学习 从不确定性采样到标注预算">主动学习 从不确定性采样到标注预算</a><time datetime="2026-10-15T11:20:00.000Z" title="发表于 2026-10-15 19:20:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64893.html" title="配对 Bootstrap 从模型差值到置信区间">配对 Bootstrap 从模型差值到置信区间</a><time datetime="2026-10-15T02:05:00.000Z" title="发表于 2026-10-15 10:05:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72684.html" title="BatchNorm 原理 从批次统计到训练推理差异">BatchNorm 原理 从批次统计到训练推理差异</a><time datetime="2026-10-15T02:00:00.000Z" title="发表于 2026-10-15 10:00:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98432.html" title="舒曼第二交响曲 从铜管格言到终曲新主题">舒曼第二交响曲 从铜管格言到终曲新主题</a><time datetime="2026-10-14T08:05:00.000Z" title="发表于 2026-10-14 16:05:00">2026-10-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

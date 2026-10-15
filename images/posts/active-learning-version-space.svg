@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">三次查询区分八个阈值</title><desc id="desc">无噪声且等先验时，每次查询把候选阈值等分；固定独立评测集不参与选样。</desc>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 10 5 0 10" fill="#28749b"/></marker></defs>
+  <rect width="900" height="520" rx="20" fill="#f3f7fc"/>
+  <g font-family="Segoe UI, Microsoft YaHei, sans-serif" fill="#243b55">
+    <text x="38" y="49" font-size="26" font-weight="700">主动查询：每个标签排除哪些模型？</text>
+    <text x="38" y="82" font-size="17">假设 t ∈ {0.5, 1.5, …, 7.5}；h(x) = 1[x ≥ t]；隐藏真值 5.5</text>
+    <g fill="#fff" stroke="#b7cada" stroke-width="2">
+      <rect x="38" y="136" width="158" height="192" rx="14"/>
+      <rect x="260" y="136" width="158" height="192" rx="14"/>
+      <rect x="482" y="136" width="158" height="192" rx="14"/>
+      <rect x="704" y="136" width="158" height="192" rx="14"/>
+    </g>
+    <g font-size="17" text-anchor="middle"><text x="117" y="170">初始版本空间</text><text x="339" y="170">x = 4，y = 0</text><text x="561" y="170">x = 6，y = 1</text><text x="783" y="170">x = 5，y = 0</text></g>
+    <g font-size="58" font-weight="700" text-anchor="middle" fill="#155d83"><text x="117" y="247">8</text><text x="339" y="247">4</text><text x="561" y="247">2</text><text x="783" y="247">1</text></g>
+    <g font-size="16" text-anchor="middle"><text x="117" y="292">八个候选阈值</text><text x="339" y="292">4.5 到 7.5</text><text x="561" y="292">4.5 或 5.5</text><text x="783" y="292">只剩 5.5</text></g>
+    <g stroke="#28749b" stroke-width="3" marker-end="url(#arrow)"><path d="M204 229H247"/><path d="M426 229H469"/><path d="M648 229H691"/></g>
+    <text x="38" y="369" font-size="19" font-weight="600">本例每轮 p(1) = 1/2，熵为 1 bit；三次二元答案恰好区分八种真值。</text>
+    <rect x="38" y="395" width="824" height="85" rx="14" fill="#e5efe9" stroke="#9ebaac"/>
+    <text x="60" y="429" font-size="20" font-weight="700" fill="#285d49">独立评测集：留在查询环之外</text>
+    <text x="60" y="458" font-size="17" fill="#285d49">查询集不是随机代表样本；这个有限模型结论不保证真实任务一定节省标签。</text>
+  </g>
+</svg>
