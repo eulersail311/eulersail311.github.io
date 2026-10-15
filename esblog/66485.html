@@ -251,7 +251,7 @@
 <p>H 在 (0,0.5) 递增、(0.5,1) 递减，并关于 0.5 对称。因此三种规则都偏好接近 0.5 的概率，除并列处理外排序一致。确定性并列规则仍应固定，否则重跑可能选到不同 ID。</p>
 <p>这里的结论只比较<strong>同一组二分类概率</strong>，不能推出不同模型、不同校准方法也给出相同选样。</p>
 
-<figure class="evidence-figure"><img class="no-lazy" src="/images/posts/active-learning-version-space.svg" width="900" height="520" loading="lazy" decoding="async" alt="八个等先验阈值经查询 x 等于 4、6、5，候选模型数从八缩小到四、二、一；独立评测集位于查询环之外"><figcaption>原创版本空间图。每个点代表一个候选阈值，不代表神经网络参数或真实业务样本。<a href="/images/posts/active-learning-version-space.svg">查看完整图</a></figcaption></figure>
+<figure class="evidence-figure"><img class="no-lazy" src="/images/posts/active-learning-version-space.svg" width="900" height="520" loading="lazy" decoding="async" alt="八个等先验阈值经查询 x 等于 4、6、5，候选模型数从八缩小到四、二、一；独立评测集位于查询环之外"><figcaption>原创版本空间图。卡片数字表示剩余候选阈值的数量，不代表神经网络参数量或真实业务样本数。<a href="/images/posts/active-learning-version-space.svg">查看完整图</a></figcaption></figure>
 
 
 <h2 id="八个阈值怎样只用三个标签区分"><a href="#八个阈值怎样只用三个标签区分" class="headerlink" title="八个阈值怎样只用三个标签区分"></a>八个阈值怎样只用三个标签区分</h2><p>为了精确核验，用有限假设集合代替神经网络。候选阈值 t 为 0.5、1.5、…、7.5，共八个；模型 h_t(x)&#x3D;1[x≥t]。候选查询位置为整数 1 到 7，隐藏真值设 t*&#x3D;5.5。假定标签无噪声，真实规则包含在候选模型中，初始八个阈值先验等权。</p>
