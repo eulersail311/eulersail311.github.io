@@ -1,0 +1,396 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>PPO 原理 从概率比到裁剪梯度 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="承接 GAE，用优势正负两种分段推导 PPO-Clip 梯度，手算四种概率比，并以 Bernoulli 策略数值检查说明裁剪目标不保证概率比或 KL 的硬约束。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PPO 原理 从概率比到裁剪梯度">
+<meta property="og:url" content="https://eulersail.com/esblog/90863.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="承接 GAE，用优势正负两种分段推导 PPO-Clip 梯度，手算四种概率比，并以 Bernoulli 策略数值检查说明裁剪目标不保证概率比或 KL 的硬约束。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-16T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-16T03:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="强化学习">
+<meta property="article:tag" content="策略梯度">
+<meta property="article:tag" content="PPO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/90863.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PPO 原理 从概率比到裁剪梯度',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-16 11:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261015-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">106</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">177</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">PPO 原理 从概率比到裁剪梯度</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-16T03:00:00.000Z" title="发表于 2026-10-16 11:00:00">2026-10-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-16T03:00:00.000Z" title="更新于 2026-10-16 11:00:00">2026-10-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="PPO 原理 从概率比到裁剪梯度" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/90764.html">GAE 优势估计</a>把轨迹变成固定的优势估计。接下来更新 Actor 时，能否对同一批数据多做几轮优化，又不让已经改善的样本无限推动策略远离采样时的状态？</p>
+<p>PPO-Clip 修改的是优化目标：某些方向上的改进达到阈值后，不再给该样本额外收益。<strong>它没有把新策略投影回概率比区间，也没有保证所有状态上的 KL 小于某个常数。</strong>下面从动作概率比进入分段目标，并运行一个可以独立核验梯度的标准库实验。</p>
+<span id="more"></span>
+
+<h2 id="先冻结采样时的三个量"><a href="#先冻结采样时的三个量" class="headerlink" title="先冻结采样时的三个量"></a>先冻结采样时的三个量</h2><p>一批数据由行为策略 π_old 采集，记录状态 s、实际执行动作 a，以及当时这个动作的 log π_old(a|s)。再按固定 Critic 快照构造优势 A_hat。Actor 优化期间，这些旧 log 概率和优势作为常量使用，不对它们反向传播。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>一批数据内如何处理</th>
+<th>混用的后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>实际执行动作 a</td>
+<td>保留采样记录</td>
+<td>用新策略重新采样动作，再拿旧优势套上去</td>
+</tr>
+<tr>
+<td>old log probability</td>
+<td>保留采样时数值</td>
+<td>每轮覆盖分母，使概率比总回到 1</td>
+</tr>
+<tr>
+<td>A_hat</td>
+<td>在本次 Actor 更新中固定</td>
+<td>不小心把梯度传入优势计算或 Critic</td>
+</tr>
+<tr>
+<td>当前 log probability</td>
+<td>随 Actor 参数更新</td>
+<td>错误地复用旧 log 概率，Actor 没有梯度</td>
+</tr>
+</tbody></table>
+<p>概率比是实际采样动作在同一状态下的新旧概率之比：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">r(θ) = π_θ(a|s) / π_old(a|s)</span><br><span class="line">     = exp(log π_θ(a|s) − log π_old(a|s))</span><br></pre></td></tr></table></figure>
+
+<p>分母必须在采样动作上为正。若旧策略永远不选某动作，旧数据中也就没有这个动作的直接观测；不能靠比值制造未采到的反馈。连续动作时使用相同动作的密度比，不能把密度值误叫作单点概率。</p>
+<p>在固定状态 s 且旧动作分布有足够支持时，Σ_a π_old(a|s)r(a)f(a)&#x3D;Σ_a π_θ(a|s)f(a)。但这只改变<strong>动作条件分布的权重</strong>，并没有同时修复旧策略与新策略的状态访问分布差异，也不是完整轨迹的重要性权重。</p>
+<h2 id="裁剪目标为什么取较小值"><a href="#裁剪目标为什么取较小值" class="headerlink" title="裁剪目标为什么取较小值"></a>裁剪目标为什么取较小值</h2><p>设 ε&#x3D;0.2，clip(r)&#x3D;min(max(r,0.8),1.2)。对一个采样点定义最大化目标：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">l(r,A) = min(rA, clip(r)A)</span><br><span class="line">L_clip = 一批采样点的 l 的平均</span><br><span class="line">若优化器执行梯度下降，Actor loss = −L_clip</span><br></pre></td></tr></table></figure>
+
+<p>这个目标来自 <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1707.06347">PPO 原始论文式 7</a>。min 选择两个候选值中较保守的那个；优势为负时，负数乘法会改变比较方向，不能机械地认为 r 离开区间就把梯度清零。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[固定动作 旧 log 概率和优势] --&gt; B[当前 Actor 重算动作 log 概率]
+  B --&gt; C[指数化差值 得到概率比 r]
+  C --&gt; D[计算 rA 与裁剪后的 rA]
+  D --&gt; E[逐样本取较小值]
+  E --&gt; F[平均后取负 得到下降用 loss]
+  F --&gt; G[若继续更新 同一批旧分母仍保持固定]
+  </pre></div>
+
+<h2 id="正负优势决定哪一边会变平"><a href="#正负优势决定哪一边会变平" class="headerlink" title="正负优势决定哪一边会变平"></a>正负优势决定哪一边会变平</h2><p>当 A&gt;0，希望提高该动作的概率。r 超过 1+ε 后，l 不再继续增长；r 过低时仍应有把它拉回来的梯度。当 A&lt;0，希望降低概率；r 低于 1−ε 后不再奖励继续降低，但 r 过高时仍会受惩罚。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">A &gt; 0：l = A × min(r, 1+ε)</span><br><span class="line">A &lt; 0：l = A × max(r, 1−ε)</span><br><span class="line">A = 0：l = 0</span><br></pre></td></tr></table></figure>
+
+<p>在非拐点处，导数为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">∂l/∂r = A，若 A&gt;0 且 r&lt;1+ε，或 A&lt;0 且 r&gt;1−ε</span><br><span class="line">∂l/∂r = 0，其余平坦区</span><br><span class="line">∇_θ l = (∂l/∂r) × r × ∇_θ log π_θ(a|s)</span><br></pre></td></tr></table></figure>
+
+<p>在拐点上目标不可微；实现可以使用选定的次梯度约定。本篇代码选择平坦侧的零梯度，数值梯度检查避开拐点，不声称所有框架在等号处返回相同导数。</p>
+
+<div class="table-wrap" tabindex="0" role="region" aria-label="PPO 四种概率比与梯度手算表"><table><thead><tr><th scope="col">A</th><th scope="col">r</th><th scope="col">rA</th><th scope="col">clip(r)A</th><th scope="col">l</th><th scope="col">∂l/∂r</th></tr></thead><tbody><tr><th scope="row">+2</th><td>1.4</td><td>2.8</td><td>2.4</td><td>2.4</td><td>0</td></tr><tr><th scope="row">+2</th><td>0.6</td><td>1.2</td><td>1.6</td><td>1.2</td><td>+2</td></tr><tr><th scope="row">−2</th><td>0.6</td><td>−1.2</td><td>−1.6</td><td>−1.6</td><td>0</td></tr><tr><th scope="row">−2</th><td>1.4</td><td>−2.8</td><td>−2.4</td><td>−2.8</td><td>−2</td></tr></tbody></table></div>
+
+
+<p>第三行不是“−1.2 比较好，所以取 −1.2”；目标明确定义了 min，因此取 −1.6。第四行则说明“超出区间即没有梯度”是错误实现。</p>
+
+<figure class="evidence-figure"><img class="no-lazy" src="/images/posts/ppo-directional-clipping.svg" width="900" height="520" loading="lazy" decoding="async" alt="正优势在概率比超过上界后变平，负优势在低于下界后变平；其余越界方向仍保留惩罚梯度"><figcaption>原创分段图；纵轴是最大化的样本目标，横轴是动作概率比，不是参数更新步数。<a href="/images/posts/ppo-directional-clipping.svg">查看完整图</a></figcaption></figure>
+
+
+<h2 id="一个目标相同而-KL-不同的反例"><a href="#一个目标相同而-KL-不同的反例" class="headerlink" title="一个目标相同而 KL 不同的反例"></a>一个目标相同而 KL 不同的反例</h2><p>只考虑一个状态、两个动作。旧策略对动作 1 的概率为 0.5，数据中两个动作各出现一次，固定优势分别为 +1 和 −1。新策略动作 1 的概率为 p，则两个样本的比值为 2p 与 2(1−p)。</p>
+<p>当 p≥0.6，正优势样本已经进入上侧平坦区，负优势样本也进入下侧平坦区，平均目标一直为 (1.2−0.8)&#x2F;2&#x3D;0.2。</p>
+<table>
+<thead>
+<tr>
+<th>新 p</th>
+<th>L_clip</th>
+<th>KL(旧 ‖ 新)，约</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.5</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0.6</td>
+<td>0.2</td>
+<td>0.020411</td>
+</tr>
+<tr>
+<td>0.9</td>
+<td>0.2</td>
+<td>0.510826</td>
+</tr>
+</tbody></table>
+<p>这里可以算出完整分布上的精确 KL，而不是由采样动作近似：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">KL(旧 ‖ 新) = 0.5 log(0.5/p) + 0.5 log(0.5/(1−p))</span><br></pre></td></tr></table></figure>
+
+<p>对 p→1，KL 可趋于无穷，而目标仍为 0.2。因此“目标被裁剪”不能推出“新旧策略一定足够接近”。即使当前点梯度已经为零，前一优化步也可能跨过边界；共享参数还可能被其他状态的梯度推动。</p>
+<h2 id="完整标准库实验与梯度"><a href="#完整标准库实验与梯度" class="headerlink" title="完整标准库实验与梯度"></a>完整标准库实验与梯度</h2><p>用一个 logit z 参数化 Bernoulli 策略 p&#x3D;σ(z)。实际动作 a 的 log 概率导数为 a−p，所以 ∂r&#x2F;∂z&#x3D;r(a−p)。代码用稳定的 softplus 计算 log 概率，并返回真实梯度、目标平坦比例与精确 KL。</p>
+<p>为避免把教学程序当成通用数值库，本实现显式限制 |z|、|old_z|≤20、|A|≤10^6；它拒绝不符合范围的输入，不通过偷偷修改概率比来掩盖溢出。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">finite</span>(<span class="params">value, bound, name</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(value) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>) <span class="keyword">or</span> <span class="keyword">not</span> -bound &lt;= value &lt;= bound:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid &quot;</span> + name)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">float</span>(value)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sigmoid</span>(<span class="params">z</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> / (<span class="number">1</span> + math.exp(-z))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">log_probability</span>(<span class="params">z, action</span>):</span><br><span class="line">    t = -z <span class="keyword">if</span> action == <span class="number">1</span> <span class="keyword">else</span> z</span><br><span class="line">    <span class="keyword">return</span> -(<span class="built_in">max</span>(t, <span class="number">0</span>) + math.log1p(math.exp(-<span class="built_in">abs</span>(t))))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sample_objective</span>(<span class="params">ratio, advantage, epsilon=<span class="number">0.2</span></span>):</span><br><span class="line">    ratio = finite(ratio, <span class="number">1e30</span>, <span class="string">&quot;ratio&quot;</span>)</span><br><span class="line">    advantage = finite(advantage, <span class="number">1e6</span>, <span class="string">&quot;advantage&quot;</span>)</span><br><span class="line">    epsilon = finite(epsilon, <span class="number">1</span>, <span class="string">&quot;epsilon&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> ratio &lt;= <span class="number">0</span> <span class="keyword">or</span> <span class="keyword">not</span> <span class="number">0</span> &lt; epsilon &lt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;ratio must be positive; epsilon must be in (0,1)&quot;</span>)</span><br><span class="line">    clipped = <span class="built_in">min</span>(<span class="built_in">max</span>(ratio, <span class="number">1</span>-epsilon), <span class="number">1</span>+epsilon)</span><br><span class="line">    value = <span class="built_in">min</span>(ratio * advantage, clipped * advantage)</span><br><span class="line">    active = ((advantage &gt; <span class="number">0</span> <span class="keyword">and</span> ratio &lt; <span class="number">1</span>+epsilon) <span class="keyword">or</span></span><br><span class="line">              (advantage &lt; <span class="number">0</span> <span class="keyword">and</span> ratio &gt; <span class="number">1</span>-epsilon))</span><br><span class="line">    <span class="keyword">return</span> value, advantage <span class="keyword">if</span> active <span class="keyword">else</span> <span class="number">0.0</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">batch</span>(<span class="params">z, old_z, actions, advantages, epsilon=<span class="number">0.2</span></span>):</span><br><span class="line">    z = finite(z, <span class="number">20</span>, <span class="string">&quot;z&quot;</span>)</span><br><span class="line">    old_z = finite(old_z, <span class="number">20</span>, <span class="string">&quot;old_z&quot;</span>)</span><br><span class="line">    epsilon = finite(epsilon, <span class="number">1</span>, <span class="string">&quot;epsilon&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt; epsilon &lt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid epsilon&quot;</span>)</span><br><span class="line">    actions, advantages = <span class="built_in">tuple</span>(actions), <span class="built_in">tuple</span>(advantages)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> actions <span class="keyword">or</span> <span class="built_in">len</span>(actions) != <span class="built_in">len</span>(advantages):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;batch lengths must match and be positive&quot;</span>)</span><br><span class="line">    p = sigmoid(z)</span><br><span class="line">    values, gradients = [], []</span><br><span class="line">    outside = flat = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> action, advantage <span class="keyword">in</span> <span class="built_in">zip</span>(actions, advantages):</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(action) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> action <span class="keyword">not</span> <span class="keyword">in</span> (<span class="number">0</span>, <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;action must be integer 0 or 1&quot;</span>)</span><br><span class="line">        ratio = math.exp(log_probability(z, action) - log_probability(old_z, action))</span><br><span class="line">        value, derivative = sample_objective(ratio, advantage, epsilon)</span><br><span class="line">        values.append(value)</span><br><span class="line">        gradients.append(derivative * ratio * (action-p))</span><br><span class="line">        outside += ratio &lt; <span class="number">1</span>-epsilon <span class="keyword">or</span> ratio &gt; <span class="number">1</span>+epsilon</span><br><span class="line">        flat += advantage != <span class="number">0</span> <span class="keyword">and</span> derivative == <span class="number">0</span></span><br><span class="line">    q = sigmoid(old_z)</span><br><span class="line">    kl = <span class="built_in">sum</span>(weight * (log_probability(old_z, action)-log_probability(z, action))</span><br><span class="line">             <span class="keyword">for</span> action, weight <span class="keyword">in</span> [(<span class="number">1</span>, q), (<span class="number">0</span>, <span class="number">1</span>-q)])</span><br><span class="line">    n = <span class="built_in">len</span>(actions)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;p&quot;</span>: p, <span class="string">&quot;objective&quot;</span>: math.fsum(values)/n,</span><br><span class="line">            <span class="string">&quot;gradient&quot;</span>: math.fsum(gradients)/n, <span class="string">&quot;kl_old_new&quot;</span>: kl,</span><br><span class="line">            <span class="string">&quot;outside_fraction&quot;</span>: outside/n, <span class="string">&quot;flat_fraction&quot;</span>: flat/n&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    old_z = <span class="number">0.0</span></span><br><span class="line">    actions, advantages = [<span class="number">1</span>, <span class="number">0</span>], [<span class="number">1.0</span>, -<span class="number">1.0</span>]</span><br><span class="line">    z, trajectory = <span class="number">0.0</span>, []</span><br><span class="line">    <span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">4</span>):</span><br><span class="line">        report = batch(z, old_z, actions, advantages)</span><br><span class="line">        trajectory.append(&#123;<span class="string">&quot;step&quot;</span>: step, <span class="string">&quot;z&quot;</span>: z, **report&#125;)</span><br><span class="line">        z += <span class="number">0.8</span> * report[<span class="string">&quot;gradient&quot;</span>]  <span class="comment"># Ascent; old_z remains frozen.</span></span><br><span class="line">    plateau = [batch(math.log(p/(<span class="number">1</span>-p)), old_z, actions, advantages)</span><br><span class="line">               <span class="keyword">for</span> p <span class="keyword">in</span> (<span class="number">0.6</span>, <span class="number">0.9</span>)]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;trajectory&quot;</span>: trajectory, <span class="string">&quot;plateau&quot;</span>: plateau&#125;, indent=<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+<p>实际运行中，第一次上升把 z 从 0 推到 0.4，p 约为 0.5987；第二次更新使 p 超过 0.6，随后该批两个样本都进入平坦区。这个演示没有环境、GAE、Critic、神经网络或完整采样循环，只核验裁剪目标与更新方向。</p>
+<p>像 p&#x3D;0.6 这样的理论拐点，经过 log 和 exp 的浮点运算后，比值可能略落在边界某一侧；不能要求其数值梯度一定等于某个选定次梯度。梯度验证使用远离拐点的样本，目标值仍在舍入误差内符合手算。</p>
+<p>outside_fraction 统计概率比是否在区间外，flat_fraction 统计非零优势样本是否落在目标平坦区，两者不是同一个指标。真实实现常见的 clip fraction 也必须结合其具体定义解释。</p>
+<p>设 batch 大小为 N，这个标量示例用 O(N) 时间、O(N) 额外存储；真实 Actor 还要加上网络前向、反向与优化器成本。用 log 概率计算比值改善计算方式，但不保证任意输入的指数化都不会溢出。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[一次新策略更新] --&gt; B[检查 loss 符号与旧快照]
+  B --&gt; C[记录目标和区间外比例]
+  C --&gt; D[另行监控 KL 与实际回报]
+  D --&gt; E{触及预定停止条件吗}
+  E --&gt;|是| F[停止本批优化并重新采样]
+  E --&gt;|否| G[按预定轮数继续]
+  G --&gt; B
+  </pre></div>
+
+<h2 id="接入-PPO-训练时还缺什么"><a href="#接入-PPO-训练时还缺什么" class="headerlink" title="接入 PPO 训练时还缺什么"></a>接入 PPO 训练时还缺什么</h2><table>
+<thead>
+<tr>
+<th>检查点</th>
+<th>失败边界</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>优势与价值目标</td>
+<td>Actor 优势标准化不应覆盖 Critic 原始回归目标</td>
+</tr>
+<tr>
+<td>动作分布</td>
+<td>离散 log 概率取实际动作；连续多维动作通常要合并各维 log 密度</td>
+</tr>
+<tr>
+<td>行为策略</td>
+<td>old log 概率必须对应采样时的同一分布、动作变换和掩码</td>
+</tr>
+<tr>
+<td>批量更新</td>
+<td>同一批可重复优化有限轮，不等于旧轨迹可以永久重放</td>
+</tr>
+<tr>
+<td>更新距离</td>
+<td>裁剪不提供硬 KL 约束；监控或早停要独立制定</td>
+</tr>
+<tr>
+<td>真实效果</td>
+<td>目标改善不自动推出期望回报单调上升，需要独立评测</td>
+</tr>
+</tbody></table>
+<p>原论文还讨论了价值损失和熵奖励的组合。本篇故意只实现 PPO-Clip Actor 项，不能把上述二动作轨迹称为完整 PPO 训练结果。</p>
+
+<details class="mechanism-check"><summary>自检：ε=0.2，是否意味着所有动作的新旧概率比永远位于 0.8 到 1.2？</summary><div><p>不是。目标在部分方向变平，并没有投影或约束新策略。越界的相反方向仍有梯度，共享参数和一次较大的优化步也可能把比值推离区间。本文 p=0.6 与 0.9 的反例具有相同裁剪目标而 KL 不同。</p></div></details>
+
+
+<p>验证程序 tests&#x2F;verify-ppo-clipping-article.cjs 直接运行完整代码，另外用非裁剪区间的独立目标、中心差分和动作重命名检查梯度。继续沿<a href="/esblog/90426.html">策略梯度</a> → <a href="/esblog/90764.html">GAE</a> → 本文阅读；评估更新效果时，再参考<a href="/esblog/64893.html">配对 Bootstrap</a>与<a href="/esblog/65087.html">配对置换检验</a>，先确认评测单位与推断假设。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/90863.html">https://eulersail.com/esblog/90863.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/">强化学习</a><a class="post-meta__tags" href="/tags/%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6/">策略梯度</a><a class="post-meta__tags" href="/tags/PPO/">PPO</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/65087.html" title="配对置换检验 从符号翻转到精确 p 值"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">配对置换检验 从符号翻转到精确 p 值</div></div></a></div><div class="next-post pull-right"><a href="/esblog/64973.html" title="辛普森悖论 从分组反转到标准化比较"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">辛普森悖论 从分组反转到标准化比较</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div><div><a href="/esblog/90764.html" title="GAE 优势估计 从 TD 残差到采样边界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-14</div><div class="title">GAE 优势估计 从 TD 残差到采样边界</div></div></a></div><div><a href="/esblog/90426.html" title="策略梯度入门：从 REINFORCE 到 Actor-Critic"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-04</div><div class="title">策略梯度入门：从 REINFORCE 到 Actor-Critic</div></div></a></div><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">106</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">177</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%86%BB%E7%BB%93%E9%87%87%E6%A0%B7%E6%97%B6%E7%9A%84%E4%B8%89%E4%B8%AA%E9%87%8F"><span class="toc-text">先冻结采样时的三个量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A3%81%E5%89%AA%E7%9B%AE%E6%A0%87%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%96%E8%BE%83%E5%B0%8F%E5%80%BC"><span class="toc-text">裁剪目标为什么取较小值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E8%B4%9F%E4%BC%98%E5%8A%BF%E5%86%B3%E5%AE%9A%E5%93%AA%E4%B8%80%E8%BE%B9%E4%BC%9A%E5%8F%98%E5%B9%B3"><span class="toc-text">正负优势决定哪一边会变平</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E7%9B%AE%E6%A0%87%E7%9B%B8%E5%90%8C%E8%80%8C-KL-%E4%B8%8D%E5%90%8C%E7%9A%84%E5%8F%8D%E4%BE%8B"><span class="toc-text">一个目标相同而 KL 不同的反例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E9%AA%8C%E4%B8%8E%E6%A2%AF%E5%BA%A6"><span class="toc-text">完整标准库实验与梯度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%85%A5-PPO-%E8%AE%AD%E7%BB%83%E6%97%B6%E8%BF%98%E7%BC%BA%E4%BB%80%E4%B9%88"><span class="toc-text">接入 PPO 训练时还缺什么</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65087.html" title="配对置换检验 从符号翻转到精确 p 值">配对置换检验 从符号翻转到精确 p 值</a><time datetime="2026-10-16T03:01:00.000Z" title="发表于 2026-10-16 11:01:00">2026-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/90863.html" title="PPO 原理 从概率比到裁剪梯度">PPO 原理 从概率比到裁剪梯度</a><time datetime="2026-10-16T03:00:00.000Z" title="发表于 2026-10-16 11:00:00">2026-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64973.html" title="辛普森悖论 从分组反转到标准化比较">辛普森悖论 从分组反转到标准化比较</a><time datetime="2026-10-15T11:21:00.000Z" title="发表于 2026-10-15 19:21:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66485.html" title="主动学习 从不确定性采样到标注预算">主动学习 从不确定性采样到标注预算</a><time datetime="2026-10-15T11:20:00.000Z" title="发表于 2026-10-15 19:20:00">2026-10-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64893.html" title="配对 Bootstrap 从模型差值到置信区间">配对 Bootstrap 从模型差值到置信区间</a><time datetime="2026-10-15T02:05:00.000Z" title="发表于 2026-10-15 10:05:00">2026-10-15</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">配对符号翻转的三十二种分配</title><desc id="desc">五条差值为一、一、一、零、一。三十二种分配的频数为二、八、十二、八、二；绝对值尾部共四种。</desc>
+  <rect width="900" height="520" rx="20" fill="#f4f7fb"/>
+  <g font-family="Segoe UI, Microsoft YaHei, sans-serif" fill="#253d56">
+    <text x="38" y="48" font-size="27" font-weight="700">保持配对，只交换对内身份</text>
+    <text x="38" y="82" font-size="18">d = [1, 1, 1, 0, 1]；T_obs = 0.8；五个单位，共 2⁵ = 32 种分配</text>
+    <rect x="38" y="112" width="824" height="286" rx="14" fill="#fff" stroke="#bdcddd"/>
+    <text x="62" y="145" font-size="17">分配数</text>
+    <path d="M110 350H796" stroke="#91a9bb" stroke-width="2"/>
+    <g fill="#317e9e"><rect x="296" y="238" width="70" height="112" rx="4"/><rect x="416" y="182" width="70" height="168" rx="4"/><rect x="536" y="238" width="70" height="112" rx="4"/></g>
+    <g fill="#ba683b"><rect x="176" y="322" width="70" height="28" rx="4"/><rect x="656" y="322" width="70" height="28" rx="4"/></g>
+    <g font-size="21" font-weight="700" text-anchor="middle"><text x="211" y="308">2</text><text x="331" y="224">8</text><text x="451" y="168">12</text><text x="571" y="224">8</text><text x="691" y="308">2</text></g>
+    <g font-size="18" text-anchor="middle"><text x="211" y="378">−0.8</text><text x="331" y="378">−0.4</text><text x="451" y="378">0</text><text x="571" y="378">+0.4</text><text x="691" y="378">+0.8</text></g>
+    <text x="779" y="378" font-size="17">T*</text>
+    <rect x="38" y="420" width="824" height="65" rx="13" fill="#e5efe9" stroke="#aac6b7"/>
+    <text x="60" y="447" font-size="21" font-weight="700" fill="#285d49">双侧尾部：|T*| ≥ 0.8，p = (2 + 2) / 32 = 1/8</text>
+    <text x="60" y="472" font-size="16" fill="#285d49">零差值单位也有两种符号分配；相同统计量必须保留频数权重。</text>
+  </g>
+</svg>

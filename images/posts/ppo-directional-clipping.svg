@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">优势方向决定 PPO 目标在哪边变平</title><desc id="desc">正优势超过概率比上界后变平，负优势低于下界时变平；相反方向继续保留梯度。</desc>
+  <rect width="900" height="520" rx="20" fill="#f3f7fc"/>
+  <g font-family="Segoe UI, Microsoft YaHei, sans-serif" fill="#243b55">
+    <text x="38" y="48" font-size="27" font-weight="700">裁剪的是目标的改进方向</text>
+    <text x="38" y="81" font-size="18">ε = 0.2；纵轴为 l(r,A)，横轴为动作概率比 r</text>
+    <g fill="#fff" stroke="#bdcddd"><rect x="38" y="112" width="394" height="274" rx="14"/><rect x="468" y="112" width="394" height="274" rx="14"/></g>
+    <text x="62" y="147" font-size="21" font-weight="700">A = +1：提高好动作的概率</text>
+    <text x="492" y="147" font-size="21" font-weight="700">A = −1：降低差动作的概率</text>
+    <g stroke="#8fa8bb" stroke-width="2" fill="none"><path d="M88 172V330H395"/><path d="M518 172V330H825"/></g>
+    <g stroke="#becddd" stroke-dasharray="5 5" stroke-width="2"><path d="M298 173V330"/><path d="M658 173V330"/></g>
+    <g fill="none" stroke-width="5" stroke-linejoin="round"><path d="M88 320 298 200" stroke="#237b9c"/><path d="M298 200H368" stroke="#bc6a37"/><path d="M518 244H658" stroke="#bc6a37"/><path d="M658 244 798 308" stroke="#237b9c"/></g>
+    <g font-size="16"><text x="68" y="323">0</text><text x="54" y="204">1.2</text><text x="484" y="184">0</text><text x="480" y="248">−0.8</text><text x="281" y="355">1.2</text><text x="641" y="355">0.8</text><text x="386" y="355">r</text><text x="816" y="355">r</text></g>
+    <text x="99" y="225" font-size="17" fill="#1b6581">仍有上升梯度</text>
+    <text x="319" y="185" font-size="16" fill="#975027">平坦</text>
+    <text x="549" y="224" font-size="16" fill="#975027">平坦</text>
+    <text x="682" y="219" font-size="17" fill="#1b6581">仍惩罚变坏</text>
+    <rect x="38" y="410" width="824" height="73" rx="13" fill="#e5efe9" stroke="#aac6b7"/>
+    <text x="60" y="442" font-size="20" font-weight="700" fill="#285d49">目标变平，不保证概率比区间或 KL 上界</text>
+    <text x="60" y="468" font-size="17" fill="#285d49">本例 p = 0.6 和 0.9 的平均目标相同，但 KL 分别约为 0.0204 和 0.5108。</text>
+  </g>
+</svg>
