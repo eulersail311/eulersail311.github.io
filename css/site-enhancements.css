@@ -301,6 +301,87 @@
   #article-container .about-portrait:hover .about-avatar-ring img { transform: none; }
 }
 
+/* Article reading rhythm: shared by existing posts, scoped away from landing pages. */
+#post #article-container > p:first-of-type {
+  font-size: 1.08em;
+  line-height: 1.95;
+  color: var(--sail-reading-ink);
+}
+#post #article-container > p { margin-block: 1.15em; }
+#post #article-container > h2 { margin-bottom: 1.1em; }
+#post #article-container :is(th, td) { font-variant-numeric: tabular-nums; }
+#post #article-container > :is(ul, ol) > li { margin-block: 0.4em; }
+/* JS normally wraps tables. Raw Markdown tables also need a no-JS fallback. */
+#post #article-container > table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Original reading diagrams have a stable paper canvas and a themed caption.
+   Keep labels at a readable size on phones; native scrolling works without JS. */
+#article-container .concept-figure {
+  margin: 2em 0;
+  border: 1px solid var(--sail-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--sail-surface-strong);
+}
+#article-container .concept-figure-canvas {
+  overflow-x: auto;
+  background: #f6f9fc;
+  scrollbar-width: thin;
+  scrollbar-color: #176b94 #eaf3f8;
+}
+#article-container .concept-figure-canvas img {
+  display: block;
+  width: 100%;
+  min-width: 540px;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+}
+#article-container .concept-figure figcaption {
+  padding: clamp(16px, 3vw, 24px);
+  border-top: 1px solid var(--sail-border);
+  color: var(--sail-reading-ink);
+  font-size: 14px;
+  line-height: 1.85;
+}
+#article-container .concept-figure-label {
+  display: block;
+  color: var(--sail-reading-cyan);
+  font-weight: 700;
+  font-size: 1.08em;
+  line-height: 1.65;
+}
+#article-container .concept-figure figcaption p { margin: 0.6em 0; }
+#article-container .concept-figure figcaption a {
+  display: inline-block;
+  padding: 6px 0;
+  color: var(--sail-reading-cyan);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+#article-container .concept-figure :is(a, .concept-figure-canvas):focus-visible {
+  outline: 3px solid var(--sail-reading-cyan);
+  outline-offset: -3px;
+}
+@media (max-width: 600px) {
+  #article-container .concept-figure-canvas::after {
+    content: '左右滑动查看图示';
+    display: block;
+    position: sticky;
+    left: 0;
+    padding: 7px 12px;
+    color: #36556a;
+    font-size: 13px;
+    text-align: center;
+  }
+}
+
 /* Evidence figures keep original labels and offer a native full-size link. */
 #article-container .evidence-figure {
   margin: 1.8em 0;
