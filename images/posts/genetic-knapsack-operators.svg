@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">二进制交叉、变异与精英保留</title><desc id="desc">父代1000与0110在第二位后交叉得到1010。翻转最后一位得到超重的1011。保留0110只保持价值9，不证明达到最优价值11。</desc>
+<style>text{font:24px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#203c50;text-anchor:middle}.bit{font-size:32px;font-weight:700}.a{fill:#d6edf6;stroke:#176b94;stroke-width:2}.b{fill:#e2f0df;stroke:#3a7542;stroke-width:2}.bad{fill:#f7e3d8;stroke:#a84b1b;stroke-width:2}.note{font-size:22px}</style>
+<rect width="900" height="520" rx="20" fill="#f6f9fc"/><text x="450" y="40">四件物品，容量 C=7：从位串回到实际约束</text>
+<text x="125" y="113">父代 A</text><text x="125" y="185">父代 B</text><text x="760" y="113">重量 2，价值 3</text><text x="760" y="185">重量 7，价值 9</text>
+<g class="a"><rect x="250" y="76" width="75" height="52" rx="8"/><rect x="340" y="76" width="75" height="52" rx="8"/><rect x="430" y="76" width="75" height="52" rx="8"/><rect x="520" y="76" width="75" height="52" rx="8"/></g>
+<g class="b"><rect x="250" y="148" width="75" height="52" rx="8"/><rect x="340" y="148" width="75" height="52" rx="8"/><rect x="430" y="148" width="75" height="52" rx="8"/><rect x="520" y="148" width="75" height="52" rx="8"/></g>
+<g class="bit"><text x="287" y="113">1</text><text x="377" y="113">0</text><text x="467" y="113">0</text><text x="557" y="113">0</text><text x="287" y="185">0</text><text x="377" y="185">1</text><text x="467" y="185">1</text><text x="557" y="185">0</text></g>
+<path d="M422 65V207" stroke="#9a632b" stroke-width="2" stroke-dasharray="6 4"/><text class="note" x="450" y="233">切点在第二位后：前段取 A，后段取 B</text>
+<text x="125" y="287">交叉子代</text><text x="760" y="287">重量 6，价值 8</text>
+<g class="a"><rect x="250" y="250" width="75" height="52" rx="8"/><rect x="340" y="250" width="75" height="52" rx="8"/></g><g class="b"><rect x="430" y="250" width="75" height="52" rx="8"/><rect x="520" y="250" width="75" height="52" rx="8"/></g>
+<g class="bit"><text x="287" y="287">1</text><text x="377" y="287">0</text><text x="467" y="287">1</text><text x="557" y="287">0</text></g>
+<text class="note" x="450" y="331">指定翻转最后一位：新方案可能不可行</text>
+<text x="125" y="385">变异子代</text><text x="760" y="385">重量 11，超重</text>
+<g class="bad"><rect x="250" y="348" width="75" height="52" rx="8"/><rect x="340" y="348" width="75" height="52" rx="8"/><rect x="430" y="348" width="75" height="52" rx="8"/><rect x="520" y="348" width="75" height="52" rx="8"/></g>
+<g class="bit"><text x="287" y="385">1</text><text x="377" y="385">0</text><text x="467" y="385">1</text><text x="557" y="385">1</text></g>
+<rect x="32" y="422" width="836" height="80" rx="12" fill="#eaf2f8" stroke="#b7ccd9"/><text x="450" y="454">精英 0110 保留价值 9，不会被差子代替换</text><text class="note" x="450" y="486">仍可能漏掉 1001 的价值 11；此图不是随机运行轨迹</text></svg>

@@ -1,0 +1,510 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>滤波算法入门 从移动平均到一维卡尔曼 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="对照因果移动平均、指数平滑、中值滤波与一维卡尔曼，推导噪声与延迟的权衡、增益和方差更新，说明窗口启动、缺失观测和模型失配，附原创计算图与标准库实验。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="滤波算法入门 从移动平均到一维卡尔曼">
+<meta property="og:url" content="https://eulersail.com/esblog/65279.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="对照因果移动平均、指数平滑、中值滤波与一维卡尔曼，推导噪声与延迟的权衡、增益和方差更新，说明窗口启动、缺失观测和模型失配，附原创计算图与标准库实验。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-18T16:20:00.000Z">
+<meta property="article:modified_time" content="2026-10-18T16:20:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="时间序列">
+<meta property="article:tag" content="滤波">
+<meta property="article:tag" content="指数平滑">
+<meta property="article:tag" content="卡尔曼滤波">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/65279.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '滤波算法入门 从移动平均到一维卡尔曼',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-19 00:20:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261016-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">110</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">190</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">滤波算法入门 从移动平均到一维卡尔曼</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-18T16:20:00.000Z" title="发表于 2026-10-19 00:20:00">2026-10-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-18T16:20:00.000Z" title="更新于 2026-10-19 00:20:00">2026-10-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="滤波算法入门 从移动平均到一维卡尔曼" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>传感器读数偶尔跳一下，监控曲线锯齿很多，或者一段趋势被单点尖峰打断，都会让人想到“加个滤波”。但平滑后的曲线更顺眼，不代表它离真实状态更近：突变可能被拖慢，真正的异常也可能被抹掉。</p>
+<p>本文放在数据分析分类，承接 <a href="/esblog/64712.html">NumPy 常用统计</a>与<a href="/esblog/24365.html">数据可视化</a>。先比较四种常见方法，再手算一维卡尔曼的预测与更新。所有示例都只使用当前及过去数据，不把离线看过未来的结果冒充实时滤波。</p>
+<span id="more"></span>
+
+
+<section class="mechanism-map" aria-label="滤波阅读路线"><div><strong>先问任务</strong><p>去尖峰、看趋势，还是估计一个隐藏状态？</p></div><div><strong>再写约定</strong><p>窗口方向、初始值、采样间隔与缺失规则。</p></div><div><strong>最后评估</strong><p>误差、突变响应和延迟必须一起观察。</p></div></section>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="四种因果滤波的合成信号图，可横向滚动"><img class="no-lazy" src="/images/posts/causal-filter-comparison.svg" width="900" height="580" loading="lazy" alt="同一合成信号含一个8的尖峰和从0到4的阶跃，比较三点移动平均、指数平滑、中值及一维卡尔曼的计算输出"></div><figcaption><strong>去掉尖峰与及时跟踪突变，不是同一目标。</strong> 曲线由下方代码的九个合成观测计算，虚线是人为指定的参考状态；不是传感器实测，也不是算法排名。<a href="/images/posts/causal-filter-comparison.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="先区分四类方法"><a href="#先区分四类方法" class="headerlink" title="先区分四类方法"></a>先区分四类方法</h2><p>设观测序列为 y_t，希望输出更适合当前任务的估计 s_t。滤波器不能凭空知道哪些变化来自噪声，哪些变化是真实信号。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>利用的信息</th>
+<th>常见用途</th>
+<th>主要代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>移动平均</td>
+<td>最近 W 个观测等权汇总</td>
+<td>看局部均值、抑制独立零均值波动</td>
+<td>滞后，尖峰会影响多个输出</td>
+</tr>
+<tr>
+<td>指数平滑</td>
+<td>当前观测与上一次估计</td>
+<td>低状态成本的在线平滑</td>
+<td>参数影响记忆长度与响应速度</td>
+</tr>
+<tr>
+<td>中值滤波</td>
+<td>窗口内排序后取中间值</td>
+<td>对付孤立的极端读数</td>
+<td>非线性，也可能消除真实短脉冲</td>
+</tr>
+<tr>
+<td>卡尔曼滤波</td>
+<td>动态模型、观测与误差方差</td>
+<td>递归估计隐藏状态</td>
+<td>依赖模型和噪声假设，普通版本不抗任意异常值</td>
+</tr>
+</tbody></table>
+<p>线性差分滤波可以用 FIR、IIR 的语言描述；<a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.lfilter.html">SciPy lfilter 官方说明</a>给出了输入输出的差分形式。中值不是线性滤波，不能把同一个线性频率响应直接套给它。本文只实现一维标量例子，不覆盖图像二维滤波和完整频域设计。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[当前观测到达] --&gt; B{主要需要什么}
+  B --&gt; C[窗口均值 看局部平均]
+  B --&gt; D[指数平滑 递归低状态成本]
+  B --&gt; E[窗口中值 处理孤立尖峰]
+  B --&gt; F[状态模型 预测加观测更新]
+  C --&gt; G[同时检查延迟 边界 与真实事件]
+  D --&gt; G
+  E --&gt; G
+  F --&gt; G
+  </pre></div>
+
+<h2 id="因果移动平均：窗口越大，响应越慢"><a href="#因果移动平均：窗口越大，响应越慢" class="headerlink" title="因果移动平均：窗口越大，响应越慢"></a>因果移动平均：窗口越大，响应越慢</h2><p>满窗口时，尾随移动平均定义为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s_t = (y_t + y_(t−1) + ... + y_(t−W+1)) / W</span><br></pre></td></tr></table></figure>
+
+<p>若窗口内真实状态恒为 μ，观测噪声独立、均值为零且方差同为 σ²，则平均仍无偏，噪声方差降为 σ²&#x2F;W。这里的条件很重要：窗口内真实状态改变时，把不同状态平均在一起会引入偏差；噪声相关时，均值方差还要加入协方差项。</p>
+<p>对于无噪声线性斜坡 y_t&#x3D;a t+b，满窗口输出恰为 a(t−(W−1)&#x2F;2)+b。这说明它相对斜坡落后了 (W−1)&#x2F;2 个采样间隔，并不是所有信号都可以用一个固定时间移位解释。</p>
+<p>本文在序列刚开始、不足 W 项时只平均已有数据，不做零填充。因此启动阶段的分母会变化，不能把整段实现都直接当作固定系数、时不变的 W 点滤波器。</p>
+<h2 id="指数平滑：把历史压成一个状态"><a href="#指数平滑：把历史压成一个状态" class="headerlink" title="指数平滑：把历史压成一个状态"></a>指数平滑：把历史压成一个状态</h2><p>取 0&lt;α≤1：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s_0 = y_0</span><br><span class="line">s_t = α y_t + (1−α) s_(t−1)</span><br></pre></td></tr></table></figure>
+
+<p>展开递推，较旧观测的权重按几何级数衰减；初始值的残留权重为 (1−α)^t。α 大时更跟随当前观测，α 小时历史记忆更长。</p>
+<p>若真实状态恒定、观测噪声独立同方差，且忽略已衰减的启动影响，稳态噪声方差为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">σ² α² Σ_(j≥0) (1−α)^(2j) = σ² α/(2−α)</span><br></pre></td></tr></table></figure>
+
+<p>这同样是特定噪声模型下的结论，不是所有时间序列上的效果保证。α&#x3D;1 时原样输出；本文不接受 α&#x3D;0，以免把“不再响应新数据”混入默认接口。</p>
+<h2 id="中值滤波：去尖峰也可能去掉真实短事件"><a href="#中值滤波：去尖峰也可能去掉真实短事件" class="headerlink" title="中值滤波：去尖峰也可能去掉真实短事件"></a>中值滤波：去尖峰也可能去掉真实短事件</h2><p>对最近 W 项排序后取中位数。本文使用奇数 W；序列启动时仍使用已有项，若已有项为偶数，取中间两值的平均。</p>
+<p>三点窗口 [0,8,0] 的均值为 8&#x2F;3，中值为 0；[0,4,4] 的中值为 4。这解释了它为何能抑制一个孤立尖峰，但“尖峰是噪声”必须来自任务判断。如果真实事件只持续一个采样点，同样可能被去掉。</p>
+<p>窗口方向也是定义的一部分。本文是尾随窗口；<a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.medfilt.html">SciPy medfilt</a>还明确规定了零填充边界，不能不对齐方向和边界就逐项比较输出。离线居中窗口可能用到未来样本。</p>
+<h2 id="同一组观测怎样手算"><a href="#同一组观测怎样手算" class="headerlink" title="同一组观测怎样手算"></a>同一组观测怎样手算</h2><p>使用观测 [0,0,8,0,0,4,4,4,4]，人为参考状态为 [0,0,0,0,0,4,4,4,4]。8 是注入的单点干扰，随后是持续阶跃；这只是用于解释行为的合成构造。</p>
+<table>
+<thead>
+<tr>
+<th>t</th>
+<th align="right">观测</th>
+<th align="right">参考状态</th>
+<th align="right">三点均值</th>
+<th align="right">指数平滑 α&#x3D;0.5</th>
+<th align="right">尾随三点中值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0—1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>2</td>
+<td align="right">8</td>
+<td align="right">0</td>
+<td align="right">8&#x2F;3</td>
+<td align="right">4</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>3</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8&#x2F;3</td>
+<td align="right">2</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>4</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8&#x2F;3</td>
+<td align="right">1</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>5</td>
+<td align="right">4</td>
+<td align="right">4</td>
+<td align="right">4&#x2F;3</td>
+<td align="right">2.5</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>6</td>
+<td align="right">4</td>
+<td align="right">4</td>
+<td align="right">8&#x2F;3</td>
+<td align="right">3.25</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<td>7</td>
+<td align="right">4</td>
+<td align="right">4</td>
+<td align="right">4</td>
+<td align="right">3.625</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<td>8</td>
+<td align="right">4</td>
+<td align="right">4</td>
+<td align="right">4</td>
+<td align="right">3.8125</td>
+<td align="right">4</td>
+</tr>
+</tbody></table>
+<p>中值去掉了 t&#x3D;2 的尖峰，却直到 t&#x3D;6 才跟上阶跃；均值在 t&#x3D;5、t&#x3D;6 分别为 4&#x2F;3、8&#x2F;3，也展示了响应滞后。评估应查看完整轨迹，不能只挑一个看起来正确的点。</p>
+<h2 id="一维卡尔曼：先写模型，再讨论增益"><a href="#一维卡尔曼：先写模型，再讨论增益" class="headerlink" title="一维卡尔曼：先写模型，再讨论增益"></a>一维卡尔曼：先写模型，再讨论增益</h2><p>采用等间隔随机游走和直接观测：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x_t = x_(t−1) + w_t       Var(w_t)=Q</span><br><span class="line">y_t = x_t + v_t           Var(v_t)=R</span><br></pre></td></tr></table></figure>
+
+<p>假定过程噪声、观测噪声与初始误差零均值，且在需要的时间和相互关系上不相关；Q≥0，R&gt;0，初始误差方差 P≥0。若初始状态及噪声进一步满足线性高斯条件，递推给出相应的后验均值和方差；仅有二阶矩条件时，不应自动宣称得到了任意分布下的完整后验。</p>
+<p>状态空间递归估计的原始依据见 <a target="_blank" rel="noopener" href="https://people.math.harvard.edu/archive/116_fall_03/handouts/Kalman1960.pdf">Kalman 1960 论文</a>。本文只推导其标量特例，Q、R 都是方差，单位为观测单位的平方；Q 对应一个采样间隔，不能不加调整就移给另一种采样频率。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">预测均值：m⁻ = m</span><br><span class="line">预测方差：P⁻ = P + Q</span><br><span class="line">增益：K = P⁻ / (P⁻ + R)</span><br><span class="line">更新均值：m = m⁻ + K(y−m⁻)</span><br><span class="line">更新方差：P = (1−K)P⁻</span><br></pre></td></tr></table></figure>
+
+<p>为什么是这个 K？用线性修正 m&#x3D;m⁻+K(y−m⁻)，在预测误差与观测噪声不相关的条件下，修正误差方差是 (1−K)²P⁻+K²R。对 K 求导并令其为零，得到上式；二阶导数 2(P⁻+R)&gt;0，因而是唯一最小值。</p>
+<p>P⁻ 大意味着预测更不确定，K 较大；R 大意味着观测更不可靠，K 较小。这不是“测量一定比模型可信”或相反。代码用等价的标量 Joseph 形式 (1−K)²P⁻+K²R 更新方差，避免直接相减带来的部分数值问题。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[上一时刻均值 m 与方差 P] --&gt; B[预测均值不变 方差加 Q]
+  B --&gt; C{当前观测缺失吗}
+  C -- 是 --&gt; D[只保留预测 方差仍增长]
+  C -- 否 --&gt; E[由预测方差与 R 计算 K]
+  E --&gt; F[按创新修正均值 更新方差]
+  D --&gt; A
+  F --&gt; A
+  </pre></div>
+
+<h2 id="三步卡尔曼怎样核对"><a href="#三步卡尔曼怎样核对" class="headerlink" title="三步卡尔曼怎样核对"></a>三步卡尔曼怎样核对</h2><p>在第一条观测之前设置 m&#x3D;0、P&#x3D;1，Q&#x3D;1、R&#x3D;1，每个时间步都先预测，第一步也先加 Q。依次收到 [1,2,3]：</p>
+
+<div class="table-wrap" id="kalman-hand-table" tabindex="0" role="region" aria-label="卡尔曼七列三步手算表">
+
+
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th align="right">观测</th>
+<th align="right">预测均值</th>
+<th align="right">P⁻</th>
+<th align="right">K</th>
+<th align="right">更新均值</th>
+<th align="right">更新方差</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">2&#x2F;3</td>
+<td align="right">2&#x2F;3</td>
+<td align="right">2&#x2F;3</td>
+</tr>
+<tr>
+<td>2</td>
+<td align="right">2</td>
+<td align="right">2&#x2F;3</td>
+<td align="right">5&#x2F;3</td>
+<td align="right">5&#x2F;8</td>
+<td align="right">3&#x2F;2</td>
+<td align="right">5&#x2F;8</td>
+</tr>
+<tr>
+<td>3</td>
+<td align="right">3</td>
+<td align="right">3&#x2F;2</td>
+<td align="right">13&#x2F;8</td>
+<td align="right">13&#x2F;21</td>
+<td align="right">17&#x2F;7</td>
+<td align="right">13&#x2F;21</td>
+</tr>
+</tbody></table>
+
+</div>
+
+
+<p>若某时刻没有观测，仍做 P←P+Q，但不做观测修正。把缺失值填成 0 再更新，相当于凭空告诉滤波器“确实测到了零”，含义完全不同。</p>
+<h2 id="完整标准库实现"><a href="#完整标准库实现" class="headerlink" title="完整标准库实现"></a>完整标准库实现</h2><p>均值和中值接口要求完整有限观测；卡尔曼额外接受 None 作为缺失标记。NaN、无穷和布尔值均不作为普通数值吞入。所有方法返回的列表用于展示；在线使用时可只保留相应的窗口或状态。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> statistics</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> deque</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">real</span>(<span class="params">value, name</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(value, <span class="built_in">bool</span>) <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(value, (<span class="built_in">int</span>, <span class="built_in">float</span>)):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; must be real&quot;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        result = <span class="built_in">float</span>(value)</span><br><span class="line">    <span class="keyword">except</span> OverflowError <span class="keyword">as</span> error:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; is too large&quot;</span>) <span class="keyword">from</span> error</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> math.isfinite(result):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; must be finite&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">series</span>(<span class="params">values, missing=<span class="literal">False</span></span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(values, (<span class="built_in">list</span>, <span class="built_in">tuple</span>)) <span class="keyword">or</span> <span class="keyword">not</span> values:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;a nonempty series is required&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> [<span class="literal">None</span> <span class="keyword">if</span> missing <span class="keyword">and</span> v <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">else</span> real(v, <span class="string">&quot;observation&quot;</span>) <span class="keyword">for</span> v <span class="keyword">in</span> values]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">window_size</span>(<span class="params">w, odd=<span class="literal">False</span></span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(w) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> w &lt; <span class="number">1</span> <span class="keyword">or</span> (odd <span class="keyword">and</span> w % <span class="number">2</span> == <span class="number">0</span>):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;window must be positive, and odd for median&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> w</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">checked_sum</span>(<span class="params">values</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">return</span> real(math.fsum(values), <span class="string">&quot;sum&quot;</span>)</span><br><span class="line">    <span class="keyword">except</span> OverflowError <span class="keyword">as</span> error:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;intermediate sum overflow&quot;</span>) <span class="keyword">from</span> error</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">moving_mean</span>(<span class="params">values, window=<span class="number">3</span></span>):</span><br><span class="line">    values, window = series(values), window_size(window)</span><br><span class="line">    history, out, total = deque(), [], <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">for</span> value <span class="keyword">in</span> values:</span><br><span class="line">        removed = history.popleft() <span class="keyword">if</span> <span class="built_in">len</span>(history) == window <span class="keyword">else</span> <span class="number">0.0</span></span><br><span class="line">        history.append(value)</span><br><span class="line">        total = checked_sum((total, value, -removed))</span><br><span class="line">        out.append(real(total/<span class="built_in">len</span>(history), <span class="string">&quot;mean&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exponential</span>(<span class="params">values, alpha=<span class="number">0.5</span></span>):</span><br><span class="line">    values, alpha = series(values), real(alpha, <span class="string">&quot;alpha&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt; alpha &lt;= <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;require 0 &lt; alpha &lt;= 1&quot;</span>)</span><br><span class="line">    state, out = values[<span class="number">0</span>], [values[<span class="number">0</span>]]</span><br><span class="line">    <span class="keyword">for</span> value <span class="keyword">in</span> values[<span class="number">1</span>:]:</span><br><span class="line">        state = checked_sum((alpha*value, (<span class="number">1</span>-alpha)*state))</span><br><span class="line">        out.append(state)</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">moving_median</span>(<span class="params">values, window=<span class="number">3</span></span>):</span><br><span class="line">    values, window = series(values), window_size(window, odd=<span class="literal">True</span>)</span><br><span class="line">    history, out = deque(), []</span><br><span class="line">    <span class="keyword">for</span> value <span class="keyword">in</span> values:</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(history) == window:</span><br><span class="line">            history.popleft()</span><br><span class="line">        history.append(value)</span><br><span class="line">        out.append(real(statistics.median(history), <span class="string">&quot;median&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">kalman</span>(<span class="params">values, q=<span class="number">0.25</span>, r=<span class="number">1.0</span>, mean=<span class="number">0.0</span>, variance=<span class="number">1.0</span></span>):</span><br><span class="line">    values = series(values, missing=<span class="literal">True</span>)</span><br><span class="line">    q, r = real(q, <span class="string">&quot;Q&quot;</span>), real(r, <span class="string">&quot;R&quot;</span>)</span><br><span class="line">    mean, variance = real(mean, <span class="string">&quot;mean&quot;</span>), real(variance, <span class="string">&quot;variance&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> q &lt; <span class="number">0</span> <span class="keyword">or</span> r &lt;= <span class="number">0</span> <span class="keyword">or</span> variance &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;require Q&gt;=0, R&gt;0 and variance&gt;=0&quot;</span>)</span><br><span class="line">    out = []</span><br><span class="line">    <span class="keyword">for</span> value <span class="keyword">in</span> values:</span><br><span class="line">        prediction = mean</span><br><span class="line">        prior = checked_sum((variance, q))</span><br><span class="line">        gain = <span class="number">0.0</span></span><br><span class="line">        mean, variance = prediction, prior</span><br><span class="line">        <span class="keyword">if</span> value <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            gain = prior/checked_sum((prior, r))</span><br><span class="line">            mean = checked_sum(((<span class="number">1</span>-gain)*prediction, gain*value))</span><br><span class="line">            variance = checked_sum(((<span class="number">1</span>-gain)**<span class="number">2</span>*prior, gain*gain*r))</span><br><span class="line">        out.append(&#123;<span class="string">&quot;observation&quot;</span>: value, <span class="string">&quot;prediction&quot;</span>: prediction,</span><br><span class="line">                    <span class="string">&quot;prior_variance&quot;</span>: prior, <span class="string">&quot;gain&quot;</span>: gain,</span><br><span class="line">                    <span class="string">&quot;estimate&quot;</span>: mean, <span class="string">&quot;variance&quot;</span>: variance&#125;)</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    observed = [<span class="number">0</span>, <span class="number">0</span>, <span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">4</span>]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;observed&quot;</span>: observed,</span><br><span class="line">                      <span class="string">&quot;reference&quot;</span>: [<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">4</span>],</span><br><span class="line">                      <span class="string">&quot;mean&quot;</span>: moving_mean(observed),</span><br><span class="line">                      <span class="string">&quot;ema&quot;</span>: exponential(observed),</span><br><span class="line">                      <span class="string">&quot;median&quot;</span>: moving_median(observed),</span><br><span class="line">                      <span class="string">&quot;kalman&quot;</span>: kalman(observed),</span><br><span class="line">                      <span class="string">&quot;hand&quot;</span>: kalman([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], q=<span class="number">1</span>, r=<span class="number">1</span>),</span><br><span class="line">                      <span class="string">&quot;missing&quot;</span>: kalman([<span class="number">1</span>, <span class="literal">None</span>, <span class="number">3</span>], q=<span class="number">1</span>, r=<span class="number">1</span>)&#125;))</span><br></pre></td></tr></table></figure>
+
+<p>滑动和实现的均值为 O(N) 时间、O(W) 工作空间；浮点滑动和仍可能随长序列累积舍入误差，必要时定期重算或使用更稳定的流式统计。指数平滑与标量卡尔曼均为 O(N) 时间、O(1) 状态。这里的中值每步排序，时间 O(N W log W)、工作空间 O(W)，不是高性能在线中位数数据结构。输入副本和返回列表另占 O(N) 空间。</p>
+<p>验证程序 tests&#x2F;verify-filtering-article.cjs 以独立的有理数窗口与显式历史权重核对 600 组序列的 23,489 个位置；对 220 组带缺失的随机模型，用批量高斯二次型消元核对 985 次递归后验均值和方差，并检查因果前缀、平移、Q&#x3D;0、确定初态及 23 类非法输入。图中折线与本文实际计算输出一致；这些检查不证明某个真实设备的噪声满足模型假设。</p>
+<p>验证程序 tests&#x2F;verify-filtering-article.cjs 以独立的有理数窗口与显式历史权重核对 600 组序列的 23,489 个位置；对 220 组带缺失的随机模型，用批量高斯二次型消元核对 985 次递归后验均值和方差，并检查因果前缀、平移、Q&#x3D;0、确定初态及 23 类非法输入。图中折线与本文实际计算输出一致；这些检查不证明某个真实设备的噪声满足模型假设。</p>
+<h2 id="选用与失败边界"><a href="#选用与失败边界" class="headerlink" title="选用与失败边界"></a>选用与失败边界</h2><table>
+<thead>
+<tr>
+<th>情形</th>
+<th>应检查什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>需要真实在线报警</td>
+<td>当前输出有没有读到未来；平滑后报警是否延后</td>
+</tr>
+<tr>
+<td>看到孤立尖峰</td>
+<td>是传感器毛刺还是要检测的真实短事件</td>
+</tr>
+<tr>
+<td>卡尔曼跟踪迟缓</td>
+<td>Q、R 的大小与单位是否合理，状态是否真能用随机游走描述</td>
+</tr>
+<tr>
+<td>卡尔曼被异常值拉走</td>
+<td>普通高斯&#x2F;二阶矩模型不自动具有鲁棒性</td>
+</tr>
+<tr>
+<td>输入有缺失或不等间隔</td>
+<td>缺失要跳过观测更新，不同时间间隔需要对应的状态和 Q</td>
+</tr>
+<tr>
+<td>与某库的结果不同</td>
+<td>先对齐窗口方向、填充方式、初始化和缺失规则</td>
+</tr>
+<tr>
+<td>只看平滑后的图</td>
+<td>同时看原始数据、真实事件和独立验证指标，不能只评“好看”</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html">SciPy filtfilt</a>采用前后双向处理并处理边界，不能当作不看未来的实时实现。本文的四个实现也不是全部滤波算法：频率选择任务还要分析采样率、目标频带和滤波器设计，状态模型复杂时则要扩展状态和观测方程。</p>
+
+<details class="mechanism-check"><summary>自检：缺失观测为什么不能简单填成 0？</summary><p>缺失表示没有新测量信息，随机游走模型只推进预测及不确定性；零则是一条有明确数值、会影响增益修正的观测。两者在概率模型中不是同一事件。</p></details>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/65279.html">https://eulersail.com/esblog/65279.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97/">时间序列</a><a class="post-meta__tags" href="/tags/%E6%BB%A4%E6%B3%A2/">滤波</a><a class="post-meta__tags" href="/tags/%E6%8C%87%E6%95%B0%E5%B9%B3%E6%BB%91/">指数平滑</a><a class="post-meta__tags" href="/tags/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2/">卡尔曼滤波</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/79428.html" title="遗传算法入门 从二进制编码到背包搜索"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">遗传算法入门 从二进制编码到背包搜索</div></div></a></div><div class="next-post pull-right"><a href="/esblog/65198.html" title="多重检验 从最小 p 值到 Holm 校正与家族错误率"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">多重检验 从最小 p 值到 Holm 校正与家族错误率</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div><div><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">110</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">190</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%8C%BA%E5%88%86%E5%9B%9B%E7%B1%BB%E6%96%B9%E6%B3%95"><span class="toc-text">先区分四类方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%A0%E6%9E%9C%E7%A7%BB%E5%8A%A8%E5%B9%B3%E5%9D%87%EF%BC%9A%E7%AA%97%E5%8F%A3%E8%B6%8A%E5%A4%A7%EF%BC%8C%E5%93%8D%E5%BA%94%E8%B6%8A%E6%85%A2"><span class="toc-text">因果移动平均：窗口越大，响应越慢</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%87%E6%95%B0%E5%B9%B3%E6%BB%91%EF%BC%9A%E6%8A%8A%E5%8E%86%E5%8F%B2%E5%8E%8B%E6%88%90%E4%B8%80%E4%B8%AA%E7%8A%B6%E6%80%81"><span class="toc-text">指数平滑：把历史压成一个状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E5%80%BC%E6%BB%A4%E6%B3%A2%EF%BC%9A%E5%8E%BB%E5%B0%96%E5%B3%B0%E4%B9%9F%E5%8F%AF%E8%83%BD%E5%8E%BB%E6%8E%89%E7%9C%9F%E5%AE%9E%E7%9F%AD%E4%BA%8B%E4%BB%B6"><span class="toc-text">中值滤波：去尖峰也可能去掉真实短事件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E4%B8%80%E7%BB%84%E8%A7%82%E6%B5%8B%E6%80%8E%E6%A0%B7%E6%89%8B%E7%AE%97"><span class="toc-text">同一组观测怎样手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E5%8D%A1%E5%B0%94%E6%9B%BC%EF%BC%9A%E5%85%88%E5%86%99%E6%A8%A1%E5%9E%8B%EF%BC%8C%E5%86%8D%E8%AE%A8%E8%AE%BA%E5%A2%9E%E7%9B%8A"><span class="toc-text">一维卡尔曼：先写模型，再讨论增益</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E6%AD%A5%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%80%8E%E6%A0%B7%E6%A0%B8%E5%AF%B9"><span class="toc-text">三步卡尔曼怎样核对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整标准库实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%89%E7%94%A8%E4%B8%8E%E5%A4%B1%E8%B4%A5%E8%BE%B9%E7%95%8C"><span class="toc-text">选用与失败边界</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79428.html" title="遗传算法入门 从二进制编码到背包搜索">遗传算法入门 从二进制编码到背包搜索</a><time datetime="2026-10-18T16:21:00.000Z" title="发表于 2026-10-19 00:21:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65279.html" title="滤波算法入门 从移动平均到一维卡尔曼">滤波算法入门 从移动平均到一维卡尔曼</a><time datetime="2026-10-18T16:20:00.000Z" title="发表于 2026-10-19 00:20:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65198.html" title="多重检验 从最小 p 值到 Holm 校正与家族错误率">多重检验 从最小 p 值到 Holm 校正与家族错误率</a><time datetime="2026-10-18T16:11:00.000Z" title="发表于 2026-10-19 00:11:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72753.html" title="Dropout 原理 从随机掩码到期望损失与梯度">Dropout 原理 从随机掩码到期望损失与梯度</a><time datetime="2026-10-18T16:10:00.000Z" title="发表于 2026-10-19 00:10:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65087.html" title="配对置换检验 从符号翻转到精确 p 值">配对置换检验 从符号翻转到精确 p 值</a><time datetime="2026-10-16T03:01:00.000Z" title="发表于 2026-10-16 11:01:00">2026-10-16</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

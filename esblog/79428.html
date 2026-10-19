@@ -1,0 +1,508 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>遗传算法入门 从二进制编码到背包搜索 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用0-1背包讲清种群、适应度、锦标赛选择、单点交叉、逐位变异与精英保留，附不变量、完整C++17、多种子同评估预算随机基线和精确动态规划参考，不把有限搜索说成全局最优保证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="遗传算法入门 从二进制编码到背包搜索">
+<meta property="og:url" content="https://eulersail.com/esblog/79428.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用0-1背包讲清种群、适应度、锦标赛选择、单点交叉、逐位变异与精英保留，附不变量、完整C++17、多种子同评估预算随机基线和精确动态规划参考，不把有限搜索说成全局最优保证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-18T16:21:00.000Z">
+<meta property="article:modified_time" content="2026-10-18T16:21:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="遗传算法">
+<meta property="article:tag" content="启发式搜索">
+<meta property="article:tag" content="优化">
+<meta property="article:tag" content="背包问题">
+<meta property="article:tag" content="C++17">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/79428.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '遗传算法入门 从二进制编码到背包搜索',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-19 00:21:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261016-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">110</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">190</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">遗传算法入门 从二进制编码到背包搜索</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-18T16:21:00.000Z" title="发表于 2026-10-19 00:21:00">2026-10-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-18T16:21:00.000Z" title="更新于 2026-10-19 00:21:00">2026-10-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="遗传算法入门 从二进制编码到背包搜索" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>此前<a href="/esblog/68219.html">动态规划入门</a>强调状态、转移与最优性证明。遗传算法处理的是另一种搜索思路：维护一批候选解，按目标值选择父代，再用交叉和变异产生新候选。</p>
+<p>本篇归入算法与竞赛的“优化与启发式搜索”方向。它适合用来理解随机优化机制，但不会替代背包的精确算法：我们反而会把小容量动态规划作为参照，测量有限预算下找到了什么、漏掉了什么。</p>
+<span id="more"></span>
+
+
+<section class="mechanism-map" aria-label="遗传算法阅读路线"><div><strong>编码对应方案</strong><p>一位表示选或不选，目标和约束单独计算。</p></div><div><strong>算子定义搜索</strong><p>选择、交叉、变异各有不同职责。</p></div><div><strong>用基线验收</strong><p>同评估预算比较，并报告精确最优值和多种子差异。</p></div></section>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="遗传算法编码交叉与可行性示意图，可横向滚动"><img class="no-lazy" src="/images/posts/genetic-knapsack-operators.svg" width="900" height="520" loading="lazy" alt="父代1000与0110在第二位后交叉得到1010，最后一位变异得到1011并违反容量约束；精英0110保留其价值9"></div><figcaption><strong>新组合不保证更好，精英保留也不保证最优。</strong> 图示采用正文四件物品的手工操作，不是某次随机运行的收敛曲线。<a href="/images/posts/genetic-knapsack-operators.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="先固定问题与二进制编码"><a href="#先固定问题与二进制编码" class="headerlink" title="先固定问题与二进制编码"></a>先固定问题与二进制编码</h2><p>给定 n 件物品，重量 w_i&gt;0，价值 v_i≥0，容量 C≥0。二进制染色体 b∈{0,1}^n 表示方案，b_i&#x3D;1 代表选择第 i 件。目标是最大化 Σv_i b_i，并满足 Σw_i b_i≤C。</p>
+<p>本文适应度定义为：可行时返回价值，不可行时返回 −1。由于所有可行价值非负，它严格区分可行与不可行，但所有不可行解之间没有进一步引导信号；约束很紧时，这可能使搜索效率很差。</p>
+<p>这是一种明确的教学约束策略，不是通用约束优化方案。罚函数、修复算子和可行优先排序都会改变搜索行为，不能在比较时偷偷替换。也不能把任意实数向量的交叉直接当成排列问题的合法操作。</p>
+<h2 id="四个算子分别做什么"><a href="#四个算子分别做什么" class="headerlink" title="四个算子分别做什么"></a>四个算子分别做什么</h2><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>本文规则</th>
+<th>作用及限制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>选择</td>
+<td>有放回抽 3 个个体，取适应度最高者</td>
+<td>偏向当前较好方案，不表示知道全局最优</td>
+</tr>
+<tr>
+<td>交叉</td>
+<td>概率 0.8，在内部随机切一刀</td>
+<td>组合父代前后片段，可能破坏好组合或约束</td>
+</tr>
+<tr>
+<td>变异</td>
+<td>每位独立以 1&#x2F;n 概率翻转</td>
+<td>提供新变化，不是每个子代恰好翻一位</td>
+</tr>
+<tr>
+<td>精英保留</td>
+<td>当前最优个体直接复制到下一代</td>
+<td>保护当前最好值，不维持全部多样性</td>
+</tr>
+</tbody></table>
+<p>逐位变异的期望翻转数是 n×(1&#x2F;n)&#x3D;1，但实际可能是 0、1 或更多。选择也不等于抽样后把父代“用掉”：同一父代可以被多次抽到。</p>
+<p><a target="_blank" rel="noopener" href="https://deap.readthedocs.io/en/master/api/tools.html">DEAP 官方算子文档</a>分别提供了锦标赛选择、单点交叉和逐位翻转；<a target="_blank" rel="noopener" href="https://deap.readthedocs.io/en/master/tutorials/basic/part2.html">官方教程</a>还提醒使用变异、交叉与适应度时要处理个体复制和失效的评分。本文自行实现一个固定变体，不声称与某个库的默认算法完全一致。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[初始化种群 包含一个空背包] --&gt; B[评价每个初始个体]
+  B --&gt; C[直接保留当前精英]
+  C --&gt; D[锦标赛选择两个父代]
+  D --&gt; E[可能进行单点交叉]
+  E --&gt; F[逐位随机变异]
+  F --&gt; G[重新评价子代 包括不可行解]
+  G --&gt; H{新种群满了吗}
+  H -- 否 --&gt; D
+  H -- 是 --&gt; I{达到代数预算了吗}
+  I -- 否 --&gt; C
+  I -- 是 --&gt; J[报告最好方案 评估次数与轨迹]
+  </pre></div>
+
+<h2 id="四件物品怎样手算一次操作"><a href="#四件物品怎样手算一次操作" class="headerlink" title="四件物品怎样手算一次操作"></a>四件物品怎样手算一次操作</h2><p>物品重量为 [2,3,4,5]，价值为 [3,4,5,8]，容量 C&#x3D;7。位串从左到右对应第 1 到第 4 件：</p>
+
+<div class="table-wrap" id="genetic-hand-table" tabindex="0" role="region" aria-label="遗传算法六列手算表">
+
+
+<table>
+<thead>
+<tr>
+<th>候选</th>
+<th>选择物品</th>
+<th align="right">总重量</th>
+<th align="right">总价值</th>
+<th align="right">适应度</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1000</td>
+<td>1</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">3</td>
+<td>父代示例</td>
+</tr>
+<tr>
+<td>0110</td>
+<td>2、3</td>
+<td align="right">7</td>
+<td align="right">9</td>
+<td align="right">9</td>
+<td>可保留的当前精英</td>
+</tr>
+<tr>
+<td>1100</td>
+<td>1、2</td>
+<td align="right">5</td>
+<td align="right">7</td>
+<td align="right">7</td>
+<td>可行候选</td>
+</tr>
+<tr>
+<td>1110</td>
+<td>1、2、3</td>
+<td align="right">9</td>
+<td align="right">12</td>
+<td align="right">−1</td>
+<td>超重，不能只看价值</td>
+</tr>
+<tr>
+<td>1010</td>
+<td>1、3</td>
+<td align="right">6</td>
+<td align="right">8</td>
+<td align="right">8</td>
+<td>1000 与 0110 在第二位后交叉</td>
+</tr>
+<tr>
+<td>1011</td>
+<td>1、3、4</td>
+<td align="right">11</td>
+<td align="right">16</td>
+<td align="right">−1</td>
+<td>上一子代再翻转第 4 位</td>
+</tr>
+<tr>
+<td>1001</td>
+<td>1、4</td>
+<td align="right">7</td>
+<td align="right">11</td>
+<td align="right">11</td>
+<td>此例的精确最优方案</td>
+</tr>
+</tbody></table>
+
+</div>
+
+
+<p>这里是指定父代、切点和变异位置的教学演算，不是伪装成随机抽样的运行日志。一次操作可以变差；保留 0110 只说明当前的 9 不会被这批差子代丢掉，并不意味着已经找到了 1001。</p>
+<h2 id="能证明的是不变量，不是有限步全局最优"><a href="#能证明的是不变量，不是有限步全局最优" class="headerlink" title="能证明的是不变量，不是有限步全局最优"></a>能证明的是不变量，不是有限步全局最优</h2><p>初始化时放入空背包，其价值为 0，保证至少有一个可行候选。若当前精英可行，复制到下一代后仍可行；新个体只有在适应度更高时才能替代它，所以每一代报告的最优值单调不降，且对应一个真正满足约束的位串。</p>
+<p>这个归纳证明没有说“最后等于最优”。如果新生成的个体一直没有探索到更好的区域，精英可能长时间不变；停滞也不能证明已收敛到全局最优。无约束地增加选择压力还可能过早丢掉多样性。</p>
+<h2 id="对比实验必须固定评估预算"><a href="#对比实验必须固定评估预算" class="headerlink" title="对比实验必须固定评估预算"></a>对比实验必须固定评估预算</h2><p>设种群规模 N，迭代 G 代。初始种群调用适应度 N 次；每代直接保留一名精英，另外 N−1 名子代各评价一次。因此总评估次数严格为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B = N + G(N−1)</span><br></pre></td></tr></table></figure>
+
+<p>重复出现的位串仍计一次评估，不使用评分缓存。随机基线也先评价一个空背包，然后独立随机生成 B−1 个位串，保留最佳可行解。精确动态规划单独用于计算参照最优值，其工作不算进这两个搜索算法的 B。</p>
+<p>同样的评估次数不表示运行时间完全相同：遗传算法还有选择、交叉、复制的开销。多种子结果也只描述指定实例和预算，不能证明它优于所有问题上的随机搜索。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[同一组背包数据] --&gt; B[精确容量 DP 得到最优值]
+  A --&gt; C[遗传算法 N 加 G 乘 N减1 次评价]
+  A --&gt; D[随机搜索 同样 B 次评价]
+  C --&gt; E[多个预先规定的种子]
+  D --&gt; E
+  B --&gt; F[核对可行性 目标差距与最优命中次数]
+  E --&gt; F
+  F --&gt; G[只解释这组实验 不夸大成全局保证]
+  </pre></div>
+
+<h2 id="完整-C-17-实现"><a href="#完整-C-17-实现" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h2><p>输入第一行是 n、容量、种群规模、代数、种子数，随后 n 行为重量与价值。代码限制输入规模，避免把教学程序当作无限资源求解器：n≤60、容量≤100000、nC≤2000000、种群 2—128、代数 0—200、种子数 1—50，并限制搜索的总逐位评估工作。</p>
+<p>随机种子从 20261019 依次递增。相同编译器与标准库可复现本实现；C++ 随机分布的具体映射不保证在不同标准库间逐位相同，因此跨实现比较应核对不变量与结果分布，不强求同一条轨迹。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdint&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;random&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdexcept&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;utility&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Problem</span> &#123; <span class="type">int</span> n, capacity; vector&lt;<span class="type">int</span>&gt; weight, value; &#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Individual</span> &#123; vector&lt;<span class="type">int</span>&gt; bits; <span class="type">long</span> <span class="type">long</span> fit; &#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Result</span> &#123; Individual best; <span class="type">long</span> <span class="type">long</span> calls; vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; trace; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">Individual <span class="title">evaluate</span><span class="params">(vector&lt;<span class="type">int</span>&gt; bits, <span class="type">const</span> Problem&amp; p)</span> </span>&#123;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> weight = <span class="number">0</span>, value = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; p.n; ++i) &#123;</span><br><span class="line">        weight += <span class="number">1LL</span> * bits[i] * p.weight[i];</span><br><span class="line">        value += <span class="number">1LL</span> * bits[i] * p.value[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="built_in">move</span>(bits), weight &lt;= p.capacity ? value : <span class="number">-1</span>&#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">random_bits</span><span class="params">(<span class="type">int</span> n, mt19937&amp; rng)</span> </span>&#123;</span><br><span class="line">    <span class="function">bernoulli_distribution <span class="title">bit</span><span class="params">(<span class="number">0.5</span>)</span></span>;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">out</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; x : out) x = <span class="built_in">bit</span>(rng);</span><br><span class="line">    <span class="keyword">return</span> out;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">const</span> Individual&amp; <span class="title">best_of</span><span class="params">(<span class="type">const</span> vector&lt;Individual&gt;&amp; pop)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> *<span class="built_in">max_element</span>(pop.<span class="built_in">begin</span>(), pop.<span class="built_in">end</span>(),</span><br><span class="line">        [](<span class="type">const</span> Individual&amp; a, <span class="type">const</span> Individual&amp; b) &#123; <span class="keyword">return</span> a.fit &lt; b.fit; &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">const</span> Individual&amp; <span class="title">tournament</span><span class="params">(<span class="type">const</span> vector&lt;Individual&gt;&amp; pop, mt19937&amp; rng)</span> </span>&#123;</span><br><span class="line">    <span class="function">uniform_int_distribution&lt;<span class="type">int</span>&gt; <span class="title">pick</span><span class="params">(<span class="number">0</span>, <span class="keyword">static_cast</span>&lt;<span class="type">int</span>&gt;(pop.size())<span class="number">-1</span>)</span></span>;</span><br><span class="line">    <span class="type">int</span> winner = <span class="built_in">pick</span>(rng);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">1</span>; k &lt; <span class="number">3</span>; ++k) &#123;</span><br><span class="line">        <span class="type">int</span> other = <span class="built_in">pick</span>(rng);</span><br><span class="line">        <span class="keyword">if</span> (pop[other].fit &gt; pop[winner].fit) winner = other;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> pop[winner];</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">Result <span class="title">genetic</span><span class="params">(<span class="type">const</span> Problem&amp; p, <span class="type">int</span> size, <span class="type">int</span> generations, <span class="type">uint32_t</span> seed)</span> </span>&#123;</span><br><span class="line">    <span class="function">mt19937 <span class="title">rng</span><span class="params">(seed)</span></span>;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> calls = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">auto</span> score = [&amp;](vector&lt;<span class="type">int</span>&gt; b) &#123; ++calls; <span class="keyword">return</span> <span class="built_in">evaluate</span>(<span class="built_in">move</span>(b), p); &#125;;</span><br><span class="line">    vector&lt;Individual&gt; pop;</span><br><span class="line">    pop.<span class="built_in">push_back</span>(<span class="built_in">score</span>(<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;(p.n, <span class="number">0</span>)));</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; size; ++i) pop.<span class="built_in">push_back</span>(<span class="built_in">score</span>(<span class="built_in">random_bits</span>(p.n, rng)));</span><br><span class="line">    vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; trace&#123;<span class="built_in">best_of</span>(pop).fit&#125;;</span><br><span class="line">    <span class="function">bernoulli_distribution <span class="title">cross</span><span class="params">(<span class="number">0.8</span>)</span>, <span class="title">mutate</span><span class="params">(<span class="number">1.0</span>/p.n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> generation = <span class="number">0</span>; generation &lt; generations; ++generation) &#123;</span><br><span class="line">        vector&lt;Individual&gt; next;</span><br><span class="line">        next.<span class="built_in">reserve</span>(size);</span><br><span class="line">        next.<span class="built_in">push_back</span>(<span class="built_in">best_of</span>(pop));</span><br><span class="line">        <span class="keyword">while</span> (<span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(next.<span class="built_in">size</span>()) &lt; size) &#123;</span><br><span class="line">            <span class="type">const</span> <span class="keyword">auto</span>&amp; a = <span class="built_in">tournament</span>(pop, rng);</span><br><span class="line">            <span class="type">const</span> <span class="keyword">auto</span>&amp; b = <span class="built_in">tournament</span>(pop, rng);</span><br><span class="line">            vector&lt;<span class="type">int</span>&gt; child = a.bits;</span><br><span class="line">            <span class="keyword">if</span> (p.n &gt; <span class="number">1</span> &amp;&amp; <span class="built_in">cross</span>(rng)) &#123;</span><br><span class="line">                <span class="type">int</span> cut = <span class="built_in">uniform_int_distribution</span>&lt;<span class="type">int</span>&gt;(<span class="number">1</span>, p.n<span class="number">-1</span>)(rng);</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> j = cut; j &lt; p.n; ++j) child[j] = b.bits[j];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span>&amp; bit : child) <span class="keyword">if</span> (<span class="built_in">mutate</span>(rng)) bit ^= <span class="number">1</span>;</span><br><span class="line">            next.<span class="built_in">push_back</span>(<span class="built_in">score</span>(<span class="built_in">move</span>(child)));</span><br><span class="line">        &#125;</span><br><span class="line">        pop = <span class="built_in">move</span>(next);</span><br><span class="line">        trace.<span class="built_in">push_back</span>(<span class="built_in">best_of</span>(pop).fit);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="built_in">best_of</span>(pop), calls, <span class="built_in">move</span>(trace)&#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">Result <span class="title">random_search</span><span class="params">(<span class="type">const</span> Problem&amp; p, <span class="type">long</span> <span class="type">long</span> budget, <span class="type">uint32_t</span> seed)</span> </span>&#123;</span><br><span class="line">    <span class="function">mt19937 <span class="title">rng</span><span class="params">(seed)</span></span>;</span><br><span class="line">    Individual best = <span class="built_in">evaluate</span>(<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;(p.n, <span class="number">0</span>), p);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">long</span> <span class="type">long</span> i = <span class="number">1</span>; i &lt; budget; ++i) &#123;</span><br><span class="line">        <span class="keyword">auto</span> candidate = <span class="built_in">evaluate</span>(<span class="built_in">random_bits</span>(p.n, rng), p);</span><br><span class="line">        <span class="keyword">if</span> (candidate.fit &gt; best.fit) best = <span class="built_in">move</span>(candidate);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="built_in">move</span>(best), budget, &#123;&#125;&#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">long</span> <span class="type">long</span> <span class="title">exact_optimum</span><span class="params">(<span class="type">const</span> Problem&amp; p)</span> </span>&#123;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">dp</span><span class="params">(p.capacity+<span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; p.n; ++i)</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> c = p.capacity; c &gt;= p.weight[i]; --c)</span><br><span class="line">            dp[c] = <span class="built_in">max</span>(dp[c], dp[c-p.weight[i]] + p.value[i]);</span><br><span class="line">    <span class="keyword">return</span> dp[p.capacity];</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">string <span class="title">bit_string</span><span class="params">(<span class="type">const</span> Individual&amp; x)</span> </span>&#123;</span><br><span class="line">    string s;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> bit : x.bits) s += <span class="built_in">static_cast</span>&lt;<span class="type">char</span>&gt;(<span class="string">&#x27;0&#x27;</span>+bit);</span><br><span class="line">    <span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Problem p; <span class="type">int</span> size, generations, runs;</span><br><span class="line">        <span class="keyword">if</span> (!(cin &gt;&gt; p.n &gt;&gt; p.capacity &gt;&gt; size &gt;&gt; generations &gt;&gt; runs))</span><br><span class="line">            <span class="keyword">throw</span> <span class="built_in">invalid_argument</span>(<span class="string">&quot;header&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (p.n &lt; <span class="number">1</span> || p.n &gt; <span class="number">60</span> || p.capacity &lt; <span class="number">0</span> || p.capacity &gt; <span class="number">100000</span> ||</span><br><span class="line">            <span class="number">1LL</span>*p.n*p.capacity &gt; <span class="number">2000000</span> || size &lt; <span class="number">2</span> || size &gt; <span class="number">128</span> ||</span><br><span class="line">            generations &lt; <span class="number">0</span> || generations &gt; <span class="number">200</span> || runs &lt; <span class="number">1</span> || runs &gt; <span class="number">50</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="built_in">invalid_argument</span>(<span class="string">&quot;limits&quot;</span>);</span><br><span class="line">        <span class="type">long</span> <span class="type">long</span> budget = size + <span class="number">1LL</span>*generations*(size<span class="number">-1</span>);</span><br><span class="line">        <span class="keyword">if</span> (budget*runs*p.n &gt; <span class="number">50000000</span>) <span class="keyword">throw</span> <span class="built_in">invalid_argument</span>(<span class="string">&quot;work budget&quot;</span>);</span><br><span class="line">        p.weight.<span class="built_in">resize</span>(p.n); p.value.<span class="built_in">resize</span>(p.n);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; p.n; ++i) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!(cin &gt;&gt; p.weight[i] &gt;&gt; p.value[i]) || p.weight[i] &lt; <span class="number">1</span> ||</span><br><span class="line">                p.weight[i] &gt; <span class="number">1000000</span> || p.value[i] &lt; <span class="number">0</span> || p.value[i] &gt; <span class="number">1000000</span>)</span><br><span class="line">                <span class="keyword">throw</span> <span class="built_in">invalid_argument</span>(<span class="string">&quot;item&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        string extra;</span><br><span class="line">        <span class="keyword">if</span> (cin &gt;&gt; extra) <span class="keyword">throw</span> <span class="built_in">invalid_argument</span>(<span class="string">&quot;extra input&quot;</span>);</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;&#123;\&quot;optimum\&quot;:&quot;</span> &lt;&lt; <span class="built_in">exact_optimum</span>(p) &lt;&lt; <span class="string">&quot;,\&quot;budget\&quot;:&quot;</span> &lt;&lt; budget &lt;&lt; <span class="string">&quot;,\&quot;runs\&quot;:[&quot;</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> run = <span class="number">0</span>; run &lt; runs; ++run) &#123;</span><br><span class="line">            <span class="type">uint32_t</span> seed = <span class="number">20261019u</span> + <span class="built_in">static_cast</span>&lt;<span class="type">uint32_t</span>&gt;(run);</span><br><span class="line">            <span class="keyword">auto</span> ga = <span class="built_in">genetic</span>(p, size, generations, seed);</span><br><span class="line">            <span class="keyword">auto</span> baseline = <span class="built_in">random_search</span>(p, budget, seed);</span><br><span class="line">            <span class="keyword">if</span> (run) cout &lt;&lt; <span class="string">&#x27;,&#x27;</span>;</span><br><span class="line">            cout &lt;&lt; <span class="string">&quot;&#123;\&quot;seed\&quot;:&quot;</span> &lt;&lt; seed &lt;&lt; <span class="string">&quot;,\&quot;ga\&quot;:&quot;</span> &lt;&lt; ga.best.fit</span><br><span class="line">                 &lt;&lt; <span class="string">&quot;,\&quot;random\&quot;:&quot;</span> &lt;&lt; baseline.best.fit</span><br><span class="line">                 &lt;&lt; <span class="string">&quot;,\&quot;ga_bits\&quot;:\&quot;&quot;</span> &lt;&lt; <span class="built_in">bit_string</span>(ga.best)</span><br><span class="line">                 &lt;&lt; <span class="string">&quot;\&quot;,\&quot;random_bits\&quot;:\&quot;&quot;</span> &lt;&lt; <span class="built_in">bit_string</span>(baseline.best)</span><br><span class="line">                 &lt;&lt; <span class="string">&quot;\&quot;,\&quot;evaluations\&quot;:&quot;</span> &lt;&lt; ga.calls</span><br><span class="line">                 &lt;&lt; <span class="string">&quot;,\&quot;random_evaluations\&quot;:&quot;</span> &lt;&lt; baseline.calls &lt;&lt; <span class="string">&quot;,\&quot;trace\&quot;:[&quot;</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">size_t</span> j = <span class="number">0</span>; j &lt; ga.trace.<span class="built_in">size</span>(); ++j) &#123;</span><br><span class="line">                <span class="keyword">if</span> (j) cout &lt;&lt; <span class="string">&#x27;,&#x27;</span>;</span><br><span class="line">                cout &lt;&lt; ga.trace[j];</span><br><span class="line">            &#125;</span><br><span class="line">            cout &lt;&lt; <span class="string">&quot;]&#125;&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;]&#125;\n&quot;</span>;</span><br><span class="line">    &#125; <span class="built_in">catch</span> (<span class="type">const</span> exception&amp;) &#123;</span><br><span class="line">        cerr &lt;&lt; <span class="string">&quot;invalid input\n&quot;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译使用 g++ -std&#x3D;c++17 -O2 -Wall -Wextra -pedantic。示例输入：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">12 26 32 40 40</span><br><span class="line">2 3</span><br><span class="line">3 4</span><br><span class="line">4 8</span><br><span class="line">5 8</span><br><span class="line">9 10</span><br><span class="line">7 9</span><br><span class="line">6 7</span><br><span class="line">8 12</span><br><span class="line">10 14</span><br><span class="line">11 16</span><br><span class="line">13 18</span><br><span class="line">1 2</span><br></pre></td></tr></table></figure>
+
+<p>输出包含精确最优值、每个种子的两种结果、可复核位串、评估次数，以及含第 0 代的精英轨迹。应汇总全部 40 个种子，而不是只展示最好的一次。</p>
+<h3 id="这次运行得到了什么"><a href="#这次运行得到了什么" class="headerlink" title="这次运行得到了什么"></a>这次运行得到了什么</h3><p>本机使用 MinGW g++ 13.1.0 和上述编译选项，运行种子 20261019—20261058。精确 DP 最优值为 41，N&#x3D;32、G&#x3D;40，所以两种搜索每个种子都评价 1272 个候选（包含重复位串）：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th align="right">最低最好值</th>
+<th align="right">平均最好值</th>
+<th align="right">最高最好值</th>
+<th align="right">命中最优值</th>
+<th align="right">平均最优差距</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>本文遗传算法</td>
+<td align="right">38</td>
+<td align="right">40.7</td>
+<td align="right">41</td>
+<td align="right">30&#x2F;40</td>
+<td align="right">0.3</td>
+</tr>
+<tr>
+<td>同预算随机搜索</td>
+<td align="right">38</td>
+<td align="right">40.225</td>
+<td align="right">41</td>
+<td align="right">13&#x2F;40</td>
+<td align="right">0.775</td>
+</tr>
+</tbody></table>
+<p>这里的“最好值”是每次运行截至预算结束找到的最佳可行价值。遗传算法有 10 个种子没有达到最优；本实例上的均值较高不能推广成通用优势，也没有衡量真实业务的运行成本。尤其是这个小容量背包，精确 DP 直接给出了最优答案。</p>
+<p>验证程序 tests&#x2F;verify-genetic-article.cjs 无警告编译本文源码，用 180 个随机小实例的全子集穷举核对最优参照，逐项核对返回位串、容量、单调精英轨迹与评估次数；另检查零代、单物品、零容量、40 件物品参考、完整示例复现与 18 类非法输入。</p>
+<h3 id="这次运行得到了什么-1"><a href="#这次运行得到了什么-1" class="headerlink" title="这次运行得到了什么"></a>这次运行得到了什么</h3><p>本机使用 MinGW g++ 13.1.0 和上述编译选项，运行种子 20261019—20261058。精确 DP 最优值为 41，N&#x3D;32、G&#x3D;40，所以两种搜索每个种子都评价 1272 个候选（包含重复位串）：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th align="right">最低最好值</th>
+<th align="right">平均最好值</th>
+<th align="right">最高最好值</th>
+<th align="right">命中最优值</th>
+<th align="right">平均最优差距</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>本文遗传算法</td>
+<td align="right">38</td>
+<td align="right">40.7</td>
+<td align="right">41</td>
+<td align="right">30&#x2F;40</td>
+<td align="right">0.3</td>
+</tr>
+<tr>
+<td>同预算随机搜索</td>
+<td align="right">38</td>
+<td align="right">40.225</td>
+<td align="right">41</td>
+<td align="right">13&#x2F;40</td>
+<td align="right">0.775</td>
+</tr>
+</tbody></table>
+<p>这里的“最好值”是每次运行截至预算结束找到的最佳可行价值。遗传算法有 10 个种子没有达到最优；本实例上的均值较高不能推广成通用优势，也没有衡量真实业务的运行成本。尤其是这个小容量背包，精确 DP 直接给出了最优答案。</p>
+<p>验证程序 tests&#x2F;verify-genetic-article.cjs 无警告编译本文源码，用 180 个随机小实例的全子集穷举核对最优参照，逐项核对返回位串、容量、单调精英轨迹与评估次数；另检查零代、单物品、零容量、40 件物品参考、完整示例复现与 18 类非法输入。</p>
+<p>遗传搜索时间 O((G+1)Nn)，种群空间 O(Nn)，轨迹另占 O(G)。随机基线时间 O(Bn)，候选状态 O(n)。容量 DP 为 O(nC) 时间、O(C) 空间，它是伪多项式算法：当容量足够小时应优先考虑；不能因为它出现在“基线”一栏就说它不实用。</p>
+<h2 id="失败边界与下一步"><a href="#失败边界与下一步" class="headerlink" title="失败边界与下一步"></a>失败边界与下一步</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>优先检查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>最好值很快不再改善</td>
+<td>种群是否过早同质化，而不是立即宣布全局最优</td>
+</tr>
+<tr>
+<td>多数子代不可行</td>
+<td>编码与约束策略是否让可行区域太难到达</td>
+</tr>
+<tr>
+<td>价值很高却超重</td>
+<td>目标与适应度是否把可行性分开处理</td>
+</tr>
+<tr>
+<td>换个种子结果差很多</td>
+<td>报告多种子分布和失败次数，不只选最好种子</td>
+</tr>
+<tr>
+<td>新子代仍沿用父代分数</td>
+<td>必须在交叉和变异后重新评价</td>
+</tr>
+<tr>
+<td>对比其他算法更快</td>
+<td>同时核对评估预算、实际耗时、参数调优成本和参考最优值</td>
+</tr>
+<tr>
+<td>想用在排列或实数优化</td>
+<td>先重新设计合法编码与算子，不照搬二进制切片</td>
+</tr>
+</tbody></table>
+
+<details class="mechanism-check"><summary>自检：精英轨迹一直上升，能否证明最终全局最优？</summary><p>不能。精英保留只证明当前最好值不会丢失。有限预算可能没有访问到更好的方案；小实例可用精确 DP 或穷举计算差距，大实例则需要界、独立基线与重复实验。</p></details>
+
+
+<p>如果需要严格最优性，先回到<a href="/esblog/68219.html">动态规划</a>、<a href="/esblog/51672.html">二分答案</a>和<a href="/esblog/60521.html">贪心证明</a>理解问题结构。启发式搜索的价值在于探索另一类求解方式，而不是取消约束、正确性检查和实验基线。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/79428.html">https://eulersail.com/esblog/79428.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95/">遗传算法</a><a class="post-meta__tags" href="/tags/%E5%90%AF%E5%8F%91%E5%BC%8F%E6%90%9C%E7%B4%A2/">启发式搜索</a><a class="post-meta__tags" href="/tags/%E4%BC%98%E5%8C%96/">优化</a><a class="post-meta__tags" href="/tags/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">背包问题</a><a class="post-meta__tags" href="/tags/C-17/">C++17</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/65279.html" title="滤波算法入门 从移动平均到一维卡尔曼"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">滤波算法入门 从移动平均到一维卡尔曼</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">110</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">190</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%9B%BA%E5%AE%9A%E9%97%AE%E9%A2%98%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%BC%96%E7%A0%81"><span class="toc-text">先固定问题与二进制编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E4%B8%AA%E7%AE%97%E5%AD%90%E5%88%86%E5%88%AB%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-text">四个算子分别做什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E4%BB%B6%E7%89%A9%E5%93%81%E6%80%8E%E6%A0%B7%E6%89%8B%E7%AE%97%E4%B8%80%E6%AC%A1%E6%93%8D%E4%BD%9C"><span class="toc-text">四件物品怎样手算一次操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%BD%E8%AF%81%E6%98%8E%E7%9A%84%E6%98%AF%E4%B8%8D%E5%8F%98%E9%87%8F%EF%BC%8C%E4%B8%8D%E6%98%AF%E6%9C%89%E9%99%90%E6%AD%A5%E5%85%A8%E5%B1%80%E6%9C%80%E4%BC%98"><span class="toc-text">能证明的是不变量，不是有限步全局最优</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E6%AF%94%E5%AE%9E%E9%AA%8C%E5%BF%85%E9%A1%BB%E5%9B%BA%E5%AE%9A%E8%AF%84%E4%BC%B0%E9%A2%84%E7%AE%97"><span class="toc-text">对比实验必须固定评估预算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整 C++17 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E6%AC%A1%E8%BF%90%E8%A1%8C%E5%BE%97%E5%88%B0%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-text">这次运行得到了什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E6%AC%A1%E8%BF%90%E8%A1%8C%E5%BE%97%E5%88%B0%E4%BA%86%E4%BB%80%E4%B9%88-1"><span class="toc-text">这次运行得到了什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%B1%E8%B4%A5%E8%BE%B9%E7%95%8C%E4%B8%8E%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="toc-text">失败边界与下一步</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79428.html" title="遗传算法入门 从二进制编码到背包搜索">遗传算法入门 从二进制编码到背包搜索</a><time datetime="2026-10-18T16:21:00.000Z" title="发表于 2026-10-19 00:21:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65279.html" title="滤波算法入门 从移动平均到一维卡尔曼">滤波算法入门 从移动平均到一维卡尔曼</a><time datetime="2026-10-18T16:20:00.000Z" title="发表于 2026-10-19 00:20:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65198.html" title="多重检验 从最小 p 值到 Holm 校正与家族错误率">多重检验 从最小 p 值到 Holm 校正与家族错误率</a><time datetime="2026-10-18T16:11:00.000Z" title="发表于 2026-10-19 00:11:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72753.html" title="Dropout 原理 从随机掩码到期望损失与梯度">Dropout 原理 从随机掩码到期望损失与梯度</a><time datetime="2026-10-18T16:10:00.000Z" title="发表于 2026-10-19 00:10:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65087.html" title="配对置换检验 从符号翻转到精确 p 值">配对置换检验 从符号翻转到精确 p 值</a><time datetime="2026-10-16T03:01:00.000Z" title="发表于 2026-10-16 11:01:00">2026-10-16</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
