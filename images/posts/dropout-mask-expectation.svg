@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">Dropout 的单次掩码与不同的期望对象</title><desc id="desc">输入2、负1、3经掩码1、0、1及二倍缩放成为4、0、6。平均预测负3，平均损失13大于评估损失4.5。</desc>
+<defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7Z" fill="#176b94"/></marker></defs>
+<style>text{font:26px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#203c50;text-anchor:middle}.small{font-size:22px}.number{font-size:32px;font-weight:700}.box{fill:#fff;stroke:#91b6cc;stroke-width:2}.kept{fill:#d6edf6;stroke:#176b94;stroke-width:2}.dropped{fill:#f7e9df;stroke:#a84b1b;stroke-width:2}.flow{fill:none;stroke:#176b94;stroke-width:3;marker-end:url(#arrow)}</style>
+<rect width="900" height="520" rx="20" fill="#f6f9fc"/>
+<text x="450" y="43">p = 0.5，保留概率 q = 0.5</text><text class="small" x="65" y="103">输入</text>
+<g class="box"><rect x="115" y="66" width="160" height="62" rx="12"/><rect x="370" y="66" width="160" height="62" rx="12"/><rect x="625" y="66" width="160" height="62" rx="12"/></g>
+<text class="number" x="195" y="108">2</text><text class="number" x="450" y="108">−1</text><text class="number" x="705" y="108">3</text>
+<path class="flow" d="M195 134V229M450 134V229M705 134V229"/>
+<rect class="kept" x="115" y="156" width="160" height="49" rx="10"/><rect class="dropped" x="370" y="156" width="160" height="49" rx="10"/><rect class="kept" x="625" y="156" width="160" height="49" rx="10"/>
+<text x="195" y="190">m=1，×2</text><text x="450" y="190">m=0，×0</text><text x="705" y="190">m=1，×2</text><text class="small" x="65" y="276">输出</text>
+<g class="box"><rect x="115" y="236" width="160" height="62" rx="12"/><rect x="370" y="236" width="160" height="62" rx="12"/><rect x="625" y="236" width="160" height="62" rx="12"/></g>
+<text class="number" x="195" y="278">4</text><text class="number" x="450" y="278">0</text><text class="number" x="705" y="278">6</text><path d="M40 322H860" stroke="#b7ccd9"/>
+<text x="450" y="360">八种掩码：E[z]=−3，Var(z)=17</text>
+<text class="small" x="166" y="408">平均训练损失</text><rect x="300" y="384" width="390" height="34" rx="6" fill="#176b94"/><text x="740" y="410">13</text>
+<text class="small" x="166" y="465">评估模式损失</text><rect x="300" y="441" width="135" height="34" rx="6" fill="#a84b1b"/><text x="485" y="467">4.5</text>
+<text class="small" x="450" y="508">条长从零起按损失成比例；不是泛化性能对比</text></svg>

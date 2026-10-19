@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">四个 p 值的 Holm 逐步校正</title><desc id="desc">原始p值0.004、0.012、0.030、0.200，前两步通过，第三步停止。调整p值0.016、0.036、0.060、0.200。</desc>
+<style>text{font:25px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#203c50;text-anchor:middle}.small{font-size:22px}.axis{stroke:#9ab6c8;stroke-width:2}.threshold{stroke:#a84b1b;stroke-width:4}.grid{stroke:#d7e2ea;stroke-dasharray:5 6}</style>
+<rect width="900" height="520" rx="20" fill="#f6f9fc"/><text x="450" y="44">Holm：α=0.05，m=4</text>
+<text class="small" x="330" y="86">原始 p 的共同刻度与逐步阈值标记</text><text class="small" x="650" y="86">原始 p</text><text class="small" x="790" y="86">调整 p</text>
+<path class="grid" d="M215 106V409M340 106V409M465 106V409M590 106V409"/>
+<text x="53" y="145">A</text><rect x="90" y="122" width="10" height="30" rx="3" fill="#176b94"/><path class="threshold" d="M121.25 114V160"/><text x="650" y="147">0.004</text><text x="790" y="147">0.016</text><text class="small" x="316" y="182">阈值 0.0125 · 通过</text>
+<text x="53" y="222">B</text><rect x="90" y="199" width="30" height="30" rx="3" fill="#176b94"/><path class="threshold" d="M131.667 191V237"/><text x="650" y="224">0.012</text><text x="790" y="224">0.036</text><text class="small" x="316" y="259">阈值约 0.016667 · 通过</text>
+<text x="53" y="299">C</text><rect x="90" y="276" width="75" height="30" rx="3" fill="#a84b1b"/><path class="threshold" d="M152.5 268V314"/><text x="650" y="301">0.030</text><text x="790" y="301">0.060</text><text class="small" x="316" y="336">阈值 0.025 · 失败，停止</text>
+<text x="53" y="376">D</text><rect x="90" y="353" width="500" height="30" rx="3" fill="#a8bac6"/><text x="650" y="378">0.200</text><text x="790" y="378">0.200</text>
+<path class="axis" d="M90 409H590"/><text class="small" x="90" y="440">0</text><text class="small" x="215" y="440">0.05</text><text class="small" x="340" y="440">0.10</text><text class="small" x="465" y="440">0.15</text><text class="small" x="590" y="440">0.20</text>
+<text class="small" x="450" y="490">C 未通过后，D 不再继续拒绝；阈值不是效应大小</text></svg>

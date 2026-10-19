@@ -1,0 +1,425 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>多重检验 从最小 p 值到 Holm 校正与家族错误率 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从同时比较多个模型的错误发现风险出发，推导 Bonferroni 与 Holm 的家族错误率控制，手算逐步停止和单调调整 p 值，用独立与完全相关的有限网格实验检查假设边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多重检验 从最小 p 值到 Holm 校正与家族错误率">
+<meta property="og:url" content="https://eulersail.com/esblog/65198.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从同时比较多个模型的错误发现风险出发，推导 Bonferroni 与 Holm 的家族错误率控制，手算逐步停止和单调调整 p 值，用独立与完全相关的有限网格实验检查假设边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-18T16:11:00.000Z">
+<meta property="article:modified_time" content="2026-10-18T16:11:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="统计推断">
+<meta property="article:tag" content="模型评测">
+<meta property="article:tag" content="多重检验">
+<meta property="article:tag" content="Holm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/65198.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '多重检验 从最小 p 值到 Holm 校正与家族错误率',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-19 00:11:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261016-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">108</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">181</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">多重检验 从最小 p 值到 Holm 校正与家族错误率</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-18T16:11:00.000Z" title="发表于 2026-10-19 00:11:00">2026-10-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-18T16:11:00.000Z" title="更新于 2026-10-19 00:11:00">2026-10-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="多重检验 从最小 p 值到 Holm 校正与家族错误率" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/65087.html">配对置换检验</a>说明一次比较的参考分布怎样建立。但如果同时比较十个候选模型、五种指标和多个数据切片，最后只展示最小的那个 p 值，问题已经变了。</p>
+<p>这一篇先固定“哪些检验属于同一组结论”，再定义至少错拒一次的概率，推导 Bonferroni 与 Holm 校正。我们使用合成 p 值检查计算和错误率边界；不会把校正当作修复无效检验或事后挑选的万能步骤。</p>
+<span id="more"></span>
+
+
+<section class="mechanism-map" aria-label="多重检验阅读路线"><div><strong>先固定家族</strong><p>报告哪些模型、指标与切片，不能只留下赢家。</p></div><div><strong>再检查 p 值</strong><p>每个真零假设下的 p 值都要满足有效性条件。</p></div><div><strong>最后逐步校正</strong><p>排序比较，第一次未通过便停止拒绝。</p></div></section>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="Holm 逐步校正图，左右滚动查看"><img class="no-lazy" src="/images/posts/holm-stepdown-family.svg" width="900" height="520" loading="lazy" alt="四个排序p值0.004、0.012、0.030、0.200，前两步通过Holm阈值，第三步停止；调整p值为0.016、0.036、0.060、0.200"></div><figcaption><strong>阈值逐步放宽，停止规则不能跳过。</strong> 数字来自正文四个合成 p 值；颜色表示在 α=0.05 下的决策，不表示效应大小或模型质量。<a href="/images/posts/holm-stepdown-family.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="先定义一个家族，再定义错误率"><a href="#先定义一个家族，再定义错误率" class="headerlink" title="先定义一个家族，再定义错误率"></a>先定义一个家族，再定义错误率</h2><p>一次评估中，预先规定要据以作结论的一组零假设称为一个检验家族。家族可以是“同一数据集上四个新模型分别与基线比较”；也可以包含多个主要指标。应按研究问题事先规定，不能看完结果再把赢家单独称为一个家族。</p>
+<p>记 V 为被错误拒绝的真零假设数量。**家族错误率 FWER&#x3D;P(V≥1)**：只要错拒一次就算这次家族发生错误。它不是每个模型出错的概率，也不是“已拒绝结论中错误比例”的期望；后者属于 FDR 的讨论范围。<a target="_blank" rel="noopener" href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/p.adjust.html">R 官方 p.adjust 文档</a>区分了这两类控制目标。</p>
+<p>本文所需的单项条件是：对于每个真零假设 j，在其成立时，任意 t∈[0,1] 都有 P(p_j≤t)≤t，通常称为有效或超均匀 p 值。精确离散检验可以满足不等式而不恰好服从连续均匀分布。单次检验的交换性、抽样机制或模型假设若不成立，后续校正不能补救。</p>
+<h2 id="多次单独检验为什么会积累风险"><a href="#多次单独检验为什么会积累风险" class="headerlink" title="多次单独检验为什么会积累风险"></a>多次单独检验为什么会积累风险</h2><p>若 m 个零假设都为真，而且 p 值独立且连续均匀，每项用阈值 α，则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">P(至少错拒一次) = 1 − (1−α)^m</span><br></pre></td></tr></table></figure>
+
+<p>例如 m&#x3D;20、α&#x3D;0.05，得到约 0.6415。这个公式需要独立性；共享测试集的多个模型未必满足。它用来展示问题，不是估算任意实际评估的错误率。</p>
+<p>不需要独立性的保守办法来自并集界。每项改用 α&#x2F;m，则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">P(至少错拒一个真零假设)</span><br><span class="line">≤ Σ_&#123;j 为真零假设&#125; P(p_j≤α/m)</span><br><span class="line">≤ m₀ α/m ≤ α</span><br></pre></td></tr></table></figure>
+
+<p>m₀ 是真零假设数量，未知但不超过总数 m。这就是 Bonferroni 控制的基本理由。等价的调整 p 值为 min(1,m p_j)，再和原始 α 比较。</p>
+<h2 id="Holm-怎样逐步放宽阈值"><a href="#Holm-怎样逐步放宽阈值" class="headerlink" title="Holm 怎样逐步放宽阈值"></a>Holm 怎样逐步放宽阈值</h2><p>把 m 个原始 p 值升序排列为 p_(1)≤…≤p_(m)。第 i 步与 α&#x2F;(m−i+1) 比较：若通过便拒绝该零假设，继续下一步；<strong>第一次 p 值大于阈值时，停止，并保留它及后面全部零假设</strong>。本文用“≤”表示通过阈值，边界在代码中保持一致。</p>
+<p>这与把每个排序值分别拿去比较不同。不能在某一步失败后，跳到更宽的阈值重新捞取后面的显著结果。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[事先固定 m 个比较及其有效 p 值] --&gt; B[按 p 值升序排序]
+  B --&gt; C[从第一步开始]
+  C --&gt; D{当前 p 不大于当前阈值吗}
+  D -- 是 --&gt; E[拒绝当前零假设]
+  E --&gt; F{还有未检查项吗}
+  F -- 是 --&gt; G[分母减一 继续下一步]
+  G --&gt; D
+  F -- 否 --&gt; H[结束]
+  D -- 否 --&gt; I[停止 保留当前及后续假设]
+  </pre></div>
+
+<h2 id="四个模型怎样手算调整-p-值"><a href="#四个模型怎样手算调整-p-值" class="headerlink" title="四个模型怎样手算调整 p 值"></a>四个模型怎样手算调整 p 值</h2><p>取四个合成 p 值 A&#x3D;0.004、B&#x3D;0.012、C&#x3D;0.030、D&#x3D;0.200，α&#x3D;0.05。它们不是本站真实模型的实验结果，也不代表效果排名。</p>
+
+<div class="table-wrap" tabindex="0" role="region" aria-label="Holm 七列逐步校正手算表">
+
+
+<table>
+<thead>
+<tr>
+<th>步骤 i</th>
+<th>模型</th>
+<th align="right">原始 p</th>
+<th align="right">剩余数 m−i+1</th>
+<th align="right">Holm 阈值</th>
+<th align="right">累积调整 p</th>
+<th>决策</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>A</td>
+<td align="right">0.004</td>
+<td align="right">4</td>
+<td align="right">0.0125</td>
+<td align="right">0.016</td>
+<td>拒绝</td>
+</tr>
+<tr>
+<td>2</td>
+<td>B</td>
+<td align="right">0.012</td>
+<td align="right">3</td>
+<td align="right">约 0.016667</td>
+<td align="right">0.036</td>
+<td>拒绝</td>
+</tr>
+<tr>
+<td>3</td>
+<td>C</td>
+<td align="right">0.030</td>
+<td align="right">2</td>
+<td align="right">0.025</td>
+<td align="right">0.060</td>
+<td>停止，不拒绝</td>
+</tr>
+<tr>
+<td>4</td>
+<td>D</td>
+<td align="right">0.200</td>
+<td align="right">1</td>
+<td align="right">0.05</td>
+<td align="right">0.200</td>
+<td>已停止，不再继续拒绝</td>
+</tr>
+</tbody></table>
+
+</div>
+
+
+<p>Bonferroni 会给出 [0.016,0.048,0.120,0.800]，本例也拒绝 A、B。Holm 对本例的拒绝数量没有增加，但为后两项给出更小的调整 p 值；不能为了演示“更强”而把 0.048 错写成大于 0.05。</p>
+<p>一般的 Holm 调整值为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">在排序后的第 i 项：</span><br><span class="line">adjusted_(i) = min(1, max_&#123;1≤j≤i&#125; [(m−j+1) p_(j)])</span><br><span class="line">最后映射回原始模型顺序。</span><br></pre></td></tr></table></figure>
+
+<p>这里的累积最大值不能省略。例如 p&#x3D;[0.020,0.021,0.022]，未经累积的乘积为 [0.060,0.042,0.022]，竟然随排序下降；Holm 调整后应全部为 0.060。它保留了“前面失败，后面停止”的一致性。</p>
+<h2 id="为什么真零假设任意相关也能控制"><a href="#为什么真零假设任意相关也能控制" class="headerlink" title="为什么真零假设任意相关也能控制"></a>为什么真零假设任意相关也能控制</h2><p>假定家族中有 m₀≥1 个真零假设。若 Holm 发生了错误拒绝，考虑排序中<strong>第一个被拒绝的真零假设</strong>，位置为 k。它之前至多有 m−m₀ 个假零假设，所以 k≤m−m₀+1，剩余数 m−k+1≥m₀。</p>
+<p>它被拒绝意味着 p_(k)≤α&#x2F;(m−k+1)≤α&#x2F;m₀。由于它也是全部真零假设中最小的 p 值，错误事件包含于“至少一个真零假设的 p≤α&#x2F;m₀”。对 m₀ 个真零假设使用并集界，概率不超过 α。若 m₀&#x3D;0，则 V 恒为零。</p>
+<p>这个论证没有使用各 p 值独立。它需要的是家族固定、每个真零假设的 p 有效，以及按规则停止。<a target="_blank" rel="noopener" href="https://www.jstor.org/stable/4615733">Holm 的原始论文</a>提出逐步拒绝方案；<a target="_blank" rel="noopener" href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/p.adjust.html">R 官方文档</a>也列出 Holm 的家族错误率控制与依赖适用范围。这里“任意相关”不等于“任意错误的 p 值也能用”。</p>
+<p>Holm 至少包含 Bonferroni 的拒绝集合：若某项 p≤α&#x2F;m，排在它前面的值也都≤α&#x2F;m，而各步阈值不小于 α&#x2F;m，所以不会在到达它之前停止。有些输入会多拒绝，有些输入会一样。</p>
+<p>例如 p&#x3D;[0.01,0.02,0.03]、α&#x3D;0.05 时，Bonferroni 调整为 [0.03,0.06,0.09]，只拒绝第一项；Holm 调整为 [0.03,0.04,0.04]，三项都通过。这里比较的是决策规则，并不表示未观测的真零假设数量已知。</p>
+<h2 id="精确网格实验怎样分开独立与依赖"><a href="#精确网格实验怎样分开独立与依赖" class="headerlink" title="精确网格实验怎样分开独立与依赖"></a>精确网格实验怎样分开独立与依赖</h2><p>为让有限枚举可见，下面实验使用 <strong>α&#x3D;0.20，仅为演示</strong>，不是建议把真实评估阈值改大。每个真零假设的 p 从 {1&#x2F;20,2&#x2F;20,…,1} 等概率取值；该分布超均匀，因为其分布函数为 floor(20t)&#x2F;20≤t。</p>
+<p>四个独立 p 值共有 20⁴&#x3D;160000 种等概率组合。全部零假设为真时，Holm 发生至少一次拒绝恰好等价于第一步通过，因此这一个实验可以按最小值直接计数，不必每个组合都完整排序。</p>
+<table>
+<thead>
+<tr>
+<th>全部零假设为真</th>
+<th align="right">未校正 FWER</th>
+<th align="right">Holm FWER</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>四个独立网格 p 值</td>
+<td align="right">94464&#x2F;160000&#x3D;0.5904</td>
+<td align="right">29679&#x2F;160000&#x3D;0.18549375</td>
+</tr>
+<tr>
+<td>四个完全相同的网格 p 值</td>
+<td align="right">4&#x2F;20&#x3D;0.20</td>
+<td align="right">1&#x2F;20&#x3D;0.05</td>
+</tr>
+</tbody></table>
+<p>第二行让四个 p 都等于同一个 U，只有 20 种等概率组合；它说明不能把独立公式机械用于相关检验。两行都不超过 Holm 的目标 0.20，但这些特定枚举本身不证明所有分布上的控制；一般保证来自上一节的证明。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[有效的离散网格 p 值] --&gt; B[四项独立 联合空间十六万种]
+  A --&gt; C[四项共享一个 U 联合空间二十种]
+  B --&gt; D[分别计数未校正与 Holm 的错拒事件]
+  C --&gt; D
+  D --&gt; E[比较 FWER 不把独立公式套到共享 U]
+  E --&gt; F[再用并集界理解一般依赖情形]
+  </pre></div>
+
+<h2 id="完整标准库实现"><a href="#完整标准库实现" class="headerlink" title="完整标准库实现"></a>完整标准库实现</h2><p>校正使用 Fraction，避免手算阈值附近的二进制浮点误差。建议给小数传字符串；若传 float，代码按其十进制字符串解释，并不恢复浮点数在产生前可能丢失的信息。实现拒绝缺失值，不会悄悄删除检验项来缩小家族。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> itertools</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">from</span> fractions <span class="keyword">import</span> Fraction</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">unit</span>(<span class="params">value, name</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(value, <span class="built_in">bool</span>) <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(value, (<span class="built_in">int</span>, <span class="built_in">float</span>, <span class="built_in">str</span>, Fraction)):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; must be numeric&quot;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        result = value <span class="keyword">if</span> <span class="built_in">isinstance</span>(value, Fraction) <span class="keyword">else</span> Fraction(<span class="built_in">str</span>(value))</span><br><span class="line">    <span class="keyword">except</span> (ValueError, ZeroDivisionError) <span class="keyword">as</span> error:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; must be a finite rational number&quot;</span>) <span class="keyword">from</span> error</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= result &lt;= <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot; must lie in [0,1]&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">holm</span>(<span class="params">pvalues, alpha=<span class="string">&quot;0.05&quot;</span></span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(pvalues, (<span class="built_in">list</span>, <span class="built_in">tuple</span>)) <span class="keyword">or</span> <span class="keyword">not</span> pvalues:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;a nonempty fixed family is required&quot;</span>)</span><br><span class="line">    p = [unit(value, <span class="string">&quot;p&quot;</span>) <span class="keyword">for</span> value <span class="keyword">in</span> pvalues]</span><br><span class="line">    alpha = unit(alpha, <span class="string">&quot;alpha&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt; alpha &lt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;require 0 &lt; alpha &lt; 1&quot;</span>)</span><br><span class="line">    m = <span class="built_in">len</span>(p)</span><br><span class="line">    order = <span class="built_in">sorted</span>(<span class="built_in">range</span>(m), key=<span class="keyword">lambda</span> i: (p[i], i))</span><br><span class="line">    adjusted = [Fraction(<span class="number">0</span>)]*m</span><br><span class="line">    running = Fraction(<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">for</span> rank, index <span class="keyword">in</span> <span class="built_in">enumerate</span>(order):</span><br><span class="line">        running = <span class="built_in">max</span>(running, (m-rank)*p[index])</span><br><span class="line">        adjusted[index] = <span class="built_in">min</span>(Fraction(<span class="number">1</span>), running)</span><br><span class="line">    <span class="keyword">return</span> [&#123;<span class="string">&quot;index&quot;</span>: i, <span class="string">&quot;raw&quot;</span>: <span class="built_in">str</span>(p[i]), <span class="string">&quot;adjusted&quot;</span>: <span class="built_in">str</span>(adjusted[i]),</span><br><span class="line">             <span class="string">&quot;reject&quot;</span>: adjusted[i] &lt;= alpha&#125; <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(m)]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">grid_experiment</span>():</span><br><span class="line">    <span class="comment"># Four true nulls; integer indices represent p = k/20 exactly.</span></span><br><span class="line">    grid, m, alpha = <span class="number">20</span>, <span class="number">4</span>, Fraction(<span class="number">1</span>, <span class="number">5</span>)</span><br><span class="line">    raw_limit = (alpha*grid).__floor__()</span><br><span class="line">    first_limit = (alpha*grid/m).__floor__()</span><br><span class="line">    raw_count = corrected_count = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> row <span class="keyword">in</span> itertools.product(<span class="built_in">range</span>(<span class="number">1</span>, grid+<span class="number">1</span>), repeat=m):</span><br><span class="line">        smallest = <span class="built_in">min</span>(row)</span><br><span class="line">        raw_count += smallest &lt;= raw_limit</span><br><span class="line">        corrected_count += smallest &lt;= first_limit</span><br><span class="line">    shared_raw = shared_corrected = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, grid+<span class="number">1</span>):</span><br><span class="line">        shared_raw += Fraction(k, grid) &lt;= alpha</span><br><span class="line">        shared_corrected += <span class="built_in">any</span>(item[<span class="string">&quot;reject&quot;</span>] <span class="keyword">for</span> item <span class="keyword">in</span> holm([Fraction(k, grid)]*m, alpha))</span><br><span class="line">    total = grid**m</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;independent&quot;</span>: &#123;<span class="string">&quot;total&quot;</span>: total, <span class="string">&quot;raw_count&quot;</span>: raw_count,</span><br><span class="line">                            <span class="string">&quot;holm_count&quot;</span>: corrected_count,</span><br><span class="line">                            <span class="string">&quot;raw_fwer&quot;</span>: <span class="built_in">str</span>(Fraction(raw_count, total)),</span><br><span class="line">                            <span class="string">&quot;holm_fwer&quot;</span>: <span class="built_in">str</span>(Fraction(corrected_count, total))&#125;,</span><br><span class="line">            <span class="string">&quot;shared&quot;</span>: &#123;<span class="string">&quot;total&quot;</span>: grid, <span class="string">&quot;raw_count&quot;</span>: shared_raw,</span><br><span class="line">                       <span class="string">&quot;holm_count&quot;</span>: shared_corrected,</span><br><span class="line">                       <span class="string">&quot;raw_fwer&quot;</span>: <span class="built_in">str</span>(Fraction(shared_raw, grid)),</span><br><span class="line">                       <span class="string">&quot;holm_fwer&quot;</span>: <span class="built_in">str</span>(Fraction(shared_corrected, grid))&#125;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;four_models&quot;</span>: holm([<span class="string">&quot;0.004&quot;</span>, <span class="string">&quot;0.012&quot;</span>, <span class="string">&quot;0.030&quot;</span>, <span class="string">&quot;0.200&quot;</span>]),</span><br><span class="line">                      <span class="string">&quot;monotone_example&quot;</span>: holm([<span class="string">&quot;0.020&quot;</span>, <span class="string">&quot;0.021&quot;</span>, <span class="string">&quot;0.022&quot;</span>]),</span><br><span class="line">                      <span class="string">&quot;grid&quot;</span>: grid_experiment()&#125;))</span><br></pre></td></tr></table></figure>
+
+<p>四模型的 adjusted 依次为 2&#x2F;125、9&#x2F;250、3&#x2F;50、1&#x2F;5，即 0.016、0.036、0.060、0.200。只有前两项 reject 为 true。网格计数应与上表一致。</p>
+<p>m 项校正的排序需要 O(m log m) 时间，扫描与结果映射为 O(m)，额外空间 O(m)。网格实验为 O(m·G^m) 时间，额外迭代空间 O(m)；这里只用 G&#x3D;20、m&#x3D;4，不把枚举当作大规模统计工具。</p>
+<p>上述校正复杂度按有理数比较和算术操作的次数计；Fraction 的分子分母位数越大，单次操作本身也会更贵。代码没有把任意精度算术当成固定时间的生产保证。</p>
+<p>上述校正复杂度按有理数比较和算术操作的次数计；Fraction 的分子分母位数越大，单次操作本身也会更贵。代码没有把任意精度算术当成固定时间的生产保证。</p>
+<p>验证程序 tests&#x2F;verify-holm-article.cjs 对 500 个随机家族使用独立的闭合检验参考，穷举 30,964 个非空交集，核对 2,248 个假设的调整值与决策；另检查 8,000 个真假零假设混合配置、20 个相关网格配置、平局和重排不变性及 14 类非法输入。它没有用这些有限例子替代一般 FWER 证明，也没有声称已核实某个真实业务检验的 p 值有效性。</p>
+<h2 id="校正没有替你解决什么"><a href="#校正没有替你解决什么" class="headerlink" title="校正没有替你解决什么"></a>校正没有替你解决什么</h2><table>
+<thead>
+<tr>
+<th>容易误解的情况</th>
+<th>正确边界</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>校正后 p&#x3D;0.04</td>
+<td>不是“零假设有 4% 概率为真”</td>
+</tr>
+<tr>
+<td>没有拒绝零假设</td>
+<td>不是证明模型相同，应同时报告效应差值与不确定性</td>
+</tr>
+<tr>
+<td>只把挑出来的赢家交给函数</td>
+<td>遗漏了选择过程，不能声称控制整个搜索的 FWER</td>
+</tr>
+<tr>
+<td>同一测试集不断看结果直到显著</td>
+<td>固定家族的一次性校正不能自动覆盖可选停止</td>
+</tr>
+<tr>
+<td>把组内相关的行当独立样本</td>
+<td>单项 p 值可能已无效，校正不会修复它</td>
+</tr>
+<tr>
+<td>有些指标其实是事后探索</td>
+<td>明确区分探索和确认，另用独立数据确认结论</td>
+</tr>
+<tr>
+<td>希望控制发现中的错误比例</td>
+<td>那是 FDR 目标，不能把 Holm 的 FWER 结论换个名字</td>
+</tr>
+</tbody></table>
+
+<details class="mechanism-check"><summary>自检：为什么 p=[0.020,0.021,0.022] 不能只保留最后一项？</summary><p>第一步阈值为 0.05/3，0.020 已未通过，Holm 必须停止。直接把最后一项与 0.05 比较会破坏逐步规则；累积最大值使三个调整 p 都为 0.060，与停止决策一致。</p></details>
+
+
+<p>继续阅读<a href="/esblog/64893.html">配对 Bootstrap</a>时，可以把“差值有多大、区间多宽”和“在预先规定的多个检验中是否拒绝”分开报告；<a href="/esblog/64928.html">RAG 回归评测</a>的关键题与分组退步也不应只压缩成一个最小 p 值。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/65198.html">https://eulersail.com/esblog/65198.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E7%BB%9F%E8%AE%A1%E6%8E%A8%E6%96%AD/">统计推断</a><a class="post-meta__tags" href="/tags/%E6%A8%A1%E5%9E%8B%E8%AF%84%E6%B5%8B/">模型评测</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E9%87%8D%E6%A3%80%E9%AA%8C/">多重检验</a><a class="post-meta__tags" href="/tags/Holm/">Holm</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/72753.html" title="Dropout 原理 从随机掩码到期望损失与梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Dropout 原理 从随机掩码到期望损失与梯度</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/64893.html" title="配对 Bootstrap 从模型差值到置信区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-15</div><div class="title">配对 Bootstrap 从模型差值到置信区间</div></div></a></div><div><a href="/esblog/65087.html" title="配对置换检验 从符号翻转到精确 p 值"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-16</div><div class="title">配对置换检验 从符号翻转到精确 p 值</div></div></a></div><div><a href="/esblog/64973.html" title="辛普森悖论 从分组反转到标准化比较"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-15</div><div class="title">辛普森悖论 从分组反转到标准化比较</div></div></a></div><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">108</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">181</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E5%AE%B6%E6%97%8F%EF%BC%8C%E5%86%8D%E5%AE%9A%E4%B9%89%E9%94%99%E8%AF%AF%E7%8E%87"><span class="toc-text">先定义一个家族，再定义错误率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E6%AC%A1%E5%8D%95%E7%8B%AC%E6%A3%80%E9%AA%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E7%A7%AF%E7%B4%AF%E9%A3%8E%E9%99%A9"><span class="toc-text">多次单独检验为什么会积累风险</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Holm-%E6%80%8E%E6%A0%B7%E9%80%90%E6%AD%A5%E6%94%BE%E5%AE%BD%E9%98%88%E5%80%BC"><span class="toc-text">Holm 怎样逐步放宽阈值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E4%B8%AA%E6%A8%A1%E5%9E%8B%E6%80%8E%E6%A0%B7%E6%89%8B%E7%AE%97%E8%B0%83%E6%95%B4-p-%E5%80%BC"><span class="toc-text">四个模型怎样手算调整 p 值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%9C%9F%E9%9B%B6%E5%81%87%E8%AE%BE%E4%BB%BB%E6%84%8F%E7%9B%B8%E5%85%B3%E4%B9%9F%E8%83%BD%E6%8E%A7%E5%88%B6"><span class="toc-text">为什么真零假设任意相关也能控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B2%BE%E7%A1%AE%E7%BD%91%E6%A0%BC%E5%AE%9E%E9%AA%8C%E6%80%8E%E6%A0%B7%E5%88%86%E5%BC%80%E7%8B%AC%E7%AB%8B%E4%B8%8E%E4%BE%9D%E8%B5%96"><span class="toc-text">精确网格实验怎样分开独立与依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整标准库实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%A1%E6%AD%A3%E6%B2%A1%E6%9C%89%E6%9B%BF%E4%BD%A0%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88"><span class="toc-text">校正没有替你解决什么</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65198.html" title="多重检验 从最小 p 值到 Holm 校正与家族错误率">多重检验 从最小 p 值到 Holm 校正与家族错误率</a><time datetime="2026-10-18T16:11:00.000Z" title="发表于 2026-10-19 00:11:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72753.html" title="Dropout 原理 从随机掩码到期望损失与梯度">Dropout 原理 从随机掩码到期望损失与梯度</a><time datetime="2026-10-18T16:10:00.000Z" title="发表于 2026-10-19 00:10:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65087.html" title="配对置换检验 从符号翻转到精确 p 值">配对置换检验 从符号翻转到精确 p 值</a><time datetime="2026-10-16T03:01:00.000Z" title="发表于 2026-10-16 11:01:00">2026-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/90863.html" title="PPO 原理 从概率比到裁剪梯度">PPO 原理 从概率比到裁剪梯度</a><time datetime="2026-10-16T03:00:00.000Z" title="发表于 2026-10-16 11:00:00">2026-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/64973.html" title="辛普森悖论 从分组反转到标准化比较">辛普森悖论 从分组反转到标准化比较</a><time datetime="2026-10-15T11:21:00.000Z" title="发表于 2026-10-15 19:21:00">2026-10-15</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
