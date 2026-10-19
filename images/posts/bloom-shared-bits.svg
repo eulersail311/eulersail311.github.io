@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">共享位如何产生布隆假阳性</title><desc id="desc">A置位1和4，B置位4和6。C查询1和6，两位都为1但C未插入。删除A时清位4会误伤B。</desc>
+<style>text{font:24px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#203c50;text-anchor:middle}.small{font-size:22px}.bit{font-size:32px;font-weight:700}.box{fill:#fff;stroke:#9ab6c8;stroke-width:2}.one{fill:#d6edf6;stroke:#176b94;stroke-width:2}.shared{fill:#f7e9df;stroke:#a84b1b;stroke-width:2}</style>
+<rect width="900" height="520" rx="20" fill="#f6f9fc"/><text x="450" y="37">A→[1,4]，B→[4,6]：插入只置位，不保存键</text>
+<text class="small" x="450" y="75">m=8，k=2；以下位置为手工指定的教学映射</text>
+<text class="small" x="167.5" y="112">0</text><rect class="box" x="135" y="129" width="65" height="60" rx="9"/><text class="bit" x="167.5" y="171">0</text>
+<text class="small" x="247.5" y="112">1</text><rect class="one" x="215" y="129" width="65" height="60" rx="9"/><text class="bit" x="247.5" y="171">1</text>
+<text class="small" x="327.5" y="112">2</text><rect class="box" x="295" y="129" width="65" height="60" rx="9"/><text class="bit" x="327.5" y="171">0</text>
+<text class="small" x="407.5" y="112">3</text><rect class="box" x="375" y="129" width="65" height="60" rx="9"/><text class="bit" x="407.5" y="171">0</text>
+<text class="small" x="487.5" y="112">4</text><rect class="shared" x="455" y="129" width="65" height="60" rx="9"/><text class="bit" x="487.5" y="171">1</text>
+<text class="small" x="567.5" y="112">5</text><rect class="box" x="535" y="129" width="65" height="60" rx="9"/><text class="bit" x="567.5" y="171">0</text>
+<text class="small" x="647.5" y="112">6</text><rect class="one" x="615" y="129" width="65" height="60" rx="9"/><text class="bit" x="647.5" y="171">1</text>
+<text class="small" x="727.5" y="112">7</text><rect class="box" x="695" y="129" width="65" height="60" rx="9"/><text class="bit" x="727.5" y="171">0</text>
+<text class="small" x="488" y="219">共享位 4</text>
+<rect class="box" x="35" y="242" width="395" height="132" rx="14"/><rect class="box" x="470" y="242" width="395" height="132" rx="14"/>
+<text x="232" y="277">C 未插入，查询 [1,6]</text><text class="small" x="232" y="317">两位均为 1 → 可能存在</text><text class="small" x="232" y="353">这次是“假阳性”</text>
+<text x="668" y="277">D 未插入，查询 [0,6]</text><text class="small" x="668" y="317">位 0 为零 → 不存在</text><text class="small" x="668" y="353">可以排除后续读取</text>
+<rect x="35" y="402" width="830" height="98" rx="14" fill="#f7e9df" stroke="#a84b1b"/>
+<text class="small" x="450" y="441">清除 A 的位 1 和 4，会把 B 需要的共享位 4 清掉</text>
+<text class="small" x="450" y="478">B 随后出现错误阴性；基本版本不能这样删除</text></svg>
