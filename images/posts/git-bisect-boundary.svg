@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">Git bisect：唯一边界与跳过歧义</title><desc id="desc">人工线性历史c0到c8，c6引入除零失败。测试c4、c6、c5能定位c6；跳过c6仅能得到c6和c7两个候选。</desc>
+<rect width="900" height="520" rx="20" fill="#f5f8fc"/>
+<g font-family="Arial, Microsoft YaHei, sans-serif" fill="#18324b">
+<text x="32" y="43" font-size="25" font-weight="700">先固定判定器，再缩小提交边界</text>
+<text x="32" y="74" font-size="16">合成故障：20 ÷ denominator 应为 2；c6 起分母为 0</text>
+<path d="M60 126H820" stroke="#8195a8" stroke-width="3"/>
+<g fill="#d6eee4" stroke="#247259" stroke-width="2">
+<circle cx="60" cy="126" r="24"/><circle cx="155" cy="126" r="24"/><circle cx="250" cy="126" r="24"/><circle cx="345" cy="126" r="24"/><circle cx="440" cy="126" r="24"/><circle cx="535" cy="126" r="24"/>
+</g><g fill="#ffe0d8" stroke="#a53d2c" stroke-width="2"><circle cx="630" cy="126" r="24"/><circle cx="725" cy="126" r="24"/><circle cx="820" cy="126" r="24"/></g>
+<g text-anchor="middle" font-size="17" font-weight="700"><text x="60" y="132">c0</text><text x="155" y="132">c1</text><text x="250" y="132">c2</text><text x="345" y="132">c3</text><text x="440" y="132">c4</text><text x="535" y="132">c5</text><text x="630" y="132">c6</text><text x="725" y="132">c7</text><text x="820" y="132">c8</text></g>
+<text x="40" y="179" font-size="16">已知好端</text><text x="583" y="179" font-size="16">真实引入点</text><text x="779" y="179" font-size="16">已知坏端</text>
+<g fill="#fff" stroke="#bdccda"><rect x="30" y="211" width="260" height="136" rx="12"/><rect x="320" y="211" width="260" height="136" rx="12"/><rect x="610" y="211" width="260" height="136" rx="12"/></g>
+<g font-size="18" font-weight="700"><text x="49" y="245">① 测 c4：通过</text><text x="339" y="245">② 测 c6：失败</text><text x="629" y="245">③ 测 c5：通过</text></g>
+<g font-size="17"><text x="49" y="281">候选 c1…c8 → c5…c8</text><text x="339" y="281">候选 c5…c8 → c5、c6</text><text x="629" y="281">候选 c5、c6 → 仅 c6</text></g>
+<g font-size="15" fill="#486077"><text x="49" y="316">左端前移，保留真实边界</text><text x="339" y="316">右端后退，保留真实边界</text><text x="629" y="316">仍需复测并审查差异</text></g>
+<rect x="30" y="371" width="840" height="116" rx="12" fill="#fff0ce" stroke="#c38f29"/>
+<text x="50" y="404" font-size="20" font-weight="700">若跳过 c6：c5 通过 ＋ c7 失败 ≠ c7 就是首坏</text>
+<text x="50" y="437" font-size="17">c6 未知时，c6 或 c7 引入变化都符合已有观测。</text>
+<text x="50" y="467" font-size="17">应报告候选集合 {c6, c7}；跳过提供的是缺失信息。</text>
+</g></svg>

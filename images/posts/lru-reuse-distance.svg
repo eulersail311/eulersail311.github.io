@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">LRU 命中后的重排与复用距离</title><desc id="desc">容量三，先访问A B C，再访问A和D。LRU在命中A后重排为B C A，插入D淘汰B；FIFO命中不重排，插入D淘汰A。</desc>
+<rect width="900" height="520" rx="20" fill="#f5f8fc"/>
+<g font-family="Arial, Microsoft YaHei, sans-serif" fill="#18324b">
+<text x="32" y="43" font-size="25" font-weight="700">命中也改变状态：LRU 记住最近访问</text>
+<text x="32" y="75" font-size="17">容量 C = 3；从左到右为策略规定的淘汰端 → 保留端</text>
+<g fill="#fff" stroke="#bdccda"><rect x="30" y="102" width="840" height="140" rx="12"/><rect x="30" y="260" width="840" height="140" rx="12"/></g>
+<text x="49" y="134" font-size="20" font-weight="700">LRU</text><text x="49" y="169" font-size="16">命中要重排</text>
+<text x="49" y="292" font-size="20" font-weight="700">FIFO</text><text x="49" y="327" font-size="16">命中不重排</text>
+<g font-size="15"><text x="213" y="130">访问 A B C 后</text><text x="452" y="130">再访问 A：命中</text><text x="694" y="130">再访问 D：未命中</text><text x="213" y="288">访问 A B C 后</text><text x="452" y="288">再访问 A：命中</text><text x="694" y="288">再访问 D：未命中</text></g>
+<g fill="#e6edf6" stroke="#8ba3bb"><rect x="210" y="148" width="150" height="46" rx="7"/><rect x="450" y="148" width="150" height="46" rx="7"/><rect x="690" y="148" width="150" height="46" rx="7"/><rect x="210" y="306" width="150" height="46" rx="7"/><rect x="450" y="306" width="150" height="46" rx="7"/><rect x="690" y="306" width="150" height="46" rx="7"/></g>
+<g font-size="23" text-anchor="middle" font-weight="700"><text x="285" y="179">A　B　C</text><text x="525" y="179">B　C　A</text><text x="765" y="179">C　A　D</text><text x="285" y="337">A　B　C</text><text x="525" y="337">A　B　C</text><text x="765" y="337">B　C　D</text></g>
+<g font-size="25" text-anchor="middle" fill="#486077"><text x="405" y="179">→</text><text x="645" y="179">→</text><text x="405" y="337">→</text><text x="645" y="337">→</text></g>
+<g font-size="16"><text x="692" y="224">淘汰 B</text><text x="692" y="382">淘汰 A</text><text x="211" y="224">左端最久未用</text><text x="211" y="382">左端最早插入</text></g>
+<rect x="30" y="422" width="840" height="74" rx="12" fill="#dcefe7" stroke="#6b9e89"/>
+<text x="49" y="451" font-size="18" font-weight="700">A B C A D B 的复用距离：[冷, 冷, 冷, 2, 冷, 3]</text>
+<text x="49" y="480" font-size="16">LRU 命中条件 d &lt; C；数的是间隔中不同键的个数，不是请求总次数。</text>
+</g></svg>
