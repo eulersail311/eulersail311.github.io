@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">主张的来路与版本变化的复核范围</title><desc id="desc">来源分别被摘录和计算使用，两者进入限定范围的主张，再进入文章。修改来源影响全部五个节点，修改摘录只影响三个下游节点。</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#697e99"/></marker></defs>
+<rect width="900" height="520" rx="20" fill="#f6f7fc"/>
+<g font-family="Arial, Microsoft YaHei, sans-serif" fill="#23364f">
+<text x="30" y="43" font-size="25" font-weight="700">一条主张，应当找得到自己的来路</text>
+<text x="30" y="75" font-size="17">箭头表示内容依赖；记录存在，不等于证据已经充分</text>
+<g fill="none" stroke="#697e99" stroke-width="2" marker-end="url(#arrow)"><path d="M210 225L255 145H300"/><path d="M210 225L255 325H300"/><path d="M500 145H535L580 225"/><path d="M500 325H535L580 225"/><path d="M720 225H750"/></g>
+<rect data-node="source-v1" x="30" y="180" width="180" height="90" rx="12" fill="#e3e8fa" stroke="#879ac6"/>
+<rect data-node="excerpt-v1" x="300" y="100" width="200" height="90" rx="12" fill="#fff0cf" stroke="#c6973f"/>
+<rect data-node="calc-v1" x="300" y="280" width="200" height="90" rx="12" fill="#dcefe8" stroke="#6c9d8b"/>
+<rect data-node="claim-v1" x="580" y="180" width="140" height="90" rx="12" fill="#e3e8fa" stroke="#879ac6"/>
+<rect data-node="draft-v1" x="750" y="180" width="120" height="90" rx="12" fill="#e3e8fa" stroke="#879ac6"/>
+<g text-anchor="middle" font-size="19" font-weight="700"><text x="120" y="216">来源 v1</text><text x="400" y="136">摘录 v1</text><text x="400" y="316">计算 v1</text><text x="650" y="216">主张 v1</text><text x="810" y="216">文章 v1</text></g>
+<g text-anchor="middle" font-size="16"><text x="120" y="246">版本 · 定位 · 条件</text><text x="400" y="165">记录观察及适用范围</text><text x="400" y="345">输入 · 单位 · 公式</text><text x="650" y="246">带条件表达</text><text x="810" y="246">面向读者</text></g>
+<rect x="30" y="406" width="840" height="88" rx="12" fill="#fff" stroke="#c2cada"/>
+<text x="50" y="439" font-size="18" font-weight="700">修改来源 → 复核五个节点；只改摘录 → 复核摘录、主张、文章</text>
+<text x="50" y="473" font-size="17">依赖图用于找待复核范围；是否需要改写，仍要检查内容和论证。</text>
+</g></svg>

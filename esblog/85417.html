@@ -1,0 +1,336 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>一级衰减与 Arrhenius 从半衰期到加速老化的边界 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从一级衰减微分方程推导半衰期与阈值时间，用两温度合成数据手算表观活化能，再计算分段温度暴露，明确加速老化模型不能直接替代真实器件寿命验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一级衰减与 Arrhenius 从半衰期到加速老化的边界">
+<meta property="og:url" content="https://eulersail.com/esblog/85417.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从一级衰减微分方程推导半衰期与阈值时间，用两温度合成数据手算表观活化能，再计算分段温度暴露，明确加速老化模型不能直接替代真实器件寿命验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-20T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-20T03:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="反应动力学">
+<meta property="article:tag" content="材料稳定性">
+<meta property="article:tag" content="Arrhenius">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/85417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '一级衰减与 Arrhenius 从半衰期到加速老化的边界',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-20 11:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261016-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">201</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">一级衰减与 Arrhenius 从半衰期到加速老化的边界</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-20T03:00:00.000Z" title="发表于 2026-10-20 11:00:00">2026-10-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-20T03:00:00.000Z" title="更新于 2026-10-20 11:00:00">2026-10-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/">化学与材料</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="一级衰减与 Arrhenius 从半衰期到加速老化的边界" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a href="/esblog/85306.html">钙钛矿太阳能电池</a>一文提醒我们，短时效率保持率与多年户外寿命不是同一个指标。若想进一步理解“加速老化”，先要能回答：下降的是哪一个量，速率怎样定义，温度改变后沿用了哪些假设？</p>
+<p>本文从最简单的一级衰减出发。所有数值曲线都是明确参数下的<strong>教学合成结果</strong>，不是材料或器件实测，也没有用几条高温曲线预测真实产品的服役年限。</p>
+<span id="more"></span>
+
+
+<section class="reading-brief" data-tone="materials" aria-label="衰减模型阅读导航"><div><strong>先写变化规律</strong><p>区分每小时减固定量与减固定比例。</p></div><div><strong>再连接温度</strong><p>使用开尔文，明确速率常数的时间单位。</p></div><div><strong>最后检查外推</strong><p>同一机制和可比较测试条件需要额外证据。</p></div></section>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="两温度一级衰减与分段暴露计算图，可横向滚动"><img class="no-lazy" src="/images/posts/arrhenius-decay-model.svg" width="900" height="560" loading="lazy" alt="合成模型在300K的半衰期为100小时，在330K为50小时；两条曲线从1指数下降，分段暴露需累加速率乘时间"></div><figcaption><strong>曲线描述一个假设模型。</strong> k₃₀₀=ln2/100 h⁻¹，Eₐ/R=3300ln2 K；图中点由下方完整代码计算。归一化量不是实际器件效率。<a href="/images/posts/arrhenius-decay-model.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="一级衰减为什么不是匀速下降"><a href="#一级衰减为什么不是匀速下降" class="headerlink" title="一级衰减为什么不是匀速下降"></a>一级衰减为什么不是匀速下降</h2><p>设 c(t) 是某种反应物的浓度，温度等条件固定，且满足 dc&#x2F;dt&#x3D;−kc，k＞0。分离变量并积分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dc/c = −k dt</span><br><span class="line">ln[c(t)/c(0)] = −kt</span><br><span class="line">r(t) = c(t)/c(0) = exp(−kt)</span><br></pre></td></tr></table></figure>
+
+<p>浓度越低，同一时刻消耗的绝对量越少；相同时间段留下相同比例，而非减去相同数量。每小时固定减去 0.01 的线性模型会在足够长时间后变成负数，与这个方程不同。</p>
+<p>令 r&#x3D;1&#x2F;2，得到半衰期 t₁&#x2F;₂&#x3D;ln2&#x2F;k，与初始浓度无关。<a target="_blank" rel="noopener" href="https://goldbook.iupac.org/terms/view/H02716">IUPAC 的半衰期条目</a>给出了相关术语。这里的积分推导同时说明：只有在一级、恒定 k 的假设下，固定半衰期才自然成立。</p>
+<p>将 r 换为阈值 q（0＜q＜1），得到 t_q&#x3D;−ln(q)&#x2F;k。到 80% 的时间是 −ln(0.8)&#x2F;k，不是半衰期的 80%，也不是效率从 20% 下降到 80%。q 是相对于同一基准的保持比例。</p>
+<p>如果把归一化器件输出拟合为 exp(−kt)，这是额外的经验建模假设：输出不一定与某一种反应物浓度成正比。不能仅凭看起来像指数下降，就宣布已识别唯一降解反应。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[定义被观测量与初始基准] --&gt; B{一级且速率恒定可用吗}
+  B -- 作为教学假设 --&gt; C[写出 dc除以dt等于负kc]
+  C --&gt; D[积分得到指数保持率]
+  D --&gt; E[给定阈值求到达时间]
+  B -- 实测尚未支持 --&gt; F[比较机制 噪声 与备选模型]
+  E --&gt; G[模型计算不等于器件寿命认证]
+  </pre></div>
+
+<h2 id="温度怎样进入速率常数"><a href="#温度怎样进入速率常数" class="headerlink" title="温度怎样进入速率常数"></a>温度怎样进入速率常数</h2><p><a target="_blank" rel="noopener" href="https://goldbook.iupac.org/terms/view/A00446">IUPAC 的 Arrhenius 方程定义</a>使用绝对温度 T：k&#x3D;A exp[−Eₐ&#x2F;(RT)]，在原始形式中将 A 与 Eₐ 视为温度无关参数。R 取 8.314462618 J·mol⁻¹·K⁻¹，Eₐ 用 J&#x2F;mol。</p>
+<p>对同一机制、同一参数适用区间，用参考温度 T_ref 消去 A，计算更方便：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln[k(T)/k_ref] = (Eₐ/R) × (1/T_ref − 1/T)</span><br><span class="line">Eₐ = R × [ln k₂ − ln k₁] / (1/T₁ − 1/T₂)</span><br></pre></td></tr></table></figure>
+
+<p>当 Eₐ＞0、T₂＞T₁ 时，分母为正，较高温度的速率更大。摄氏度必须先加 273.15 转成 K；对摄氏温度直接取倒数会改变关系。两个 k 也必须使用相同时间单位。</p>
+<p>两点总能确定一条直线，不能据此检验 ln k 对 1&#x2F;T 是否线性。实际拟合还需要多个温度、重复样品、误差模型和机制证据；温度太接近时，分母很小，测量误差会被放大。</p>
+<h2 id="两个温度怎样手算"><a href="#两个温度怎样手算" class="headerlink" title="两个温度怎样手算"></a>两个温度怎样手算</h2><p>人为设定 T_ref&#x3D;300 K，k_ref&#x3D;ln2&#x2F;100 h⁻¹，并设 Eₐ&#x2F;R&#x3D;3300ln2 K。则从 300 K 升至 330 K：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ln(k₃₃₀/k₃₀₀) = 3300ln2 × (1/300 − 1/330) = ln2</span><br><span class="line">k₃₃₀ = 2k₃₀₀</span><br><span class="line">Eₐ = 3300Rln2，约 19.02 kJ/mol</span><br></pre></td></tr></table></figure>
+
+
+<div class="table-wrap" id="arrhenius-hand-table" tabindex="0" role="region" aria-label="两温度六列衰减手算表">
+
+
+<table>
+<thead>
+<tr>
+<th>温度</th>
+<th>k &#x2F; h⁻¹</th>
+<th>50 h 保持率</th>
+<th>100 h 保持率</th>
+<th>半衰期 &#x2F; h</th>
+<th>到 80% 的时间 &#x2F; h</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>300 K</td>
+<td>ln2&#x2F;100 ≈ 0.00693147</td>
+<td>2⁻¹ᐟ² ≈ 0.707107</td>
+<td>0.5</td>
+<td>100</td>
+<td>32.1928</td>
+</tr>
+<tr>
+<td>330 K</td>
+<td>ln2&#x2F;50 ≈ 0.01386294</td>
+<td>0.5</td>
+<td>0.25</td>
+<td>50</td>
+<td>16.0964</td>
+</tr>
+</tbody></table>
+
+</div>
+
+
+<p>两温度速率比恰好为 2 是合成参数的设计结果，不是“每升高 30 K 所有材料都快两倍”的经验规律。</p>
+<h2 id="温度变化时先累计暴露"><a href="#温度变化时先累计暴露" class="headerlink" title="温度变化时先累计暴露"></a>温度变化时先累计暴露</h2><p>如果仍假设只有当前温度影响 k，没有恢复或路径依赖，那么分段恒温的累计暴露量 H&#x3D;Σk(T_i)Δt_i，r&#x3D;exp(−H)。每段按自己的速率推进；H 无量纲。</p>
+<p>先 300 K 放 50 h，再 330 K 放 50 h，H&#x3D;0.5ln2+ln2&#x3D;1.5ln2，因此 r&#x3D;2^(-1.5)≈0.353553。调换两段顺序在这个模型中得到相同结果。真实材料若出现不可逆相变、裂纹或恢复过程，这个可交换性可能不成立。</p>
+<p>把两段简化为“平均 315 K、共 100 h”，一般会得到不同结果，因为 k(T) 非线性。程序会同时输出两种计算，避免把平均温度代入当作精确积分。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[分段时间与开尔文温度] --&gt; B[逐段计算 k]
+  B --&gt; C[逐段求 k乘时间]
+  C --&gt; D[求和得到无量纲 H]
+  D --&gt; E[保持率等于 exp负H]
+  A --&gt; F[只计算平均温度]
+  F --&gt; G[会丢失非线性温度响应]
+  </pre></div>
+
+<h2 id="完整标准库实验"><a href="#完整标准库实验" class="headerlink" title="完整标准库实验"></a>完整标准库实验</h2><p>代码刻意限制教学参数范围：温度 200…500 K，参考速率 10⁻¹²…10³ h⁻¹，非负表观活化能至 200 kJ&#x2F;mol，单段时间至 10⁶ h。它们是数值输入护栏，不是材料工作范围建议。很大的累计暴露可让浮点 exp 下溢为 0，这是数值极限，不是测到了绝对零浓度。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line">R = <span class="number">8.314462618</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">number</span>(<span class="params">value, low, high, name</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(value) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        value = <span class="built_in">float</span>(value)</span><br><span class="line">    <span class="keyword">except</span> OverflowError:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name) <span class="keyword">from</span> <span class="literal">None</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> math.isfinite(value) <span class="keyword">or</span> <span class="keyword">not</span> low &lt;= value &lt;= high:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name)</span><br><span class="line">    <span class="keyword">return</span> value</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rate</span>(<span class="params">temperature, k_ref, ea, t_ref=<span class="number">300.0</span></span>):</span><br><span class="line">    t = number(temperature, <span class="number">200</span>, <span class="number">500</span>, <span class="string">&#x27;temperature in K&#x27;</span>)</span><br><span class="line">    ref = number(t_ref, <span class="number">200</span>, <span class="number">500</span>, <span class="string">&#x27;reference temperature in K&#x27;</span>)</span><br><span class="line">    k = number(k_ref, <span class="number">1e-12</span>, <span class="number">1e3</span>, <span class="string">&#x27;reference rate per hour&#x27;</span>)</span><br><span class="line">    energy = number(ea, <span class="number">0</span>, <span class="number">200000</span>, <span class="string">&#x27;activation energy in J/mol&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> math.exp(math.log(k) + energy / R * (<span class="number">1</span> / ref - <span class="number">1</span> / t))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">threshold_time</span>(<span class="params">fraction, k</span>):</span><br><span class="line">    q = number(fraction, <span class="number">1e-12</span>, <span class="number">1</span> - <span class="number">1e-12</span>, <span class="string">&#x27;fraction&#x27;</span>)</span><br><span class="line">    k = number(k, <span class="number">1e-12</span>, <span class="number">1e3</span>, <span class="string">&#x27;rate per hour&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> -math.log(q) / k</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">activation_energy</span>(<span class="params">t1, k1, t2, k2</span>):</span><br><span class="line">    t1 = number(t1, <span class="number">200</span>, <span class="number">500</span>, <span class="string">&#x27;T1&#x27;</span>)</span><br><span class="line">    t2 = number(t2, <span class="number">200</span>, <span class="number">500</span>, <span class="string">&#x27;T2&#x27;</span>)</span><br><span class="line">    k1 = number(k1, <span class="number">1e-12</span>, <span class="number">1e3</span>, <span class="string">&#x27;k1&#x27;</span>)</span><br><span class="line">    k2 = number(k2, <span class="number">1e-12</span>, <span class="number">1e3</span>, <span class="string">&#x27;k2&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span> math.isclose(t1, t2, rel_tol=<span class="number">1e-12</span>):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&#x27;temperatures too close&#x27;</span>)</span><br><span class="line">    energy = R * (math.log(k2) - math.log(k1)) / (<span class="number">1</span> / t1 - <span class="number">1</span> / t2)</span><br><span class="line">    <span class="keyword">return</span> number(energy, <span class="number">0</span>, <span class="number">200000</span>, <span class="string">&#x27;nonnegative apparent energy&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exposure</span>(<span class="params">segments, k_ref, ea, t_ref=<span class="number">300.0</span></span>):</span><br><span class="line">    <span class="comment"># Validate model parameters even for an empty exposure.</span></span><br><span class="line">    rate(t_ref, k_ref, ea, t_ref)</span><br><span class="line">    terms = []</span><br><span class="line">    <span class="keyword">for</span> duration, temperature <span class="keyword">in</span> segments:</span><br><span class="line">        dt = number(duration, <span class="number">0</span>, <span class="number">1e6</span>, <span class="string">&#x27;duration in hours&#x27;</span>)</span><br><span class="line">        terms.append(dt * rate(temperature, k_ref, ea, t_ref))</span><br><span class="line">    total = math.fsum(terms)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&#x27;H&#x27;</span>: total, <span class="string">&#x27;retention&#x27;</span>: math.exp(-total)&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    k0 = math.log(<span class="number">2</span>) / <span class="number">100</span></span><br><span class="line">    ea = <span class="number">3300</span> * R * math.log(<span class="number">2</span>)</span><br><span class="line">    table = []</span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> (<span class="number">300</span>, <span class="number">330</span>):</span><br><span class="line">        k = rate(t, k0, ea)</span><br><span class="line">        table.append(&#123;<span class="string">&#x27;T&#x27;</span>: t, <span class="string">&#x27;k&#x27;</span>: k, <span class="string">&#x27;r50&#x27;</span>: math.exp(-<span class="number">50</span>*k),</span><br><span class="line">                      <span class="string">&#x27;r100&#x27;</span>: math.exp(-<span class="number">100</span>*k),</span><br><span class="line">                      <span class="string">&#x27;half&#x27;</span>: threshold_time(<span class="number">.5</span>, k),</span><br><span class="line">                      <span class="string">&#x27;t80&#x27;</span>: threshold_time(<span class="number">.8</span>, k)&#125;)</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&#x27;table&#x27;</span>: table, <span class="string">&#x27;ea&#x27;</span>: ea,</span><br><span class="line">                      <span class="string">&#x27;inferred_ea&#x27;</span>: activation_energy(<span class="number">300</span>, k0, <span class="number">330</span>, <span class="number">2</span>*k0),</span><br><span class="line">                      <span class="string">&#x27;segments&#x27;</span>: exposure([(<span class="number">50</span>,<span class="number">300</span>),(<span class="number">50</span>,<span class="number">330</span>)], k0, ea),</span><br><span class="line">                      <span class="string">&#x27;mean_temperature&#x27;</span>: exposure([(<span class="number">100</span>,<span class="number">315</span>)], k0, ea)&#125;, indent=<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+<h2 id="怎样验证计算，怎样审查外推"><a href="#怎样验证计算，怎样审查外推" class="headerlink" title="怎样验证计算，怎样审查外推"></a>怎样验证计算，怎样审查外推</h2><p>验证程序用独立的高精度十进制对数与指数核对参数、阈值和分段结果；还检查恒温拆段、调换分段、时间缩放和温度&#x2F;速率单位的边界。这里验证的是算术实现，不是某种真实材料满足一级模型或 Arrhenius 外推。</p>
+<p>求 M 段暴露的时间 O(M)，当前代码为提高求和精度保存 M 个项，额外空间 O(M)。单段公式是 O(1)；没有拟合仪器噪声、生成置信区间或识别多阶段机制。</p>
+<p>阅读真实光伏稳定性结果时，还应记录光照、湿度、气氛、负载、封装、归一化起点和恢复过程。<a target="_blank" rel="noopener" href="https://ddd.uab.cat/pub/artpub/2020/233995/natene_a2020v5p35.pdf">2020 年 ISOS 共识原文的机构存档</a>强调了测试和报告条件的可比性，并讨论多种应力及可恢复变化；它并不把实验室协议当作户外寿命认证。本文只用该文说明报告边界，没有把它的器件数据拿来拟合上述合成模型。</p>
+
+<details class="mechanism-check"><summary>自检：两条高温曲线拟合很好，就能写成户外可用二十年吗？</summary><p>不能。还需要确认外推区间的失效机制、湿度和光照等应力、封装与负载条件、恢复和多阶段变化，并处理样品差异及预测不确定性。公式算得准确，只说明在给定假设下计算正确。</p></details>
+
+
+<p>回看<a href="/esblog/85306.html">钙钛矿效率与稳定性</a>，把保持率与绝对效率分开；写读书笔记时，可以用<a href="/esblog/70735.html">引用溯源与主张边界</a>区分原文报告、自己的计算和外推判断。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/85417.html">https://eulersail.com/esblog/85417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%8F%8D%E5%BA%94%E5%8A%A8%E5%8A%9B%E5%AD%A6/">反应动力学</a><a class="post-meta__tags" href="/tags/%E6%9D%90%E6%96%99%E7%A8%B3%E5%AE%9A%E6%80%A7/">材料稳定性</a><a class="post-meta__tags" href="/tags/Arrhenius/">Arrhenius</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/70735.html" title="引用溯源 从摘录到主张边界与版本影响"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">引用溯源 从摘录到主张边界与版本影响</div></div></a></div><div class="next-post pull-right"><a href="/esblog/46182.html" title="LRU 缓存 从访问顺序到复用距离与淘汰边界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LRU 缓存 从访问顺序到复用距离与淘汰边界</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div><div><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">201</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BA%A7%E8%A1%B0%E5%87%8F%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%98%AF%E5%8C%80%E9%80%9F%E4%B8%8B%E9%99%8D"><span class="toc-text">一级衰减为什么不是匀速下降</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B8%A9%E5%BA%A6%E6%80%8E%E6%A0%B7%E8%BF%9B%E5%85%A5%E9%80%9F%E7%8E%87%E5%B8%B8%E6%95%B0"><span class="toc-text">温度怎样进入速率常数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E6%B8%A9%E5%BA%A6%E6%80%8E%E6%A0%B7%E6%89%8B%E7%AE%97"><span class="toc-text">两个温度怎样手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B8%A9%E5%BA%A6%E5%8F%98%E5%8C%96%E6%97%B6%E5%85%88%E7%B4%AF%E8%AE%A1%E6%9A%B4%E9%9C%B2"><span class="toc-text">温度变化时先累计暴露</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E9%AA%8C"><span class="toc-text">完整标准库实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%8E%E6%A0%B7%E9%AA%8C%E8%AF%81%E8%AE%A1%E7%AE%97%EF%BC%8C%E6%80%8E%E6%A0%B7%E5%AE%A1%E6%9F%A5%E5%A4%96%E6%8E%A8"><span class="toc-text">怎样验证计算，怎样审查外推</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/70735.html" title="引用溯源 从摘录到主张边界与版本影响">引用溯源 从摘录到主张边界与版本影响</a><time datetime="2026-10-20T03:01:00.000Z" title="发表于 2026-10-20 11:01:00">2026-10-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85417.html" title="一级衰减与 Arrhenius 从半衰期到加速老化的边界">一级衰减与 Arrhenius 从半衰期到加速老化的边界</a><time datetime="2026-10-20T03:00:00.000Z" title="发表于 2026-10-20 11:00:00">2026-10-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46182.html" title="LRU 缓存 从访问顺序到复用距离与淘汰边界">LRU 缓存 从访问顺序到复用距离与淘汰边界</a><time datetime="2026-10-20T01:01:00.000Z" title="发表于 2026-10-20 09:01:00">2026-10-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/52847.html" title="Git bisect 从判定器到首个坏提交">Git bisect 从判定器到首个坏提交</a><time datetime="2026-10-20T01:00:00.000Z" title="发表于 2026-10-20 09:00:00">2026-10-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/45973.html" title="布隆过滤器 从位数组到误判概率与精确枚举">布隆过滤器 从位数组到误判概率与精确枚举</a><time datetime="2026-10-18T16:31:00.000Z" title="发表于 2026-10-19 00:31:00">2026-10-19</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

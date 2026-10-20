@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="title desc">
+<title id="title">一级衰减的合成曲线与分段温度暴露</title><desc id="desc">假设300K的半衰期100小时、330K的半衰期50小时。两条指数曲线由明确参数计算，分段温度不能用平均温度精确替代。</desc>
+<rect width="900" height="560" rx="20" fill="#f5f8fc"/>
+<g font-family="Arial, Microsoft YaHei, sans-serif" fill="#23364f">
+<text x="30" y="43" font-size="25" font-weight="700">先算模型，再问材料是否满足假设</text>
+<text x="30" y="75" font-size="17">教学合成数据 · 恒温一级衰减 · r(t) = exp(−kt)</text>
+<g stroke="#d2dce7" stroke-width="1"><path d="M60 140H540M60 188H540M60 236H540M60 284H540M60 332H540M60 380H540"/></g>
+<path d="M60 126V380H552" fill="none" stroke="#6c8197" stroke-width="2"/>
+<g font-size="15" text-anchor="end"><text x="49" y="145">1.0</text><text x="49" y="193">0.8</text><text x="49" y="241">0.6</text><text x="49" y="289">0.4</text><text x="49" y="337">0.2</text><text x="49" y="385">0</text></g>
+<g font-size="15" text-anchor="middle"><text x="60" y="407">0</text><text x="180" y="407">50</text><text x="300" y="407">100</text><text x="420" y="407">150</text><text x="540" y="407">200</text></g>
+<text x="64" y="115" font-size="16">归一化量 r</text><text x="450" y="431" font-size="16">时间 / h</text>
+<polyline data-temperature="300" points="60.00000,140.00000 84.00000,156.07208 108.00000,171.06786 132.00000,185.05942 156.00000,198.11401 180.00000,210.29437 204.00000,221.65905 228.00000,232.26267 252.00000,242.15620 276.00000,251.38718 300.00000,260.00000 324.00000,268.03604 348.00000,275.53393 372.00000,282.52971 396.00000,289.05701 420.00000,295.14719 444.00000,300.82953 468.00000,306.13134 492.00000,311.07810 516.00000,315.69359 540.00000,320.00000" fill="none" stroke="#2468b0" stroke-width="3"/>
+<polyline data-temperature="330" points="60.00000,140.00000 84.00000,171.06786 108.00000,198.11401 132.00000,221.65905 156.00000,242.15620 180.00000,260.00000 204.00000,275.53393 228.00000,289.05701 252.00000,300.82953 276.00000,311.07810 300.00000,320.00000 324.00000,327.76697 348.00000,334.52850 372.00000,340.41476 396.00000,345.53905 420.00000,350.00000 444.00000,353.88348 468.00000,357.26425 492.00000,360.20738 516.00000,362.76952 540.00000,365.00000" fill="none" stroke="#be5339" stroke-width="3"/>
+<circle cx="300" cy="260" r="5" fill="#2468b0"/><circle cx="180" cy="260" r="5" fill="#be5339"/>
+<rect x="592" y="107" width="278" height="310" rx="12" fill="#fff" stroke="#bdcddd"/>
+<path d="M612 140H650" stroke="#2468b0" stroke-width="3"/><text x="661" y="146" font-size="18">300 K：较慢</text>
+<text x="612" y="181" font-size="17">半衰期 = 100 h</text><text x="612" y="210" font-size="17">到 80% ≈ 32.1928 h</text>
+<path d="M612 255H650" stroke="#be5339" stroke-width="3"/><text x="661" y="261" font-size="18">330 K：较快</text>
+<text x="612" y="296" font-size="17">半衰期 = 50 h</text><text x="612" y="325" font-size="17">到 80% ≈ 16.0964 h</text>
+<text x="612" y="370" font-size="16">两倍速率是参数设计结果</text><text x="612" y="396" font-size="16">不代表通用材料经验规则</text>
+<rect x="30" y="454" width="840" height="80" rx="12" fill="#e5eee8" stroke="#9bb1a4"/>
+<text x="49" y="485" font-size="18" font-weight="700">300 K 暴露 50 h，再于 330 K 暴露 50 h：累加 H = Σ k(T)Δt</text>
+<text x="49" y="516" font-size="17">得到保持率 0.353553；改用平均 315 K 会得到 0.369143。</text>
+</g></svg>
