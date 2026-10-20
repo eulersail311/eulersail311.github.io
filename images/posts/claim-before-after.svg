@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" role="img" aria-labelledby="title desc"><title id="title">把过强结论改成有范围的表述</title><desc id="desc">合成记录20.0%到18.0%，只能直接计算100小时保持率90%，不能据此证明长期户外寿命。</desc><defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#61758e"/></marker></defs><rect width="900" height="460" rx="20" fill="#f5f7fb"/><g font-family="Arial, Microsoft YaHei, sans-serif" fill="#22364d">
+<text x="30" y="42" font-size="25" font-weight="700">同一条记录，能写到哪一步？</text>
+<text x="30" y="75" font-size="17">教学样例：初值 20.0%，100 h 末值 18.0%；没有户外长期数据</text>
+<rect x="30" y="104" width="405" height="260" rx="12" fill="#fff" stroke="#ce9486"/>
+<rect x="465" y="104" width="405" height="260" rx="12" fill="#fff" stroke="#81aa99"/>
+<text x="50" y="139" font-size="18" font-weight="700" fill="#a6422f">修改前 · 外推缺少证据</text>
+<text x="485" y="139" font-size="18" font-weight="700" fill="#24694f">修改后 · 条件可以检查</text>
+<rect x="50" y="160" width="365" height="90" rx="7" fill="#fff0e9"/>
+<text x="65" y="191" font-size="20">“保持率高，说明已经可以</text><text x="65" y="224" font-size="20">长期户外运行。”</text>
+<path d="M65 230H249" stroke="#ad4935" stroke-width="2"/>
+<rect x="485" y="160" width="365" height="90" rx="7" fill="#e5f1ea"/>
+<text x="500" y="191" font-size="20">“在所列测试条件下，</text><text x="500" y="224" font-size="20">100 h 保持率为 90%。”</text>
+<text x="50" y="287" font-size="17">还缺什么？</text><text x="50" y="319" font-size="17">户外环境、时间、样品与失效机制</text>
+<text x="485" y="287" font-size="17">读者能核对什么？</text><text x="485" y="319" font-size="17">测试条件、观察时长、初值与末值</text>
+<rect x="30" y="388" width="840" height="48" rx="10" fill="#e8edf6"/>
+<text x="50" y="419" font-size="17">先写清观察和计算，再单独讨论解释；一句话不必承担整条推理链。</text></g></svg>

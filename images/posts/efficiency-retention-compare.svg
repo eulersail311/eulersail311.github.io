@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480" role="img" aria-labelledby="title desc"><title id="title">保持率不是最终效率</title><desc id="desc">甲起始25%保留90%得到22.5%，乙起始23%保留98%得到22.54%；两者末值接近但不能据此判断寿命。</desc><defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#61758e"/></marker></defs><rect width="900" height="480" rx="20" fill="#f5f7fb"/><g font-family="Arial, Microsoft YaHei, sans-serif" fill="#22364d">
+<text x="30" y="42" font-size="25" font-weight="700">保持率更高，末值却不一定高很多</text>
+<text x="30" y="75" font-size="17">人为设定的教学数据；两组条形均从零开始，使用同一刻度</text>
+<g font-size="18" font-weight="700"><text x="180" y="120">初始效率</text><text x="590" y="120">测试末值</text></g>
+<text x="45" y="187" font-size="20">甲</text><text x="45" y="277" font-size="20">乙</text>
+<g fill="#e6ebf4"><rect x="120" y="151" width="300" height="51" rx="6"/><rect x="120" y="241" width="300" height="51" rx="6"/><rect x="550" y="151" width="300" height="51" rx="6"/><rect x="550" y="241" width="300" height="51" rx="6"/></g>
+<g fill="#4c7caf"><rect data-series="A-initial" data-value="25" x="120" y="151" width="250" height="51" rx="6"/><rect data-series="B-initial" data-value="23" x="120" y="241" width="230" height="51" rx="6"/></g>
+<g fill="#368775"><rect data-series="A-final" data-value="22.5" x="550" y="151" width="225" height="51" rx="6"/><rect data-series="B-final" data-value="22.54" x="550" y="241" width="225.4" height="51" rx="6"/></g>
+<g font-size="19" font-weight="700" fill="#fff"><text x="135" y="184">25.00%</text><text x="135" y="274">23.00%</text><text x="565" y="184">22.50%</text><text x="565" y="274">22.54%</text></g>
+<g font-size="16"><text x="431" y="184">× 90%</text><text x="431" y="274">× 98%</text><text x="120" y="329">0</text><text x="384" y="329">30%</text><text x="550" y="329">0</text><text x="814" y="329">30%</text></g>
+<rect x="30" y="365" width="840" height="90" rx="12" fill="#fff0d2" stroke="#c7a561"/>
+<text x="49" y="399" font-size="19" font-weight="700">末值很接近 ≠ 已证明两种材料同样耐久</text>
+<text x="49" y="434" font-size="17">还需核对时间、光照、温度、负载、封装与重复样品。</text></g></svg>

@@ -429,6 +429,14 @@
   #article-container .evidence-figure * { transition: none !important; }
 }
 
+/* Editorial diagrams keep their labels readable through native scrolling. */
+#article-container .editorial-figure .concept-figure-canvas img[width="900"] {
+  min-width: 900px;
+}
+#article-container .editorial-figure figcaption {
+  font-size: 14px;
+}
+
 /* Resource routes are static links: useful with or without JavaScript. */
 #article-container .resource-paths {
   --route-ink: #1d4ed8;

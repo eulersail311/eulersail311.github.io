@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="title desc"><title id="title">一张可以恢复阅读现场的来源卡</title><desc id="desc">教学来源卡填写合成记录的版本、位置、数值、计算与范围，右侧列出复核提示。</desc><defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#61758e"/></marker></defs><rect width="900" height="500" rx="20" fill="#f5f7fb"/><g font-family="Arial, Microsoft YaHei, sans-serif" fill="#22364d">
+<text x="30" y="42" font-size="25" font-weight="700">来源卡不是网址收藏夹</text>
+<text x="30" y="75" font-size="17">下面是一张填好的教学样例；字段服务于复核，不要求固定软件</text>
+<rect x="48" y="103" width="520" height="332" rx="10" fill="#dfe5ef"/>
+<rect x="40" y="95" width="520" height="332" rx="10" fill="#fff" stroke="#b9c6d7"/>
+<path d="M493 95V145L510 133L527 145V95" fill="#8a9ac4"/>
+<text x="64" y="131" font-size="21" font-weight="700">材料阅读记录 · v1</text>
+<g font-size="17"><text x="64" y="178">来源</text><text x="151" y="178">合成记录 v1（不是论文数据）</text>
+<text x="64" y="221">位置</text><text x="151" y="221">条目 2 · 初值与 100 h 末值</text>
+<text x="64" y="264">观察</text><text x="151" y="264">初值 20.0% → 末值 18.0%</text>
+<text x="64" y="307">计算</text><text x="151" y="307">18.0 ÷ 20.0 = 90%</text>
+<text x="64" y="350">范围</text><text x="151" y="350">只描述已记录条件下的两个端点</text>
+<text x="64" y="393">待查</text><text x="151" y="393">测试条件、重复样品、长期轨迹</text></g>
+<rect x="610" y="113" width="260" height="294" rx="10" fill="#fff1cf" stroke="#cda44c"/>
+<text x="631" y="151" font-size="19" font-weight="700">下次回来要找得到</text>
+<g font-size="18"><text x="631" y="198">① 谁报告、哪一版</text><text x="631" y="240">② 原文的具体位置</text><text x="631" y="282">③ 我计算或改写了什么</text><text x="631" y="324">④ 这条证据支持到哪里</text><text x="631" y="366">⑤ 还有什么没有核读</text></g>
+<text x="40" y="472" font-size="17">网址负责定位；版本、位置和条件帮助你恢复当时的阅读现场。</text></g></svg>
