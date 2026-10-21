@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" role="img" aria-labelledby="title desc">
+  <title id="title">柴可夫斯基第四交响曲：四种时间感</title>
+  <desc id="desc">原创概念图。四行分别表现宣告与摇摆、长句延续、拨弦颗粒与交接、快速运动中插入开篇回忆。Not a score, waveform, measured dynamics or proportional timeline.</desc>
+  <defs><style>text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#23364c}.title{font-size:27px;font-weight:700}.sub{font-size:16px;fill:#52667c}.label{font-size:19px;font-weight:700}.small{font-size:16px}.muted{fill:#52667c}.line{fill:none;stroke-linecap:round;stroke-linejoin:round}</style></defs>
+  <rect width="900" height="620" rx="20" fill="#f6f4ee"/>
+  <text x="38" y="48" class="title">四种时间感，四个复听动作</text>
+  <text x="38" y="78" class="sub">沿声音事件辨认，不先画“悲伤 → 快乐”的单向曲线</text>
+  <rect x="28" y="103" width="844" height="110" rx="14" fill="#fff" stroke="#d6dedf"/>
+  <text x="48" y="135" class="label">Ⅰ 宣告与摇摆</text><text x="48" y="165" class="small muted">分开听大拍与旋律</text>
+  <path d="M272 187L283 130L294 187M307 187L318 130L329 187" class="line" stroke="#ab4b43" stroke-width="7"/>
+  <path d="M354 169Q381 131 408 169T462 169T516 169T570 169T624 169" class="line" stroke="#387b91" stroke-width="4"/>
+  <path d="M662 187L673 130L684 187M697 187L708 130L719 187" class="line" stroke="#ab4b43" stroke-width="7"/>
+  <text x="745" y="160" class="small">熟悉轮廓</text><text x="745" y="185" class="small">改变方向</text>
+  <rect x="28" y="224" width="844" height="110" rx="14" fill="#fff" stroke="#d6dedf"/>
+  <text x="48" y="257" class="label">Ⅱ 长句延续</text><text x="48" y="286" class="small muted">等一句话真正落下</text>
+  <path d="M279 303C336 300 337 250 392 249S460 289 507 280S549 241 595 250S660 297 715 298" class="line" stroke="#387b91" stroke-width="5"/>
+  <path d="M282 315H720" stroke="#a8bec5" stroke-width="2" stroke-dasharray="4 7"/>
+  <text x="746" y="280" class="small">伴奏支撑</text><text x="746" y="305" class="small">句尾呼吸</text>
+  <rect x="28" y="345" width="844" height="110" rx="14" fill="#fff" stroke="#d6dedf"/>
+  <text x="48" y="378" class="label">Ⅲ 颗粒与交接</text><text x="48" y="407" class="small muted">从短音听出长线</text>
+  <g fill="#3e8a70"><circle cx="284" cy="410" r="6"/><circle cx="310" cy="401" r="6"/><circle cx="336" cy="410" r="6"/><circle cx="362" cy="393" r="6"/><circle cx="388" cy="402" r="6"/><circle cx="414" cy="390" r="6"/></g>
+  <path d="M446 402Q475 369 505 400T565 395" class="line" stroke="#c18b35" stroke-width="4"/>
+  <g fill="#3e8a70"><circle cx="598" cy="402" r="6"/><circle cx="624" cy="394" r="6"/><circle cx="650" cy="405" r="6"/><circle cx="676" cy="390" r="6"/><circle cx="702" cy="399" r="6"/></g>
+  <text x="746" y="399" class="small">换音色</text><text x="746" y="424" class="small">仍有连续感</text>
+  <rect x="28" y="466" width="844" height="110" rx="14" fill="#fff" stroke="#d6dedf"/>
+  <text x="48" y="499" class="label">Ⅳ 中断与继续</text><text x="48" y="528" class="small muted">记住恢复后的声音</text>
+  <path d="M280 542L296 515L312 541L328 510L344 540L360 507L376 535L392 505L408 533L424 507L440 530L456 506L472 533L488 508L504 530" class="line" stroke="#c18b35" stroke-width="4"/>
+  <path d="M538 548L549 493L560 548M574 548L585 493L596 548" class="line" stroke="#ab4b43" stroke-width="7"/>
+  <path d="M628 542L644 513L660 540L676 507L692 539L708 503" class="line" stroke="#c18b35" stroke-width="4"/>
+  <text x="746" y="521" class="small">开篇回忆</text><text x="746" y="546" class="small">并非终点</text>
+  <text x="38" y="603" class="sub">概念轨迹，不对应音高、小节、实测强弱或实际时长；不同段落并非等长。</text>
+</svg>

@@ -2814,3 +2814,69 @@
     animation: none;
   }
 }
+
+/* A shared reading surface for every post. Page hubs keep their own layout. */
+#post .reading-article { --article-accent: #315f9b; --article-soft: #edf3fb; --article-rule: #c7d6e8; }
+#post .reading-article[data-reading-tone='music'] { --article-accent: #964b3c; --article-soft: #fbf0e9; --article-rule: #e6c7b7; }
+#post .reading-article[data-reading-tone='ai'] { --article-accent: #6455a2; --article-soft: #f2effb; --article-rule: #d7ceec; }
+#post .reading-article[data-reading-tone='data'] { --article-accent: #146e65; --article-soft: #eaf6f1; --article-rule: #bddbd0; }
+#post .reading-article[data-reading-tone='systems'] { --article-accent: #28687e; --article-soft: #edf5fa; --article-rule: #bdd7e2; }
+#post .reading-article[data-reading-tone='tools'] { --article-accent: #4b6b35; --article-soft: #f0f5e9; --article-rule: #cedbbf; }
+#post .reading-article[data-reading-tone='notes'] { --article-accent: #875a32; --article-soft: #f9f3e9; --article-rule: #e5d2b5; }
+#post .reading-article[data-reading-tone='materials'] { --article-accent: #806129; --article-soft: #f8f4e6; --article-rule: #e4d6ad; }
+[data-theme='dark'] #post .reading-article { --article-accent: #a9c9f0; --article-soft: #1b2c42; --article-rule: #405873; }
+[data-theme='dark'] #post .reading-article[data-reading-tone='music'] { --article-accent: #f0b59d; --article-soft: #34292a; --article-rule: #6b4d45; }
+[data-theme='dark'] #post .reading-article[data-reading-tone='ai'] { --article-accent: #c9bbf2; --article-soft: #28263e; --article-rule: #514a70; }
+[data-theme='dark'] #post .reading-article[data-reading-tone='data'] { --article-accent: #94d9c6; --article-soft: #1b302f; --article-rule: #3c625a; }
+[data-theme='dark'] #post .reading-article[data-reading-tone='systems'] { --article-accent: #a2d3e6; --article-soft: #1d303d; --article-rule: #3e6071; }
+[data-theme='dark'] #post .reading-article[data-reading-tone='tools'] { --article-accent: #bbd59e; --article-soft: #293125; --article-rule: #536349; }
+[data-theme='dark'] #post .reading-article[data-reading-tone='notes'] { --article-accent: #e2c49f; --article-soft: #332d27; --article-rule: #6d5943; }
+[data-theme='dark'] #post .reading-article[data-reading-tone='materials'] { --article-accent: #e3c98b; --article-soft: #332f22; --article-rule: #6b5e39; }
+
+#post #article-container.reading-article { line-height: 2; letter-spacing: 0.012em; }
+#post #article-container.reading-article > p { max-width: 80ch; margin: 0 0 1.1em; line-height: 2; overflow-wrap: anywhere; }
+#post #article-container.reading-article > p:first-of-type { margin-bottom: 1.5em; color: var(--sail-reading-ink); font-size: 1.04em; font-weight: 500; }
+#post #article-container.reading-article > h2 {
+  margin: 2.65em 0 1.1em;
+  padding: 0 0 0.55em;
+  border: 0;
+  border-bottom: 2px solid var(--article-rule);
+  border-radius: 0;
+  color: var(--article-accent);
+  background: none;
+  font-size: 1.42em;
+  line-height: 1.6;
+  letter-spacing: 0.015em;
+  scroll-margin-top: 88px;
+  transition: none;
+}
+#post #article-container.reading-article > h3 { margin: 2em 0 0.9em; padding-left: 0.7em; border-left: 3px solid var(--article-rule); color: var(--article-accent); line-height: 1.65; transition: none; }
+#post #article-container.reading-article > :is(ul,ol):not([class]) { margin: 1.2em 0 1.65em; padding-left: 1.65em; }
+#post #article-container.reading-article > :is(ul,ol):not([class]) > li { padding-left: 0.25em; margin: 0.5em 0; }
+#post #article-container.reading-article > :is(ul,ol):not([class]) > li::marker { color: var(--article-accent); }
+#post #article-container.reading-article > blockquote { padding: 1.1em 1.35em; border-left-color: var(--article-accent); border-radius: 0 12px 12px 0; background: var(--article-soft); color: var(--sail-reading-ink); line-height: 1.95; }
+#post #article-container.reading-article > blockquote > :last-child { margin-bottom: 0; }
+#post #article-container.reading-article > p > a:not(.fancybox), #post #article-container.reading-article > :is(ul,ol):not([class]) a { color: var(--article-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.22em; }
+#post #article-container.reading-article > p > a:focus-visible, #post #article-container.reading-article > :is(ul,ol):not([class]) a:focus-visible { outline: 2px solid var(--article-accent); outline-offset: 3px; border-radius: 3px; }
+
+/* Hexo code highlights use tables too. Only decorate prose tables. */
+#post #article-container.reading-article table:not(figure.highlight table) { border-color: var(--article-rule); font-variant-numeric: tabular-nums; }
+#post #article-container.reading-article table:not(figure.highlight table) th { padding: 0.85em 1em; background: var(--article-soft); color: var(--article-accent); line-height: 1.65; }
+#post #article-container.reading-article table:not(figure.highlight table) td { padding: 0.8em 1em; line-height: 1.8; }
+#post #article-container.reading-article table:not(figure.highlight table) tbody tr:nth-child(even), #post #article-container.reading-article table:not(figure.highlight table) tbody tr:hover td { background: var(--article-soft); }
+#post #article-container.reading-article table:not(figure.highlight table) tbody td:first-child { font-weight: 600; }
+#post #article-container.reading-article figure.highlight { border-top: 3px solid var(--article-rule); box-shadow: none; }
+#post #article-container.reading-article .concept-figure-canvas img[width='900'] { min-width: 900px; }
+#post #article-container.reading-article figure figcaption { font-size: 14px; line-height: 1.85; }
+#post #article-container.reading-article > figure:not(.highlight) { margin-top: 2em; margin-bottom: 2em; }
+#post #article-container.reading-article > hr { height: 1px; margin: 2.5em 0; border: 0; background: var(--article-rule); }
+#post #article-container.reading-article > hr::before { display: none; }
+@media (max-width: 600px) {
+  #post #article-container.reading-article > h2 { margin-top: 2.2em; }
+  #post #article-container.reading-article > blockquote { padding: 0.9em 1em; }
+}
+@media print {
+  #post #article-container.reading-article { color: #111; }
+  #post #article-container.reading-article > :is(h2,h3) { color: #111; }
+  #post #article-container.reading-article table:not(figure.highlight table) th { color: #111; background: #f1f1f1; }
+}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="title desc">
+  <title id="title">拨弦的空隙与声部交接</title>
+  <desc id="desc">上半图示意短促拨弦与管乐延续的听觉差异。下半图用点、曲线和块面提示第三乐章的音色对照与返回。Conceptual listening illustration, not measured envelopes, orchestration bars or a proportional timeline.</desc>
+  <defs><style>text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#23364c}.title{font-size:27px;font-weight:700}.sub{font-size:16px;fill:#52667c}.label{font-size:20px;font-weight:700}.small{font-size:17px}.line{fill:none;stroke-linecap:round;stroke-linejoin:round}</style></defs>
+  <rect width="900" height="560" rx="20" fill="#f6f4ee"/>
+  <text x="38" y="48" class="title">声音可以很短，组织仍然很长</text>
+  <text x="38" y="78" class="sub">第三乐章的复听放大镜：先听触弦，再听声部怎样接住运动</text>
+  <rect x="28" y="103" width="412" height="177" rx="14" fill="#fff" stroke="#d6dedf"/>
+  <text x="48" y="137" class="label">拨弦：起音与衰减更突出</text>
+  <path d="M53 229H416" stroke="#ccd5d9" stroke-width="2"/>
+  <path d="M62 229L68 167Q77 219 112 228M147 229L153 167Q162 219 197 228M232 229L238 167Q247 219 282 228M317 229L323 167Q332 219 367 228" class="line" stroke="#3e8a70" stroke-width="4"/>
+  <text x="49" y="261" class="sub">起音之后的空隙，也进入听觉组织</text>
+  <rect x="458" y="103" width="414" height="177" rx="14" fill="#fff" stroke="#d6dedf"/>
+  <text x="478" y="137" class="label">管乐：可以延续和连接</text>
+  <path d="M483 229H848" stroke="#ccd5d9" stroke-width="2"/>
+  <path d="M491 220C509 188 526 184 548 190S579 210 604 190S633 177 659 190S692 204 721 188S754 174 783 188S814 218 838 220" class="line" stroke="#387b91" stroke-width="5"/>
+  <text x="479" y="261" class="sub">示意可持续的线条，不代表固定吹法</text>
+  <text x="38" y="318" class="label">再换一个尺度：把声部关系听成一句话</text>
+  <rect x="28" y="339" width="844" height="153" rx="14" fill="#fff" stroke="#d6dedf"/>
+  <text x="58" y="372" class="small">主段：短音的运动</text><text x="338" y="372" class="small">中间：木管与铜管对照</text><text x="627" y="372" class="small">返回：熟悉材料再相遇</text>
+  <g fill="#3e8a70"><circle cx="65" cy="428" r="7"/><circle cx="91" cy="418" r="7"/><circle cx="117" cy="428" r="7"/><circle cx="143" cy="408" r="7"/><circle cx="169" cy="419" r="7"/><circle cx="195" cy="407" r="7"/><circle cx="221" cy="417" r="7"/></g>
+  <path d="M282 414H311M303 406L311 414L303 422" class="line" stroke="#80909c" stroke-width="2"/>
+  <path d="M341 415Q365 385 389 414T437 413" class="line" stroke="#387b91" stroke-width="4"/>
+  <g fill="#c18b35"><rect x="458" y="401" width="22" height="31" rx="4"/><rect x="489" y="407" width="22" height="25" rx="4"/><rect x="520" y="394" width="22" height="38" rx="4"/></g>
+  <path d="M573 414H602M594 406L602 414L594 422" class="line" stroke="#80909c" stroke-width="2"/>
+  <g fill="#3e8a70"><circle cx="633" cy="435" r="6"/><circle cx="661" cy="425" r="6"/><circle cx="689" cy="435" r="6"/><circle cx="717" cy="419" r="6"/><circle cx="745" cy="429" r="6"/><circle cx="773" cy="416" r="6"/><circle cx="801" cy="427" r="6"/></g>
+  <path d="M632 408Q657 389 682 405T732 403T803 402" class="line" stroke="#387b91" stroke-width="3"/>
+  <text x="60" y="472" class="sub">点：弦乐颗粒</text><text x="338" y="472" class="sub">曲线：木管　块面：铜管</text><text x="627" y="472" class="sub">听返回怎样带回连续感</text>
+  <text x="38" y="524" class="sub">上图非实测包络；下图为选择性聆听提示，不对应总谱小节或精确配器次序。</text>
+  <text x="38" y="549" class="sub">声部能够重叠，区块并非等长；“交接”不表示严格轮流演奏。</text>
+</svg>

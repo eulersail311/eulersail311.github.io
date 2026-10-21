@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">零位没有见证时，为什么所有数组都无解</title>
+  <desc id="desc">三个位置的一位都被前两条约束强制为一，但第三条区间约束要求至少一个零。不存在可以放零的位置，所以无解。</desc>
+  <rect width="900" height="520" rx="20" fill="#f8f7fb"/>
+  <g font-family="system-ui, 'Microsoft YaHei', sans-serif" fill="#172b46">
+    <text x="36" y="48" font-size="25" font-weight="700">失败区间是一份矛盾证书</text>
+    <text x="36" y="79" font-size="16" fill="#50627b">只看最低位 · 目标为零需要至少一个零位置，不要求整段清零</text>
+    <g text-anchor="middle" font-size="18" font-weight="700"><text x="350" y="123">位置 1</text><text x="535" y="123">位置 2</text><text x="720" y="123">位置 3</text></g>
+    <text x="36" y="169" font-size="18">[1,2] AND = 1</text>
+    <rect x="282" y="144" width="322" height="38" rx="9" fill="#d8ecfb" stroke="#3181b2"/>
+    <text x="443" y="169" font-size="17" text-anchor="middle">两个位置都必须为一</text>
+    <text x="36" y="224" font-size="18">[2,3] AND = 1</text>
+    <rect x="467" y="199" width="322" height="38" rx="9" fill="#dcf1e5" stroke="#28835b"/>
+    <text x="628" y="224" font-size="17" text-anchor="middle">两个位置都必须为一</text>
+    <text x="36" y="291" font-size="18" font-weight="700">强制构造</text>
+    <g fill="#fff" stroke="#8b9caf" stroke-width="2"><rect x="302" y="257" width="96" height="54" rx="9"/><rect x="487" y="257" width="96" height="54" rx="9"/><rect x="672" y="257" width="96" height="54" rx="9"/></g>
+    <g font-size="28" text-anchor="middle" font-weight="700"><text x="350" y="294">1</text><text x="535" y="294">1</text><text x="720" y="294">1</text></g>
+    <text x="36" y="357" font-size="18">[1,3] AND = 0</text>
+    <rect x="282" y="331" width="507" height="42" rx="9" fill="#fff1e8" stroke="#b6572b" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="535" y="358" font-size="17" text-anchor="middle" fill="#983d20">需要至少一个零，但三个位置都已被迫为一</text>
+    <rect x="36" y="401" width="828" height="87" rx="12" fill="#fff" stroke="#d3d9e4"/>
+    <text x="56" y="435" font-size="20" font-weight="700" fill="#983d20">不能靠更换候选数组补救</text>
+    <text x="56" y="467" font-size="17" fill="#50627b">任何可行解都必须保留这三个一；再添加一也不能产生零。结论：NO。</text>
+  </g>
+</svg>
