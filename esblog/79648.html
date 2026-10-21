@@ -1,0 +1,360 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Codeforces 295B 从逆序加点到 Floyd 的中间点状态 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="删除顶点会使最短路失效，逆序加点却能逐层扩大允许的中间点集合；从状态不变量证明全端点更新的必要性，附手算、原创图与完整 C++17。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Codeforces 295B 从逆序加点到 Floyd 的中间点状态">
+<meta property="og:url" content="https://eulersail.com/esblog/79648.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="删除顶点会使最短路失效，逆序加点却能逐层扩大允许的中间点集合；从状态不变量证明全端点更新的必要性，附手算、原创图与完整 C++17。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-21T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-21T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Codeforces">
+<meta property="article:tag" content="最短路">
+<meta property="article:tag" content="Floyd">
+<meta property="article:tag" content="离线算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/79648.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Codeforces 295B 从逆序加点到 Floyd 的中间点状态',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-21 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261020-2"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">120</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">205</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Codeforces 295B 从逆序加点到 Floyd 的中间点状态</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-21T02:00:00.000Z" title="发表于 2026-10-21 10:00:00">2026-10-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-21T02:00:00.000Z" title="更新于 2026-10-21 10:00:00">2026-10-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E7%AB%9E%E8%B5%9B/">算法与竞赛</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="Codeforces 295B 从逆序加点到 Floyd 的中间点状态" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261020" data-reading-tone="algorithm"><p>删掉一个顶点，经过它的最短路可能全部失效。仅从原来的最短距离里减去一些数，并不能找回绕行路线。若所有删除顺序提前给出，就可以反过来问：每次加入一个顶点，哪些路径第一次变得可用？</p>
+<p>这篇承接 <a href="/esblog/77420.html">Dijkstra</a> 的路径代价与<a href="/esblog/68219.html">动态规划</a>的状态定义，把 Floyd 的外层循环解释成“逐个放开中间点”。这里不是在线维护任意增删图，而是利用已经知道的完整操作顺序。</p>
+<span id="more"></span>
+
+<h2 id="官方题目与朴素代价"><a href="#官方题目与朴素代价" class="headerlink" title="官方题目与朴素代价"></a>官方题目与朴素代价</h2><p><a target="_blank" rel="noopener" href="https://codeforces.com/problemset/problem/295/B">295B · Greg and Graph</a> 的官方难度为 <strong>1700</strong>，标签为 <code>dp</code>、<code>graphs</code>、<code>shortest paths</code>。输入是完全有向图的邻接矩阵，<code>1≤n≤500</code>，非对角边权 <code>1…100000</code>，对角为零；两个方向的权重可以不同。删除序列是顶点的一个排列。每次删除<strong>之前</strong>，输出当前所有有序点对的最短距离之和。元信息及范围核对于 2026-10-21。</p>
+<p>如果对每个剩余图重新运行 Floyd，总时间为 O(n⁴)。若只保存最初的全图距离，删除后又无法知道最短路是否偷偷使用了已经消失的点。难点是限制路径的内部顶点，而非只限制求和的端点。</p>
+<h2 id="反转操作，先明确允许什么"><a href="#反转操作，先明确允许什么" class="headerlink" title="反转操作，先明确允许什么"></a>反转操作，先明确允许什么</h2><p>删除顺序记为 x₁,…,xₙ。逆序依次加入 xₙ,…,x₁；当刚加入 xₜ 时，活动点集合恰好等于正序第 t 次删除之前的剩余集合。</p>
+<p>定义 <code>d[i][j]</code>：从 i 到 j、<strong>内部顶点只允许取自已加入集合 S</strong> 的最短距离。i、j 本身可以尚未加入。端点与内部顶点是两种不同权限。</p>
+
+<figure class="evidence-figure concept-figure" aria-labelledby="floyd-state-caption"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="Floyd 中间点权限图，可横向滚动"><img class="no-lazy" src="/images/posts/floyd-endpoint-state.svg" width="900" height="430" loading="lazy" decoding="async" alt="端点一尚未加入，中间点二已加入，端点三尚未加入；一到三仍应提前由十更新为二加三等于五。"></div><figcaption id="floyd-state-caption">原创状态图，数字取自下文自拟矩阵。未激活端点的距离也要更新；只有内部顶点需要已激活。<a href="/images/posts/floyd-endpoint-state.svg">查看原图</a></figcaption></figure>
+
+
+<p>初始 S 为空，没有内部顶点，故 <code>d=a</code>。加入 k 后，对<strong>所有</strong> i、j 执行：</p>
+<p><code>d[i][j] = min(d[i][j], d[i][k] + d[k][j])</code>。</p>
+<p>更新完成后，只对 i、j 都在 S 中的有序点对求和。对角项为零，包含它们也不影响结果。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[已知全部删除顺序] --&gt; B[逆序加入一个顶点 k]
+  B --&gt; C[允许 k 成为内部顶点]
+  C --&gt; D[更新全部端点对]
+  D --&gt; E[只累计活动端点对]
+  E --&gt; F[存到原删除位置]
+  </pre></div>
+
+<h2 id="为什么一次松弛足够"><a href="#为什么一次松弛足够" class="headerlink" title="为什么一次松弛足够"></a>为什么一次松弛足够</h2><p>归纳假设：加入 k 前，所有 <code>d[i][j]</code> 都已是内部顶点限制在 S 的最优距离。</p>
+<p>加入 k 后，最短路径分两类：不经过 k 时，旧距离已经最优；经过 k 时，因为权重为正，可以去掉环并取一条简单最短路径，k 只出现一次。将路径在 k 切开，两段内部顶点都在旧 S 内，因此代价至少为旧 <code>d[i][k]+d[k][j]</code>。反过来，两段最短路拼接给出可行行走，若有重复顶点可去环，不会增加代价。所以两类取最小恰好得到新状态。</p>
+<p>原地更新也成立：<code>d[k][k]=0</code> 且无负环，经过 k 不会让第 k 行或第 k 列变得更短。因此本轮使用的 <code>d[i][k]</code>、<code>d[k][j]</code> 保持旧值，等价于分层转移。<strong>k 必须是最外层循环</strong>；i、j 的先后可交换。</p>
+<p>这个不变量覆盖未激活端点。等到一个端点真正加入时，它已经积累了此前所有中间点的路径信息，无需补做旧层。</p>
+<h2 id="三个顶点的完整手算"><a href="#三个顶点的完整手算" class="headerlink" title="三个顶点的完整手算"></a>三个顶点的完整手算</h2><p>自拟矩阵如下，行是起点、列是终点：</p>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>10</td>
+</tr>
+<tr>
+<td>2</td>
+<td>8</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4</td>
+<td>9</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p>删除顺序为 <code>[1,3,2]</code>，加入顺序是 <code>[2,3,1]</code>。</p>
+
+<div class="table-wrap" id="floyd-hand-table" tabindex="0" role="region" aria-label="逆序 Floyd 手算表，可横向滚动"><table><thead><tr><th>加入点</th><th>活动集合</th><th>本轮发生的缩短</th><th>活动有序点对距离和</th><th>答案位置</th></tr></thead><tbody><tr><td>2</td><td>{2}</td><td>d₁₃：10→2+3=5</td><td>0</td><td>第 3 项</td></tr><tr><td>3</td><td>{2,3}</td><td>d₂₁：8→3+4=7</td><td>3+9=12</td><td>第 2 项</td></tr><tr><td>1</td><td>{1,2,3}</td><td>d₃₂：9→4+2=6</td><td>2+5+7+3+4+6=27</td><td>第 1 项</td></tr></tbody></table></div>
+
+
+<p>输出为 <code>27 12 0</code>。第二项的 3→2 距离仍是 9；路径 3→1→2 虽然只花 6，但那时点 1 已经被删除，不能使用。</p>
+<h2 id="为什么不能只更新活动端点"><a href="#为什么不能只更新活动端点" class="headerlink" title="为什么不能只更新活动端点"></a>为什么不能只更新活动端点</h2><p>上例首次加入 2 时，1 与 3 都未激活，却必须把 <code>d[1][3]</code> 从 10 更新到 5。若跳过它，之后加入 3 时仍拿着旧的 10；同样还会漏掉经由 3 对 <code>d[2][1]</code> 的更新。最后加入 1 的转移只能尝试经由 1，无法重新补上错过的中间点，最终错误得到总和 33。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[距离矩阵：全部端点] --&gt; B[中间点权限由 S 限制]
+  A --&gt; C[求和对象：活动端点]
+  B --&gt; D[每轮 n 平方次松弛]
+  C --&gt; E[只计当前剩余图]
+  D --&gt; F[别把求和筛选搬到更新循环]
+  E --&gt; F
+  </pre></div>
+
+<details><summary>自检：为何最终全图距离不能直接用于中间答案？</summary><p>最终距离可能经过尚未加入的中间点。例子里最终 d₃₂=6，但只剩 {2,3} 时应为 9。端点存在并不表示路径内部点存在。</p></details>
+
+<h2 id="完整-C-17-实现"><a href="#完整-C-17-实现" class="headerlink" title="完整 C++17 实现"></a>完整 C++17 实现</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ios::<span class="built_in">sync_with_stdio</span>(<span class="literal">false</span>);</span><br><span class="line">    cin.<span class="built_in">tie</span>(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="type">int</span> n;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    vector&lt;vector&lt;<span class="type">long</span> <span class="type">long</span>&gt;&gt; <span class="built_in">d</span>(n, <span class="built_in">vector</span>&lt;<span class="type">long</span> <span class="type">long</span>&gt;(n));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; row : d) <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; value : row) cin &gt;&gt; value;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">x</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>&amp; v : x) &#123; cin &gt;&gt; v; --v; &#125;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">bool</span>&gt; <span class="title">active</span><span class="params">(n, <span class="literal">false</span>)</span></span>;</span><br><span class="line">    <span class="function">vector&lt;<span class="type">long</span> <span class="type">long</span>&gt; <span class="title">answer</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> t = n - <span class="number">1</span>; t &gt;= <span class="number">0</span>; --t) &#123;</span><br><span class="line">        <span class="type">int</span> k = x[t];</span><br><span class="line">        active[k] = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; n; ++j) &#123;</span><br><span class="line">                d[i][j] = <span class="built_in">min</span>(d[i][j], d[i][k] + d[k][j]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">long</span> <span class="type">long</span> sum = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) <span class="keyword">if</span> (active[i]) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; n; ++j) <span class="keyword">if</span> (active[j]) sum += d[i][j];</span><br><span class="line">        &#125;</span><br><span class="line">        answer[t] = sum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> t = <span class="number">0</span>; t &lt; n; ++t) &#123;</span><br><span class="line">        <span class="keyword">if</span> (t) cout &lt;&lt; <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">        cout &lt;&lt; answer[t];</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每轮一次 n² 松弛和至多 n² 求和，共 O(n³) 时间，矩阵 O(n²) 空间。完全图保证两点间总有直接边，所以有限距离不超过 100000，代码无需无穷大哨兵；有序点对之和可达 <code>500×499×100000=24950000000</code>，必须用 <code>long long</code>。这里连矩阵也统一用 64 位，便于安全相加。</p>
+<h2 id="边界与验证"><a href="#边界与验证" class="headerlink" title="边界与验证"></a>边界与验证</h2><table>
+<thead>
+<tr>
+<th>检查</th>
+<th>应有行为</th>
+<th>常见错误</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>n&#x3D;1</td>
+<td>唯一答案为 0</td>
+<td>漏掉最后单点状态</td>
+</tr>
+<tr>
+<td>非对称边权</td>
+<td>两个方向分别计算</td>
+<td>擅自把矩阵对称化</td>
+</tr>
+<tr>
+<td>删除前求和</td>
+<td>加入 xₜ 后存 answer[t]</td>
+<td>少算一个顶点</td>
+</tr>
+<tr>
+<td>尚未加入的端点</td>
+<td>仍然参与距离更新</td>
+<td>只更新活动端点</td>
+</tr>
+<tr>
+<td>500 个点、最大权重</td>
+<td>总和 24950000000</td>
+<td>使用 int 累加</td>
+</tr>
+<tr>
+<td>任意在线删除</td>
+<td>本文方法不直接适用</td>
+<td>忽略离线前提</td>
+</tr>
+</tbody></table>
+<p>验证程序 <code>tests/verify-reverse-floyd-article.cjs</code> 提取正文代码实际编译，用每个正序剩余图上重新运行的逐源稠密 Dijkstra 独立核对全部答案；同时检查上面的手算与“只更新活动端点”反例、单点、非对称、全部删除排列的小图和 n&#x3D;500 的 64 位边界。测试覆盖的范围以程序实际输出为准。</p>
+<p>继续比较 <a href="/esblog/80632.html">0-1 BFS</a>：它利用边权限制加速单源搜索；本题则利用操作顺序，让全点对动态规划只增加状态权限。二者节省工作的依据不同。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/79648.html">https://eulersail.com/esblog/79648.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Codeforces/">Codeforces</a><a class="post-meta__tags" href="/tags/%E6%9C%80%E7%9F%AD%E8%B7%AF/">最短路</a><a class="post-meta__tags" href="/tags/Floyd/">Floyd</a><a class="post-meta__tags" href="/tags/%E7%A6%BB%E7%BA%BF%E7%AE%97%E6%B3%95/">离线算法</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/98768.html" title="圣桑第三交响曲 从两部结构到管风琴的两种角色"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">圣桑第三交响曲 从两部结构到管风琴的两种角色</div></div></a></div><div class="next-post pull-right"><a href="/esblog/98657.html" title="柴可夫斯基第四交响曲 从号角中断到拨弦与民歌"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">柴可夫斯基第四交响曲 从号角中断到拨弦与民歌</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/73148.html" title="Codeforces 520B Two Buttons：从状态图到逆向贪心"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-07</div><div class="title">Codeforces 520B Two Buttons：从状态图到逆向贪心</div></div></a></div><div><a href="/esblog/77420.html" title="Codeforces 20C Dijkstra：加权最短路与路径还原"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-08</div><div class="title">Codeforces 20C Dijkstra：加权最短路与路径还原</div></div></a></div><div><a href="/esblog/80632.html" title="Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-09</div><div class="title">Codeforces 1063B Labyrinth：用位移守恒压缩状态，再走进 0-1 BFS</div></div></a></div><div><a href="/esblog/27504.html" title="Codeforces 最短路进阶三题：最短路树、冗余列车与多源建模"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">Codeforces 最短路进阶三题：最短路树、冗余列车与多源建模</div></div></a></div><div><a href="/esblog/84517.html" title="Codeforces 入门五题：把题意翻译成判断、计数与模拟"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 入门五题：把题意翻译成判断、计数与模拟</div></div></a></div><div><a href="/esblog/91263.html" title="Codeforces 序列优化四题：滑动窗口、双指针与二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="title">Codeforces 序列优化四题：滑动窗口、双指针与二分查找</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">120</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">205</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E9%A2%98%E7%9B%AE%E4%B8%8E%E6%9C%B4%E7%B4%A0%E4%BB%A3%E4%BB%B7"><span class="toc-text">官方题目与朴素代价</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E8%BD%AC%E6%93%8D%E4%BD%9C%EF%BC%8C%E5%85%88%E6%98%8E%E7%A1%AE%E5%85%81%E8%AE%B8%E4%BB%80%E4%B9%88"><span class="toc-text">反转操作，先明确允许什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E6%AC%A1%E6%9D%BE%E5%BC%9B%E8%B6%B3%E5%A4%9F"><span class="toc-text">为什么一次松弛足够</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E4%B8%AA%E9%A1%B6%E7%82%B9%E7%9A%84%E5%AE%8C%E6%95%B4%E6%89%8B%E7%AE%97"><span class="toc-text">三个顶点的完整手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8F%AA%E6%9B%B4%E6%96%B0%E6%B4%BB%E5%8A%A8%E7%AB%AF%E7%82%B9"><span class="toc-text">为什么不能只更新活动端点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-C-17-%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整 C++17 实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E4%B8%8E%E9%AA%8C%E8%AF%81"><span class="toc-text">边界与验证</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98768.html" title="圣桑第三交响曲 从两部结构到管风琴的两种角色">圣桑第三交响曲 从两部结构到管风琴的两种角色</a><time datetime="2026-10-21T03:00:00.000Z" title="发表于 2026-10-21 11:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79648.html" title="Codeforces 295B 从逆序加点到 Floyd 的中间点状态">Codeforces 295B 从逆序加点到 Floyd 的中间点状态</a><time datetime="2026-10-21T02:00:00.000Z" title="发表于 2026-10-21 10:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98657.html" title="柴可夫斯基第四交响曲 从号角中断到拨弦与民歌">柴可夫斯基第四交响曲 从号角中断到拨弦与民歌</a><time datetime="2026-10-20T08:20:00.000Z" title="发表于 2026-10-20 16:20:00">2026-10-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79536.html" title="Codeforces 482B 区间 AND 从必要条件到最小构造">Codeforces 482B 区间 AND 从必要条件到最小构造</a><time datetime="2026-10-20T07:00:00.000Z" title="发表于 2026-10-20 15:00:00">2026-10-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/70735.html" title="引用溯源 从摘录到主张边界与版本影响">引用溯源 从摘录到主张边界与版本影响</a><time datetime="2026-10-20T03:01:00.000Z" title="发表于 2026-10-20 11:01:00">2026-10-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" role="img" aria-labelledby="title desc">
+<title id="title">三种键盘音色注意对象</title><desc id="desc">持续支撑、颗粒闪光、和弦宣告。图不是实际录音波形。</desc><rect width="900" height="420" rx="20" fill="#faf5ee"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#49344b"><text x="40" y="50" font-size="27" font-weight="bold">别把两种键盘乐器听成同一个角色</text><text x="40" y="86" font-size="19">示意线条只提示持续方式，不表示音高、响度或录音波形</text>
+<g fill="#fff"><rect x="40" y="115" width="260" height="255" rx="14"/><rect x="320" y="115" width="260" height="255" rx="14"/><rect x="600" y="115" width="260" height="255" rx="14"/></g>
+<g font-size="23" text-anchor="middle"><text x="170" y="158">慢段 · 管风琴</text><text x="450" y="158">快速区 · 钢琴</text><text x="730" y="158">Maestoso · 管风琴</text></g>
+<path d="M65 222 H275 M65 238 H275 M65 254 H275" stroke="#528b7c" stroke-width="5"/><path d="M345 246 l20 -34 l20 34 l20 -34 l20 34 l20 -34 l20 34 l20 -34 l20 34 l20 -34" stroke="#9271a5" stroke-width="4" fill="none"/>
+<g fill="#c29343"><rect x="627" y="202" width="36" height="70"/><rect x="670" y="202" width="36" height="70"/><rect x="713" y="202" width="36" height="70"/><rect x="756" y="202" width="36" height="70"/><rect x="799" y="202" width="36" height="70"/></g>
+<g font-size="20" text-anchor="middle"><text x="170" y="311">托住长句的背景</text><text x="450" y="311">短音与颗粒的前景</text><text x="730" y="311">改变空间的和弦</text><text x="170" y="344">听持续与融合</text><text x="450" y="344">听轻巧与切换</text><text x="730" y="344">听宣告后的推进</text></g></g></svg>

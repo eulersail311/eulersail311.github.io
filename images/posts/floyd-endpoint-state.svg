@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430" role="img" aria-labelledby="title desc">
+<title id="title">端点存在与中间点权限是两件事</title><desc id="desc">集合只有二时，仍需把一到三从十更新为二加三等于五。仅在活动端点间求和。</desc>
+<rect width="900" height="430" rx="20" fill="#f4f7fb"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#18364a"><text x="45" y="52" font-size="27" font-weight="bold">距离先准备好，求和再筛选端点</text><text x="45" y="90" font-size="19">S = {2}：只有 2 获准成为内部顶点</text>
+<path d="M180 215 L450 215 L720 215 M180 190 Q450 85 720 190" fill="none" stroke="#477995" stroke-width="4"/>
+<circle cx="180" cy="215" r="42" fill="#dae2eb"/><circle cx="450" cy="215" r="42" fill="#a8dfc7"/><circle cx="720" cy="215" r="42" fill="#dae2eb"/>
+<g font-size="28" text-anchor="middle"><text x="180" y="225">1</text><text x="450" y="225">2</text><text x="720" y="225">3</text></g>
+<g font-size="21" text-anchor="middle"><text x="310" y="200">2 →</text><text x="590" y="200">3 →</text><text x="450" y="135">直接边 10 →</text><text x="180" y="288">未激活端点</text><text x="450" y="288">已激活中间点</text><text x="720" y="288">未激活端点</text></g>
+<rect x="45" y="324" width="810" height="70" rx="12" fill="#fff"/><text x="65" y="354" font-size="21">现在就更新 d₁₃ = min(10, 2 + 3) = 5</text><text x="65" y="382" font-size="18">但当前只对 {2} × {2} 求和，答案仍为 0。图为自拟案例。</text></g></svg>
