@@ -10,9 +10,10 @@
 [data-theme='dark'] .sail-journal [data-tone='tools'] { --topic-color: #edb69e; --topic-wash: #432f29; }
 [data-theme='dark'] .sail-journal [data-tone='materials'] { --topic-color: #d6b6e4; --topic-wash: #3b2b45; }
 
-#category-atlas, #subject-hub { color: var(--editorial-ink); }
+#category-atlas, #subject-hub, #algorithm-hub { color: var(--editorial-ink); }
 #category-atlas h2, #category-atlas h3, #subject-hub h2, #subject-hub h3,
-#subject-hub h3 a { color: var(--editorial-ink); }
+#subject-hub h3 a, #algorithm-hub h2, #algorithm-hub h3,
+#algorithm-hub h3 a { color: var(--editorial-ink); }
 .subject-view #live2d-widget { display: none !important; }
 .atlas-heading { padding: 8px 0 30px; border-bottom: 1px solid var(--editorial-line); }
 .atlas-heading > .sail-eyebrow { color: var(--editorial-muted); }
@@ -34,7 +35,7 @@
 .atlas-latest { padding-top: 15px; border-top: 1px solid var(--editorial-line); }
 .atlas-latest > span { display: block; color: var(--editorial-muted); font-size: 10px; letter-spacing: .06em; }
 .atlas-latest a { display: block; margin-top: 6px; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
-#category-atlas a:hover, #subject-hub a:hover { text-decoration: underline; text-underline-offset: 4px; }
+#category-atlas a:hover, #subject-hub a:hover, #algorithm-hub a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .subject-nav { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; color: var(--editorial-muted); }
 .subject-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid transparent; border-radius: 7px; font-size: 12px; line-height: 1.5; }
 .subject-nav a:hover { background: var(--editorial-paper); }
@@ -45,8 +46,8 @@
 .subject-intro p { margin: 0; max-width: 38em; color: var(--editorial-muted); font-size: 14px; line-height: 1.95; }
 .subject-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 24px; font-size: 12px; }
 .subject-actions a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 14px; border: 1px solid var(--topic-color); border-radius: 7px; }
-#subject-hub .subject-actions a { color: var(--editorial-ink); }
-#subject-hub .subject-actions .subject-primary { background: var(--topic-color); color: var(--editorial-paper); }
+#subject-hub .subject-actions a, #algorithm-hub .subject-actions a { color: var(--editorial-ink); }
+#subject-hub .subject-actions .subject-primary, #algorithm-hub .subject-actions .subject-primary { background: var(--topic-color); color: var(--editorial-paper); }
 .subject-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 24px; color: var(--editorial-muted); font-size: 11px; }
 .subject-stats b { color: var(--topic-color); font-size: 21px; font-weight: 500; margin-right: 4px; }
 .subject-visual { position: relative; min-height: 180px; overflow: hidden; color: var(--topic-color); background-image: radial-gradient(currentColor .6px, transparent .6px); background-size: 22px 22px; border-left: 1px solid var(--editorial-line); }
@@ -74,6 +75,23 @@
 .subject-route ol { margin: 15px 0 5px; padding: 15px 0 0 20px; border-top: 1px solid var(--editorial-line); font-size: 12px; color: var(--topic-color); }
 .subject-route li { padding: 5px 0 7px 2px; line-height: 1.8; }
 .subject-route-more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; color: var(--topic-color) !important; font-size: 12px; }
+
+/* Algorithm routes reuse the subject hero, navigation and route-card shell.
+   Only the extra selection notes and full reading-list captions are specific. */
+#algorithm-topics, #algorithm-hub .algorithm-topic-card { scroll-margin-top: 90px; }
+#algorithm-hub .algorithm-topic-jump { margin-top: 18px; }
+#algorithm-hub .algorithm-topic-card { overflow-wrap: anywhere; }
+#algorithm-hub .algorithm-topic-notes { margin: 14px 0 0; border-top: 1px solid var(--editorial-line); }
+#algorithm-hub .algorithm-topic-notes > summary { min-height: 44px; padding: 10px 0 5px; color: var(--topic-color); font-size: 12px; line-height: 1.8; cursor: pointer; }
+#algorithm-hub .algorithm-topic-state { margin: 12px 0 16px; padding-left: 12px; border-left: 2px solid var(--editorial-line); color: var(--editorial-muted); font-size: 12px; line-height: 1.9; }
+#algorithm-hub .algorithm-topic-state dt { color: var(--editorial-ink); font-weight: 600; }
+#algorithm-hub .algorithm-topic-state dd { margin: 4px 0 10px; }
+#algorithm-hub .algorithm-topic-state dd:last-child { margin-bottom: 0; }
+#algorithm-hub .algorithm-topic-route span { display: block; margin-top: 4px; color: var(--editorial-muted); font-size: 12px; line-height: 1.8; }
+#algorithm-hub .algorithm-topic-notes > summary:focus-visible { outline: 3px solid var(--topic-color); outline-offset: 3px; border-radius: 4px; }
+#algorithm-hub .algorithm-practice #article-container { color: var(--editorial-ink); }
+#algorithm-hub .algorithm-practice .algorithm-exercises { border-color: var(--editorial-line); border-radius: 13px; background: var(--editorial-paper); box-shadow: none; }
+#algorithm-hub .algorithm-practice .algorithm-exercises > summary { color: var(--topic-color); }
 #subject-library { scroll-margin-top: 80px; }
 .subject-controls { padding: 20px; border: 1px solid var(--editorial-line); border-radius: 12px; background: var(--editorial-paper); }
 .subject-search { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
