@@ -190,6 +190,19 @@
   }
 
   function initializeReadingOverview(article) {
+    const staticOverview = article.querySelector(':scope > .reading-overview[data-reading-static]');
+    if (staticOverview) {
+      if (staticOverview.dataset.readingReady) return;
+      const chapters = createChapterNavigator(article);
+      staticOverview.append(createReadingTools(article));
+      if (chapters) {
+        staticOverview.append(chapters);
+        const fallback = staticOverview.querySelector('.reading-static-chapters');
+        if (fallback) fallback.hidden = true;
+      }
+      staticOverview.dataset.readingReady = 'true';
+      return;
+    }
     if (article.querySelector(':scope > .reading-overview')) return;
 
     const sections = article.querySelectorAll('h2').length;
