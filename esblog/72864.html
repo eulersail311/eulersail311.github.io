@@ -1,0 +1,399 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>LayerNorm 原理 从特征轴到归一化梯度 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从逐 token 的特征轴出发，手算 LayerNorm 前向与完整反向，解释逐特征仿射参数、epsilon、常量行与 padding 边界，附标准库实现和独立数值核验。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LayerNorm 原理 从特征轴到归一化梯度">
+<meta property="og:url" content="https://eulersail.com/esblog/72864.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从逐 token 的特征轴出发，手算 LayerNorm 前向与完整反向，解释逐特征仿射参数、epsilon、常量行与 padding 边界，附标准库实现和独立数值核验。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-21T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-21T07:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="神经网络">
+<meta property="article:tag" content="反向传播">
+<meta property="article:tag" content="LayerNorm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/72864.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'LayerNorm 原理 从特征轴到归一化梯度',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-21 15:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261021-2"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">122</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">208</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">LayerNorm 原理 从特征轴到归一化梯度</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-21T07:00:00.000Z" title="发表于 2026-10-21 15:00:00">2026-10-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-21T07:00:00.000Z" title="更新于 2026-10-21 15:00:00">2026-10-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="LayerNorm 原理 从特征轴到归一化梯度" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="ai"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>AI ENGINEERING</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>7</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>7</strong><small>组图片与图表</small></span></div></div><p>沿定义、计算与实验边界阅读，分开模型原理、教学验证和实际系统效果。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>7 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先把统计轴画对"><span>01</span><strong>先把统计轴画对</strong></a></li><li><a href="#一行三个数，前向与反向手算"><span>02</span><strong>一行三个数，前向与反向手算</strong></a></li><li><a href="#反向传播为什么要先乘各自的-gamma"><span>03</span><strong>反向传播为什么要先乘各自的 gamma</strong></a></li><li><a href="#epsilon-保留了什么，又改变了什么"><span>04</span><strong>epsilon 保留了什么，又改变了什么</strong></a></li><li><a href="#训练与评估一致，不等于-padding-自动安全"><span>05</span><strong>训练与评估一致，不等于 padding 自动安全</strong></a></li><li><a href="#完整标准库-Python-实验"><span>06</span><strong>完整标准库 Python 实验</strong></a></li><li><a href="#接入模型前的边界清单"><span>07</span><strong>接入模型前的边界清单</strong></a></li></ol></nav></details></section><p><a href="/esblog/64183.html">Transformer 入门</a>里，LayerNorm 常与残差连接一起出现；<a href="/esblog/72684.html">BatchNorm</a>则已经展示了“减均值、除标准差”的计算。两者算式相似，但<strong>统计轴不同，输入之间的依赖关系也不同</strong>。</p>
+<p>这篇先把一组特征画成一行，再沿着前向、手算和反向走一遍。重点是说明：哪几个数共同决定统计量，哪些参数在多行之间共享，以及 epsilon 为什么不能在推导中悄悄丢掉。</p>
+<span id="more"></span>
+
+<h2 id="先把统计轴画对"><a href="#先把统计轴画对" class="headerlink" title="先把统计轴画对"></a>先把统计轴画对</h2><p>对形状为 (B,T,H) 的序列表示，若采用 <code>LayerNorm(H)</code>，每个样本的每个 token 都沿最后 H 个特征计算自己的均值和方差。共有 B×T 组统计量；把它们展平成 R&#x3D;B×T 行、每行 D&#x3D;H 个数，便于逐行分析。<strong>这里 D 表示一组中的元素总数</strong>，不是张量轴的数量。</p>
+<p>更一般地，<code>normalized_shape=(H,W)</code> 表示一起归一化末尾两个轴，每组有 D&#x3D;H×W 个元素，而不是分别给每个轴算一次。<code>normalized_shape</code> 必须匹配输入的末尾形状；更改张量轴顺序后，需要重新检查它代表的含义。<a target="_blank" rel="noopener" href="https://docs.pytorch.org/docs/2.14/generated/torch.nn.LayerNorm.html">PyTorch 2.14 LayerNorm 官方文档</a>规定了末尾轴、逐元素仿射参数以及分母为 D 的方差约定。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="LayerNorm 逐行统计与逐特征共享参数图，可左右滚动"><img class="no-lazy" src="/images/posts/layernorm-feature-axes.svg" width="900" height="520" loading="lazy" decoding="async" alt="两行三个特征分别计算均值与方差；第一行1、2、3与第二行11、12、13具有独立统计，而三个gamma和beta按列跨行共享"></div><figcaption><strong>统计沿行，参数沿列共享。</strong> 原创计算示意；两行只为说明加上同一常数不改变该行的归一化值，不代表真实模型激活或训练结果。<a href="/images/posts/layernorm-feature-axes.svg">查看原图</a></figcaption></figure>
+
+
+<p>对第 r 行、第 i 个特征，定义：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">μ_r = (1/D) Σ_i x_ri</span><br><span class="line">c_ri = x_ri − μ_r</span><br><span class="line">v_r = (1/D) Σ_i c_ri²</span><br><span class="line">q_r = 1 / sqrt(v_r + ε)</span><br><span class="line">z_ri = c_ri q_r</span><br><span class="line">y_ri = γ_i z_ri + β_i</span><br></pre></td></tr></table></figure>
+
+<p>每行有自己的 μ_r、v_r、q_r；γ_i、β_i 则有 D 个，跨 R 行共享。若末尾归一化形状是 (H,W)，参数也具有该形状；展平只是记号与教学实现，不会把它们变成一个标量。</p>
+<table>
+<thead>
+<tr>
+<th>输入与约定</th>
+<th>一组统计覆盖什么</th>
+<th>谁会影响某个位置的统计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LayerNorm，(B,T,H)，归一化 H</td>
+<td>一个 token 的 H 个特征</td>
+<td>同 token 的特征</td>
+</tr>
+<tr>
+<td>LayerNorm，(B,T,H)，归一化 (T,H)</td>
+<td>一个样本的全部 T×H 个位置</td>
+<td>同样本的其他 token 也会影响</td>
+</tr>
+<tr>
+<td>BatchNorm1d，输入 (N,C)</td>
+<td>一个通道的 N 个样本</td>
+<td>同通道的其他样本</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1607.06450">Ba、Kiros 与 Hinton 的原始论文</a>从单个样本内的单元计算统计，并为单元设置增益和偏置；它不要求把同批其他样本混进统计。本文聚焦这些计算关系，不据此推断任意网络的训练速度或效果。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[确认 normalized shape 与末尾轴] --&gt; B[把每组特征看成一行]
+  B --&gt; C[各行独立计算均值与方差]
+  C --&gt; D[减均值 除以带 epsilon 的标准差]
+  D --&gt; E[每个特征使用自己的 gamma 和 beta]
+  E --&gt; F[跨行复用同一组参数]
+  </pre></div>
+
+<h2 id="一行三个数，前向与反向手算"><a href="#一行三个数，前向与反向手算" class="headerlink" title="一行三个数，前向与反向手算"></a>一行三个数，前向与反向手算</h2><p>取一行 x&#x3D;[1,2,3]，γ&#x3D;[1,2,3]，β&#x3D;[0,1,−1]，ε&#x3D;1&#x2F;3。这个 epsilon 是为了让标准差恰好等于 1 的<strong>教学取值</strong>；PyTorch 文档的默认值为 1e−5，不能把这里的手算设置当成调参建议。</p>
+<p>均值 μ&#x3D;2、方差 v&#x3D;2&#x2F;3，所以 q&#x3D;1，z&#x3D;[−1,0,1]，得到 y&#x3D;[−1,1,2]。设输出的上游梯度 g&#x3D;[1,−1,2]；核验时可以使用标量目标 L&#x3D;Σ_i g_i y_i，它只检查这一层的导数。</p>
+<p>反向先经过每特征的仿射变换，得到 h_i&#x3D;γ_i g_i，即 h&#x3D;[1,−2,6]。接着会用到 mean(h)&#x3D;5&#x2F;3 与 mean(hz)&#x3D;5&#x2F;3。</p>
+
+<div class="table-wrap" tabindex="0" role="region" aria-label="LayerNorm 三特征前向与反向八列手算表"><table id="layernorm-hand-table"><thead><tr><th>i</th><th>x_i</th><th>γ_i</th><th>β_i</th><th>z_i</th><th>y_i</th><th>g_i → h_i</th><th>dL/dx_i</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>1</td><td>0</td><td>−1</td><td>−1</td><td>1 → 1</td><td>1−5/3+5/3=1</td></tr><tr><td>2</td><td>2</td><td>2</td><td>1</td><td>0</td><td>1</td><td>−1 → −2</td><td>−2−5/3=−11/3</td></tr><tr><td>3</td><td>3</td><td>3</td><td>−1</td><td>1</td><td>2</td><td>2 → 6</td><td>6−5/3−5/3=8/3</td></tr></tbody></table></div>
+
+
+<p>因此输入梯度为 [1,−11&#x2F;3,8&#x2F;3]，三个分量之和为 0；这一行贡献 dγ&#x3D;[−1,0,2]、dβ&#x3D;[1,−1,2]。手机可横向查看手算表；键盘用户可先聚焦表格区域，再按方向键。</p>
+<h2 id="反向传播为什么要先乘各自的-gamma"><a href="#反向传播为什么要先乘各自的-gamma" class="headerlink" title="反向传播为什么要先乘各自的 gamma"></a>反向传播为什么要先乘各自的 gamma</h2><p>以下暂时省略行下标 r，只推导一行。上游梯度为 g_i，先定义 h_i&#x3D;γ_i g_i。由于不同特征的 γ_i 不同，不能把某个公共 γ 提到公式外面，也不能先平均 g，再统一乘一次 γ。</p>
+<p>改变 x_i 既改变直接路径，也改变这一行的 μ 与 v。利用 Σ_i c_i&#x3D;0，沿计算图有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dL/dv = −(q³/2) Σ_i h_i c_i</span><br><span class="line">dL/dμ = −q Σ_i h_i</span><br><span class="line">dL/dx_i = q h_i + (2c_i/D)(dL/dv) + (1/D)(dL/dμ)</span><br><span class="line">         = q [h_i − mean(h) − z_i mean(hz)]</span><br></pre></td></tr></table></figure>
+
+<p>第一行来自 q&#x3D;(v+ε)^(−1&#x2F;2) 的导数；均值支路中，方差对 μ 的项包含 Σ_i c_i，因此抵消为零。最后把 c_i&#x3D;z_i&#x2F;q 代入，可得紧凑公式。<strong>ε 始终保留在 q 和 z 中</strong>。</p>
+<p>一行内部的输入梯度相互耦合；不同的行在这个局部算子中不共享统计，也没有跨行的输入偏导。但仿射参数跨行共享，所以必须累加每行的贡献：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dL/dγ_i = Σ_r g_ri z_ri</span><br><span class="line">dL/dβ_i = Σ_r g_ri</span><br></pre></td></tr></table></figure>
+
+<p>这里用求和还是在外部损失中再除以样本数，取决于损失定义。若上游已经来自平均损失，不能在层内重复除以 R。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[每行收到上游梯度 g] --&gt; B[逐特征乘 gamma 得到 h]
+  B --&gt; C[该行计算 mean h 与 mean hz]
+  C --&gt; D[得到该行全部输入梯度]
+  A --&gt; E[逐特征计算 g 乘 z 与 g]
+  E --&gt; F[跨行求和得到参数梯度]
+  </pre></div>
+
+<h2 id="epsilon-保留了什么，又改变了什么"><a href="#epsilon-保留了什么，又改变了什么" class="headerlink" title="epsilon 保留了什么，又改变了什么"></a>epsilon 保留了什么，又改变了什么</h2><p>首先，z 的均值为 0，但其方差是 v&#x2F;(v+ε)。ε&gt;0 时，不能说归一化方差总等于 1；经过非均匀的 γ、β 后，y 更不必具有零均值或单位方差。</p>
+<p>把 J 记为 z 对 x 的雅可比矩阵，1 为全 1 向量，可将上面的导数写成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">J = q [I − 11ᵀ/D − zzᵀ/D]</span><br><span class="line">dx = J h</span><br></pre></td></tr></table></figure>
+
+<p>J 是对称矩阵。由 Σ_i z_i&#x3D;0，得到 J1&#x3D;0：给同一行全部特征加常数不改变输出，因此 Σ_i dx_i&#x3D;0。若中心化向量 c 非零，则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Jc = εq³ c</span><br><span class="line">若 w 与 1、c 都正交，则 Jw = q w</span><br></pre></td></tr></table></figure>
+
+<p>证明第二个方向只需代入 Σ_i c_i²&#x3D;Dv；于是 q(1−vq²)&#x3D;εq³。它说明<strong>ε&gt;0 时沿 c 的梯度通常仍然存在</strong>，不能套用 ε&#x3D;0 时“梯度必与输入中心化方向正交”的结论。本例 dx·c&#x3D;5&#x2F;3，而非 0。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="LayerNorm 三种扰动方向与 epsilon 的雅可比作用，可左右滚动"><img class="no-lazy" src="/images/posts/layernorm-gradient-directions.svg" width="900" height="500" loading="lazy" decoding="async" alt="不含仿射参数的归一化雅可比将平移方向变为零，将中心化方向乘epsilon q的三次方，将同时垂直于全一和中心化方向的向量乘q；手算例子对应0、三分之一、1"></div><figcaption><strong>平移方向被抵消，尺度方向受 epsilon 影响。</strong> 原创解析关系图；图中倍数来自本例 ε=1/3、q=1 的精确代入，描述归一化步骤的局部导数，不是训练曲线。实际反向需先令 h=γ⊙g。<a href="/images/posts/layernorm-gradient-directions.svg">查看原图</a></figcaption></figure>
+
+
+<p>固定 ε 时，把 x 乘正数 a，通常不能得到完全相同的 z；同时把 ε 改为 a²ε 才恢复这一缩放关系。对于 v≫ε 的数据，固定 ε 的影响可能较小，但那是近似条件。</p>
+<p>常量行也值得单独看：c&#x3D;0、z&#x3D;0，输出为 β，然而 dx&#x3D;q[h−mean(h)] 仍可能非零。D&#x3D;1 则不同：唯一特征始终减去自身，z&#x3D;0，输入梯度和 dγ 都为 0，dβ 仍接收上游梯度。</p>
+
+<details class="mechanism-check"><summary>自检：一行的输出等于 beta，是否就说明输入梯度全为零？</summary><div><p>不一定。常量行在当前点输出 beta，但各特征若分别扰动，会出现非零中心化值；D&gt;1 时 dx=q[h−mean(h)] 可能非零。D=1 时，每次扰动仍只有一个数，中心化结果恒为零，才必有零输入梯度。</p></div></details>
+
+
+<h2 id="训练与评估一致，不等于-padding-自动安全"><a href="#训练与评估一致，不等于-padding-自动安全" class="headerlink" title="训练与评估一致，不等于 padding 自动安全"></a>训练与评估一致，不等于 padding 自动安全</h2><p>LayerNorm 使用当前输入的统计，不维护 BatchNorm 那样的 running_mean、running_var；相同输入、参数与 ε 下，LayerNorm 这个算子的训练和评估计算相同。这是<a target="_blank" rel="noopener" href="https://docs.pytorch.org/docs/2.14/generated/torch.nn.LayerNorm.html">官方文档明确的行为</a>，不代表整个网络切换模式后都相同；例如 <a href="/esblog/72753.html">Dropout</a> 的行为会改变。</p>
+<p>padding 是否影响有效位置，要从统计轴与后续算子判断：</p>
+<ul>
+<li>只沿 H 归一化时，一个 padding token 是另一行，不会直接进入有效 token 的统计。</li>
+<li>若沿 (T,H) 归一化，padding 会落在同一统计组中，改变有效位置的均值与方差。</li>
+<li>即使只沿 H，padding 行归一化后也不保证保持零；全零行会输出 β。后续注意力、池化和损失仍需正确使用掩码。</li>
+<li>若归一化组内部本身包含无效特征，标准 LayerNorm 不会自动跳过它们，需要另行定义掩码统计及对应梯度。</li>
+</ul>
+<p>这些结论来自对统计轴和后续运算的直接分析。行间独立只描述 LayerNorm 本身；前面的注意力已经可以让一个 token 的表示依赖其他 token。</p>
+<h2 id="完整标准库-Python-实验"><a href="#完整标准库-Python-实验" class="headerlink" title="完整标准库 Python 实验"></a>完整标准库 Python 实验</h2><p>代码接收非空的 R×D 矩阵，每行代表一组已经展平的归一化特征；γ、β 长度为 D。它实现前向、输入梯度和跨行参数梯度，使用不可变缓存保存本次 γ 的快照。多轴张量的 reshape、掩码、自动微分、混合精度与优化器都不在这个教学实现中。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">finite</span>(<span class="params">value</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(value) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">return</span> math.isfinite(value)</span><br><span class="line">    <span class="keyword">except</span> OverflowError:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">vector</span>(<span class="params">values</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(values, (<span class="built_in">list</span>, <span class="built_in">tuple</span>)) <span class="keyword">or</span> <span class="keyword">not</span> values:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected nonempty list or tuple&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">all</span>(finite(v) <span class="keyword">for</span> v <span class="keyword">in</span> values):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected finite real numbers&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">tuple</span>(<span class="built_in">float</span>(v) <span class="keyword">for</span> v <span class="keyword">in</span> values)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">matrix</span>(<span class="params">rows, width</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(rows, (<span class="built_in">list</span>, <span class="built_in">tuple</span>)) <span class="keyword">or</span> <span class="keyword">not</span> rows:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected nonempty matrix&quot;</span>)</span><br><span class="line">    result = <span class="built_in">tuple</span>(vector(row) <span class="keyword">for</span> row <span class="keyword">in</span> rows)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">any</span>(<span class="built_in">len</span>(row) != width <span class="keyword">for</span> row <span class="keyword">in</span> result):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;matrix width differs from parameter width&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">total</span>(<span class="params">values</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        value = math.fsum(values)</span><br><span class="line">    <span class="keyword">except</span> (OverflowError, ValueError):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;sum overflowed&quot;</span>) <span class="keyword">from</span> <span class="literal">None</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> finite(value):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;nonfinite result&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> value</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Cache</span>:</span><br><span class="line">    z: <span class="built_in">tuple</span></span><br><span class="line">    inverse_std: <span class="built_in">tuple</span></span><br><span class="line">    gamma: <span class="built_in">tuple</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">layernorm</span>(<span class="params">rows, gamma, beta, eps=<span class="number">1e-5</span></span>):</span><br><span class="line">    gamma, beta = vector(gamma), vector(beta)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(gamma) != <span class="built_in">len</span>(beta) <span class="keyword">or</span> <span class="keyword">not</span> finite(eps) <span class="keyword">or</span> eps &lt;= <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid parameters or epsilon&quot;</span>)</span><br><span class="line">    x = matrix(rows, <span class="built_in">len</span>(gamma))</span><br><span class="line">    d = <span class="built_in">len</span>(gamma)</span><br><span class="line">    normalized, inverse_std, outputs = [], [], []</span><br><span class="line">    <span class="keyword">for</span> row <span class="keyword">in</span> x:</span><br><span class="line">        mean = total(row) / d</span><br><span class="line">        centered = <span class="built_in">tuple</span>(v - mean <span class="keyword">for</span> v <span class="keyword">in</span> row)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">all</span>(finite(v) <span class="keyword">for</span> v <span class="keyword">in</span> centered):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;centering overflowed&quot;</span>)</span><br><span class="line">        variance = total(v * v <span class="keyword">for</span> v <span class="keyword">in</span> centered) / d</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> finite(variance + eps):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;variance overflowed&quot;</span>)</span><br><span class="line">        q = <span class="number">1.0</span> / math.sqrt(variance + eps)</span><br><span class="line">        z = <span class="built_in">tuple</span>(v * q <span class="keyword">for</span> v <span class="keyword">in</span> centered)</span><br><span class="line">        y = <span class="built_in">tuple</span>(a * v + b <span class="keyword">for</span> a, v, b <span class="keyword">in</span> <span class="built_in">zip</span>(gamma, z, beta))</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">all</span>(finite(v) <span class="keyword">for</span> v <span class="keyword">in</span> (*z, *y, q)):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;output overflowed&quot;</span>)</span><br><span class="line">        normalized.append(z)</span><br><span class="line">        inverse_std.append(q)</span><br><span class="line">        outputs.append(<span class="built_in">list</span>(y))</span><br><span class="line">    <span class="keyword">return</span> outputs, Cache(<span class="built_in">tuple</span>(normalized), <span class="built_in">tuple</span>(inverse_std), gamma)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">backward</span>(<span class="params">cache, upstream</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(cache, Cache):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected forward cache&quot;</span>)</span><br><span class="line">    gamma = vector(cache.gamma)</span><br><span class="line">    z = matrix(cache.z, <span class="built_in">len</span>(gamma))</span><br><span class="line">    q = vector(cache.inverse_std)</span><br><span class="line">    g = matrix(upstream, <span class="built_in">len</span>(gamma))</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(g) != <span class="built_in">len</span>(z) <span class="keyword">or</span> <span class="built_in">len</span>(q) != <span class="built_in">len</span>(z) <span class="keyword">or</span> <span class="built_in">any</span>(v &lt;= <span class="number">0</span> <span class="keyword">for</span> v <span class="keyword">in</span> q):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;cache or upstream shape mismatch&quot;</span>)</span><br><span class="line">    d = <span class="built_in">len</span>(gamma)</span><br><span class="line">    dx = []</span><br><span class="line">    <span class="keyword">for</span> zi, gi, qi <span class="keyword">in</span> <span class="built_in">zip</span>(z, g, q):</span><br><span class="line">        h = <span class="built_in">tuple</span>(a * b <span class="keyword">for</span> a, b <span class="keyword">in</span> <span class="built_in">zip</span>(gi, gamma))</span><br><span class="line">        mean_h = total(h) / d</span><br><span class="line">        mean_hz = total(a * b <span class="keyword">for</span> a, b <span class="keyword">in</span> <span class="built_in">zip</span>(h, zi)) / d</span><br><span class="line">        gradient = [qi * (a - mean_h - b * mean_hz)</span><br><span class="line">                    <span class="keyword">for</span> a, b <span class="keyword">in</span> <span class="built_in">zip</span>(h, zi)]</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">all</span>(finite(v) <span class="keyword">for</span> v <span class="keyword">in</span> gradient):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;gradient overflowed&quot;</span>)</span><br><span class="line">        dx.append(gradient)</span><br><span class="line">    dgamma = [total(gi[i] * zi[i] <span class="keyword">for</span> gi, zi <span class="keyword">in</span> <span class="built_in">zip</span>(g, z))</span><br><span class="line">              <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(d)]</span><br><span class="line">    dbeta = [total(gi[i] <span class="keyword">for</span> gi <span class="keyword">in</span> g) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(d)]</span><br><span class="line">    <span class="keyword">return</span> dx, dgamma, dbeta</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    x, gamma, beta = [[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]], [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], [<span class="number">0</span>, <span class="number">1</span>, -<span class="number">1</span>]</span><br><span class="line">    y, cache = layernorm(x, gamma, beta, eps=<span class="number">1</span>/<span class="number">3</span>)</span><br><span class="line">    dx, dgamma, dbeta = backward(cache, [[<span class="number">1</span>, -<span class="number">1</span>, <span class="number">2</span>]])</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;y&quot;</span>: y, <span class="string">&quot;dx&quot;</span>: dx,</span><br><span class="line">                      <span class="string">&quot;dgamma&quot;</span>: dgamma, <span class="string">&quot;dbeta&quot;</span>: dbeta&#125;, indent=<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+
+<p>运行得到 y&#x3D;[[-1,1,2]]，dx 约为 [[1,−3.666667,2.666667]]，dγ&#x3D;[−1,0,2]、dβ&#x3D;[1,−1,2]，与手算一致。前向和反向均为 O(RD) 时间，输出、缓存与输入梯度均为 O(RD) 空间，参数梯度为 O(D)。实现拒绝非有限数与常见溢出，不承诺处理全部接近浮点极限的输入。</p>
+<p><code>tests/verify-layernorm-article.cjs</code> 从本文提取代码，使用独立标量目标的中心差分检查全部输入与参数导数，并以高精度、显式雅可比核对；还检查多行累加、行间独立性、平移、epsilon 缩放关系与缓存快照。这些检查验证该层计算，没有运行完整 Transformer 训练，也没有验证泛化收益。</p>
+<h2 id="接入模型前的边界清单"><a href="#接入模型前的边界清单" class="headerlink" title="接入模型前的边界清单"></a>接入模型前的边界清单</h2><table>
+<thead>
+<tr>
+<th>情形</th>
+<th>要核对的内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>normalized_shape</td>
+<td>与输入末尾形状一致，轴顺序和语义正确</td>
+</tr>
+<tr>
+<td>γ、β</td>
+<td>每组中的每个位置各一个，跨所有外部行共享</td>
+</tr>
+<tr>
+<td>v 的分母</td>
+<td>使用 D，不使用 D−1；它不是估计总体方差的无偏校正</td>
+</tr>
+<tr>
+<td>ε</td>
+<td>位于平方根内部，影响归一化方差和尺度方向梯度</td>
+</tr>
+<tr>
+<td>D&#x3D;1</td>
+<td>输出为 β，输入梯度与 dγ 为 0；并非非法形状</td>
+</tr>
+<tr>
+<td>常量行</td>
+<td>输出为 β，但 D&gt;1 时输入梯度不一定为 0</td>
+</tr>
+<tr>
+<td>小批次</td>
+<td>统计不跨批次，并不等于所有模型都无需考虑批量设置</td>
+</tr>
+<tr>
+<td>padding</td>
+<td>检查是否落入统计轴，以及后续注意力、池化和损失的掩码</td>
+</tr>
+<tr>
+<td>训练与评估</td>
+<td>LayerNorm 局部计算一致；整个网络可能仍受 Dropout 等影响</td>
+</tr>
+<tr>
+<td>数值差分</td>
+<td>每次扰动都重新计算统计量；不要把前向缓存当成常数目标</td>
+</tr>
+</tbody></table>
+
+<details class="mechanism-check"><summary>自检：按行独立统计，为什么 gamma 的梯度还要跨行求和？</summary><div><p>各行有自己的均值和方差，但它们用了同一组 gamma、beta。一个共享参数经多条路径影响损失，反向就把这些路径的贡献相加。输入梯度的行间独立性与参数梯度的跨行累加可以同时成立。</p></div></details>
+
+
+<p>读完可以回到 <a href="/esblog/72684.html">BatchNorm 的批次统计与运行缓冲量</a>比较统计轴，也可结合<a href="/esblog/71926.html">共享参数的反向传播</a>，再把这些局部关系放回 <a href="/esblog/64183.html">Transformer 的残差块</a>。先明确计算与依赖，再讨论具体架构和实测效果。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/72864.html">https://eulersail.com/esblog/72864.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">神经网络</a><a class="post-meta__tags" href="/tags/%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD/">反向传播</a><a class="post-meta__tags" href="/tags/LayerNorm/">LayerNorm</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/46293.html" title="HTTP 缓存 从新鲜度到条件请求"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">HTTP 缓存 从新鲜度到条件请求</div></div></a></div><div class="next-post pull-right"><a href="/esblog/98768.html" title="圣桑第三交响曲 从两部结构到管风琴的两种角色"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">圣桑第三交响曲 从两部结构到管风琴的两种角色</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div><div><a href="/esblog/72684.html" title="BatchNorm 原理 从批次统计到训练推理差异"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-15</div><div class="title">BatchNorm 原理 从批次统计到训练推理差异</div></div></a></div><div><a href="/esblog/72753.html" title="Dropout 原理 从随机掩码到期望损失与梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-19</div><div class="title">Dropout 原理 从随机掩码到期望损失与梯度</div></div></a></div><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div><div><a href="/esblog/71926.html" title="反向传播、自动微分与优化器：神经网络怎样学到参数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-20</div><div class="title">反向传播、自动微分与优化器：神经网络怎样学到参数</div></div></a></div><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">122</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">208</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E7%BB%9F%E8%AE%A1%E8%BD%B4%E7%94%BB%E5%AF%B9"><span class="toc-text">先把统计轴画对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E8%A1%8C%E4%B8%89%E4%B8%AA%E6%95%B0%EF%BC%8C%E5%89%8D%E5%90%91%E4%B8%8E%E5%8F%8D%E5%90%91%E6%89%8B%E7%AE%97"><span class="toc-text">一行三个数，前向与反向手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%85%88%E4%B9%98%E5%90%84%E8%87%AA%E7%9A%84-gamma"><span class="toc-text">反向传播为什么要先乘各自的 gamma</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#epsilon-%E4%BF%9D%E7%95%99%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%8C%E5%8F%88%E6%94%B9%E5%8F%98%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-text">epsilon 保留了什么，又改变了什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E4%B8%8E%E8%AF%84%E4%BC%B0%E4%B8%80%E8%87%B4%EF%BC%8C%E4%B8%8D%E7%AD%89%E4%BA%8E-padding-%E8%87%AA%E5%8A%A8%E5%AE%89%E5%85%A8"><span class="toc-text">训练与评估一致，不等于 padding 自动安全</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%A0%87%E5%87%86%E5%BA%93-Python-%E5%AE%9E%E9%AA%8C"><span class="toc-text">完整标准库 Python 实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%85%A5%E6%A8%A1%E5%9E%8B%E5%89%8D%E7%9A%84%E8%BE%B9%E7%95%8C%E6%B8%85%E5%8D%95"><span class="toc-text">接入模型前的边界清单</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46293.html" title="HTTP 缓存 从新鲜度到条件请求">HTTP 缓存 从新鲜度到条件请求</a><time datetime="2026-10-21T08:00:00.000Z" title="发表于 2026-10-21 16:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72864.html" title="LayerNorm 原理 从特征轴到归一化梯度">LayerNorm 原理 从特征轴到归一化梯度</a><time datetime="2026-10-21T07:00:00.000Z" title="发表于 2026-10-21 15:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98768.html" title="圣桑第三交响曲 从两部结构到管风琴的两种角色">圣桑第三交响曲 从两部结构到管风琴的两种角色</a><time datetime="2026-10-21T03:00:00.000Z" title="发表于 2026-10-21 11:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79648.html" title="Codeforces 295B 从逆序加点到 Floyd 的中间点状态">Codeforces 295B 从逆序加点到 Floyd 的中间点状态</a><time datetime="2026-10-21T02:00:00.000Z" title="发表于 2026-10-21 10:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98657.html" title="柴可夫斯基第四交响曲 从号角中断到拨弦与民歌">柴可夫斯基第四交响曲 从号角中断到拨弦与民歌</a><time datetime="2026-10-20T08:20:00.000Z" title="发表于 2026-10-20 16:20:00">2026-10-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
