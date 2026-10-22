@@ -1,0 +1,393 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Git revert 从逆向补丁到合并主线 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用两个文件的线性历史解释 revert 如何新增逆向提交并保留独立后续修改，再从两个父版本推导合并主线、冲突处理与再次合并的边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git revert 从逆向补丁到合并主线">
+<meta property="og:url" content="https://eulersail.com/esblog/52963.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用两个文件的线性历史解释 revert 如何新增逆向提交并保留独立后续修改，再从两个父版本推导合并主线、冲突处理与再次合并的边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-22T01:10:00.000Z">
+<meta property="article:modified_time" content="2026-10-22T01:10:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="版本控制">
+<meta property="article:tag" content="代码审查">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/52963.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Git revert 从逆向补丁到合并主线',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-22 09:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261021-2"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">124</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">211</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Git revert 从逆向补丁到合并主线</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-22T01:10:00.000Z" title="发表于 2026-10-22 09:10:00">2026-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-22T01:10:00.000Z" title="更新于 2026-10-22 09:10:00">2026-10-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>9分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="Git revert 从逆向补丁到合并主线" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="tools"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DEVELOPER DESK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>5</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>6</strong><small>组图片与图表</small></span></div></div><p>先定位当前任务，再对照操作前提、结果与容易混淆的边界。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先把提交和快照分开"><span>01</span><strong>先把提交和快照分开</strong></a></li><li><a href="#两个文件的手算：后来的说明保留下来"><span>02</span><strong>两个文件的手算：后来的说明保留下来</strong></a></li><li><a href="#一次单提交撤销的审查顺序"><span>03</span><strong>一次单提交撤销的审查顺序</strong></a></li><li><a href="#冲突之后，继续与中止分别做什么"><span>04</span><strong>冲突之后，继续与中止分别做什么</strong></a></li><li><a href="#合并提交为什么必须选择父版本"><span>05</span><strong>合并提交为什么必须选择父版本</strong></a></li><li><a href="#撤销合并之后，再合并为什么没有恢复旧功能"><span>06</span><strong>撤销合并之后，再合并为什么没有恢复旧功能</strong></a></li><li><a href="#用真实-Git-核验教学历史"><span>07</span><strong>用真实 Git 核验教学历史</strong></a></li><li><a href="#接着读"><span>08</span><strong>接着读</strong></a></li></ol></nav></details></section><p><a href="/esblog/52716.html">差异审查</a>让我们看清一次提交改了什么，<a href="/esblog/52847.html">bisect</a>帮助定位行为改变的位置。找到问题提交之后，还有一步：怎样撤销它的影响，同时保留后来已经完成的其他工作？</p>
+<p><code>git revert</code> 的思路是向前增加一份逆向修改。理解它时，要同时看内容和祖先关系：内容可以被反向修改，旧提交仍留在历史里。合并提交有多个父版本，这个区别尤其重要。</p>
+<span id="more"></span>
+
+
+<section class="reading-brief" data-tone="tools" aria-label="Git撤销阅读导航"><div><strong>先选差异</strong><p>明确目标提交相对哪个父版本引入了变化。</p></div><div><strong>再看当前状态</strong><p>逆向修改应用到现在，独立的后续工作可以保留。</p></div><div><strong>最后看祖先</strong><p>合并的内容被撤销，合并关系仍然存在。</p></div></section>
+<figure class="concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="四个提交的内容与祖先关系示意，可横向滚动"><img class="no-lazy" src="/images/posts/git-revert-history.svg" width="900" height="500" loading="lazy" alt="A关闭功能并保留旧说明，B打开功能，C更新说明；在C后撤销B生成R，功能关闭而新说明保留，A到R仍是一条连续历史"></div><figcaption><strong>R 的父提交是 C。</strong> 图中是两个教学文件的合成历史；撤销 B 的开关修改后，C 的独立说明修改仍保留。R 的内容也因此不同于 A。<a href="/images/posts/git-revert-history.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="先把提交和快照分开"><a href="#先把提交和快照分开" class="headerlink" title="先把提交和快照分开"></a>先把提交和快照分开</h2><p>在普通单父提交中，设 B 的父提交为 A。B 引入的变化来自 A 与 B 的比较；撤销 B 时，Git 尝试在当前内容上应用相反方向的变化，成功后通常记录一个新提交 R。这一行为由 <a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-revert">git-revert 官方手册</a>定义。</p>
+<p>“相反方向”是理解差异的模型，不是把每一行当作独立加减数。当前版本可能已经移动、修改了相关内容，因此应用时可能需要合并，也可能产生冲突。即便没有文本冲突，后续代码仍可能在语义上依赖被撤销的功能。</p>
+<p>本文只讨论已经提交的、明确选中的单个目标，练习文件都是已有普通文本文件。开始前先审查工作区与暂存区，确认干净，并检查目标涉及的全部路径与变更类型；若目标超出项目允许修改的范围，应先按项目规则处理。</p>
+<h2 id="两个文件的手算：后来的说明保留下来"><a href="#两个文件的手算：后来的说明保留下来" class="headerlink" title="两个文件的手算：后来的说明保留下来"></a>两个文件的手算：后来的说明保留下来</h2><p>初始提交 A 中，<code>settings.txt</code> 内容是 <code>feature=off</code>，<code>note.txt</code> 内容是 <code>note=old</code>。B 只把开关改为 on，C 只把说明改为 new。现在位于 C，选择撤销 B。</p>
+
+<div class="table-wrap" id="revert-hand-table" tabindex="0" role="region" aria-label="Git revert五列手算表，可横向滚动">
+
+
+<table>
+<thead>
+<tr>
+<th>提交</th>
+<th>父提交</th>
+<th>settings.txt</th>
+<th>note.txt</th>
+<th>这一步的作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>无</td>
+<td>feature&#x3D;off</td>
+<td>note&#x3D;old</td>
+<td>初始快照</td>
+</tr>
+<tr>
+<td>B</td>
+<td>A</td>
+<td>feature&#x3D;on</td>
+<td>note&#x3D;old</td>
+<td>打开功能</td>
+</tr>
+<tr>
+<td>C</td>
+<td>B</td>
+<td>feature&#x3D;on</td>
+<td>note&#x3D;new</td>
+<td>更新独立说明</td>
+</tr>
+<tr>
+<td>R</td>
+<td>C</td>
+<td>feature&#x3D;off</td>
+<td>note&#x3D;new</td>
+<td>撤销 B 的影响</td>
+</tr>
+<tr>
+<td>RR</td>
+<td>R</td>
+<td>feature&#x3D;on</td>
+<td>note&#x3D;new</td>
+<td>再撤销 R 的影响</td>
+</tr>
+</tbody></table>
+
+</div>
+
+
+<p>R 和 A 都关闭功能，却有不同的说明。R 的父提交是 C，A、B、C 仍可沿祖先关系到达。即便某个例子的文件快照恰好与旧版本相同，新提交的身份与祖先也不因此相同。</p>
+<p>最后一行 RR 是本例的“撤销撤销”：R 关闭了功能，撤销 R 就重新打开它。这里只因为改动彼此独立，结果可以直接手算；真实历史中间若有重叠修改，仍需处理冲突和行为依赖。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[A 功能关 旧说明] --&gt; B[B 功能开 旧说明]
+  B --&gt; C[C 功能开 新说明]
+  C --&gt; R[R 功能关 新说明]
+  B -. 反向应用B的变化 .-&gt; R
+  R --&gt; RR[RR 功能开 新说明]
+  </pre></div>
+
+<h2 id="一次单提交撤销的审查顺序"><a href="#一次单提交撤销的审查顺序" class="headerlink" title="一次单提交撤销的审查顺序"></a>一次单提交撤销的审查顺序</h2><p>下面的 <code>$target</code> 是 PowerShell 变量，须替换为已经核对的完整提交 ID。A、B、C、R 是本文图中的标签，并非要求仓库里存在这些分支。先用只读命令确认目标；单父场景中的 <code>^</code> 表示第一父版本，语法见 <a target="_blank" rel="noopener" href="https://git-scm.com/docs/gitrevisions">gitrevisions 官方文档</a>。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$target</span> = <span class="string">&#x27;替换为已核对的完整提交ID&#x27;</span></span><br><span class="line">git status <span class="literal">--short</span></span><br><span class="line">git show <span class="literal">--stat</span> <span class="literal">--oneline</span> <span class="variable">$target</span></span><br><span class="line">git show <span class="literal">--no-patch</span> <span class="literal">--format</span>=<span class="string">&#x27;%H %P&#x27;</span> <span class="variable">$target</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="string">&quot;<span class="variable">$</span>&#123;target&#125;^&quot;</span> <span class="variable">$target</span> <span class="literal">--</span> settings.txt</span><br></pre></td></tr></table></figure>
+
+<p>本例的目标只涉及 <code>settings.txt</code>；其他目标应先查看它实际涉及的全部文件。确认父版本、内容与权限范围，再针对这一个提交执行：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git revert <span class="literal">--no-edit</span> <span class="variable">$target</span></span><br><span class="line">git show <span class="literal">--stat</span> <span class="literal">--oneline</span> HEAD</span><br><span class="line">git <span class="built_in">diff</span> <span class="string">&#x27;HEAD^&#x27;</span> HEAD <span class="literal">--</span> settings.txt</span><br><span class="line">git status <span class="literal">--short</span></span><br></pre></td></tr></table></figure>
+
+<p><code>--no-edit</code> 采用默认撤销说明，不启动提交说明编辑器。它没有跳过冲突处理、内容审查或测试。命令成功之后，应确认新提交的差异只表达预期撤销，并运行与被改行为相关的测试。若需要解释撤销原因，可以使用编辑提交说明的正常流程。</p>
+<h2 id="冲突之后，继续与中止分别做什么"><a href="#冲突之后，继续与中止分别做什么" class="headerlink" title="冲突之后，继续与中止分别做什么"></a>冲突之后，继续与中止分别做什么</h2><p>把例子改成 A 的开关为 off、B 改为 on、C 又把同一行改为 experimental。此时撤销 B 需要把 on 反向改成 off，当前却已经是 experimental，不能假定 Git 会自动保留你想要的语义。</p>
+<p>遇到冲突后，先确认当前进行的是这一次 revert，再检查未合并路径与差异：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git status</span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--name-only</span> <span class="literal">--diff-filter</span>=U</span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--</span> settings.txt</span><br></pre></td></tr></table></figure>
+
+<p>若决定完成撤销，通过编辑器解决 <code>settings.txt</code> 的冲突，明确保留哪部分当前行为。完成行为测试后，只暂存这个已审查的文件，再核对暂存差异：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git add <span class="literal">--</span> settings.txt</span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--cached</span> <span class="literal">--check</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="literal">--cached</span> <span class="literal">--</span> settings.txt</span><br><span class="line">git revert <span class="literal">--continue</span></span><br></pre></td></tr></table></figure>
+
+<p><code>--continue</code> 继续正在进行的操作；它不会替你证明解法正确。若决定取消本次尚未完成的撤销，则使用 <code>git revert --abort</code>，回到本次操作开始前的状态。本次冲突处理期间的编辑也会随之撤回，需要保留的解法应事先另行记录。<code>--quit</code> 只是忘记进行中的操作状态，不能当作恢复开始状态的同义词。三者的区别见上述 revert 手册的 sequencer 小节。</p>
+
+<details class="mechanism-check"><summary>自检：没有冲突，就能保证后续工作不受影响吗？</summary><p>不能。两个文件的文本修改可以顺利合并，但后来的调用可能依赖被关闭的功能。无冲突只说明 Git 得到了可应用的文本结果；仍应检查行为、配置兼容性和相关测试。</p></details>
+
+
+<h2 id="合并提交为什么必须选择父版本"><a href="#合并提交为什么必须选择父版本" class="headerlink" title="合并提交为什么必须选择父版本"></a>合并提交为什么必须选择父版本</h2><p>考虑一个两父合并 M：P1 更新说明，P2 打开功能，合并后两者都在。这里 P1、P2 是 M 的父列表顺序，不是分支名的排序，也不是图中位置决定的。</p>
+
+<figure class="concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="两个父基线对应不同撤销结果的图示，可横向滚动"><img class="no-lazy" src="/images/posts/git-revert-merge-mainline.svg" width="900" height="540" loading="lazy" alt="P1为功能关新说明，P2为功能开旧说明，M合并为功能开新说明；以第一父为基线撤销得到功能关新说明，以第二父为基线撤销得到功能开旧说明"></div><figcaption><strong>先问相对谁发生了变化。</strong> M 相对 P1 引入功能开关变化，相对 P2 引入说明变化。本图把撤销直接接在 M 后，因而两个结果分别等于选定父版本的内容；若还有后续提交，需要把它们也纳入分析。概念图不是项目历史截图。<a href="/images/posts/git-revert-merge-mainline.svg">查看原图</a></figcaption></figure>
+
+
+<table>
+<thead>
+<tr>
+<th>比较基线</th>
+<th>基线内容</th>
+<th>M 相对它的变化</th>
+<th>紧接 M 撤销后的内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一父 P1</td>
+<td>关、新说明</td>
+<td>功能关 → 开</td>
+<td>关、新说明</td>
+</tr>
+<tr>
+<td>第二父 P2</td>
+<td>开、旧说明</td>
+<td>说明旧 → 新</td>
+<td>开、旧说明</td>
+</tr>
+</tbody></table>
+<p><code>git revert -m 1 M</code> 选择第一父为比较基线，反向应用 P1→M；<code>-m 2</code> 选择第二父，反向应用 P2→M。这里的数字从 1 开始。<strong>选择的是保留哪条父基线的含义，不是“删除第几个父提交”。</strong> 结果仍有 M 作为祖先。<a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Tools-Advanced-Merging#_undoing_merges">Pro Git 的合并章节</a>给出了同类解释。</p>
+<p>实际操作先检查父列表与两份比较；以下仍是 PowerShell 的单个提交变量：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$merge</span> = <span class="string">&#x27;替换为已核对的合并提交ID&#x27;</span></span><br><span class="line">git show <span class="literal">--no-patch</span> <span class="literal">--format</span>=<span class="string">&#x27;%H %P&#x27;</span> <span class="variable">$merge</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="string">&quot;<span class="variable">$</span>&#123;merge&#125;^1&quot;</span> <span class="variable">$merge</span></span><br><span class="line">git <span class="built_in">diff</span> <span class="string">&quot;<span class="variable">$</span>&#123;merge&#125;^2&quot;</span> <span class="variable">$merge</span></span><br></pre></td></tr></table></figure>
+
+<p>通常在某分支上执行普通合并时，第一父是合并前该分支的 tip，但不应仅凭分支名猜测。确认第一父确实是要保留的比较基线后，才针对这个合并执行 <code>git revert --no-edit -m 1 $merge</code>。不要把 <code>-m 1</code> 当成所有合并都适用的固定答案。</p>
+<h2 id="撤销合并之后，再合并为什么没有恢复旧功能"><a href="#撤销合并之后，再合并为什么没有恢复旧功能" class="headerlink" title="撤销合并之后，再合并为什么没有恢复旧功能"></a>撤销合并之后，再合并为什么没有恢复旧功能</h2><p>本例在 M 后创建 R，撤销 P1→M 的功能变化。P2 仍是 R 的祖先，因此再合并同一个 P2，不会把它当作从未合并的新历史。</p>
+<p>如果 P2 后面新增 P3，只添加独立的 <code>fix.txt</code>，再次合并会带来这份新改动，旧功能不一定因此恢复。本例结果是“功能关、新说明、新修补文件”：修补文件到了，旧开关仍然关闭。祖先判断与内容撤销各自都在发挥作用。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[已合并 M 后创建撤销提交 R] --&gt; B{准备合并的分支历史}
+  B -- 仍是已到达的 P2 --&gt; C[没有新的祖先需要合入]
+  B -- 在 P2 上追加 P3 --&gt; D[计算 P2 之后的新变化]
+  D --&gt; E[新增修补可进入 旧内容不会自动补回]
+  B -- 需求是恢复被撤销内容 --&gt; F[先检查是否应撤销 R]
+  F --&gt; G[审查恢复结果 再合并后续修复]
+  </pre></div>
+
+<p>当分支是在原有提交上追加修复，而且确实要恢复 R 撤掉的内容时，可以先审查并撤销 <strong>R 这个普通提交</strong>，然后再合并后续修复。此时通常不需要对 R 传 <code>-m</code>：R 撤销的是合并，但 R 自己只有一个父提交。</p>
+<p>如果分支已经基于撤销后的主线重新实现功能，恢复 R 可能重复引入旧实现并造成冲突。这是另一种历史，应重新比较合并基线与实际差异。Git 项目自身的 <a target="_blank" rel="noopener" href="https://github.com/git/git/blob/HEAD/Documentation/howto/revert-a-faulty-merge.adoc">revert-a-faulty-merge 说明</a>专门区分了追加修复与重做历史，不能机械套用“再撤销一次”。</p>
+<h2 id="用真实-Git-核验教学历史"><a href="#用真实-Git-核验教学历史" class="headerlink" title="用真实 Git 核验教学历史"></a>用真实 Git 核验教学历史</h2><p>本文的验证位于 <code>tests/verify-git-revert-article.cjs</code>。它在新建的独立教学仓库中，用 Git 对象命令构造上述快照与父关系，再实际运行单提交 revert、两种主线撤销、冲突继续&#x2F;中止和再次合并。所有实验目录均保留，不接触博客的部署仓库，不清理文件或缓存。</p>
+<p>核验分别比较文件内容、新提交的父 ID、祖先可达性和工作区状态。随机案例只改变合成文件中的内容，用于检查独立后续修改的保留；它们不构成对所有合并策略、重命名、二进制文件或真实业务兼容性的保证。本文所有图都依据这些教学状态绘制，不把它们称为生产项目的恢复记录。</p>
+
+<details class="mechanism-check"><summary>自检：合并的第一父是 P1，撤销时写 -m 1，是删除 P1 吗？</summary><p>不是。它把 P1 作为比较基线，反向应用 P1 到 M 的变化。紧接 M 的简单例子中，结果内容等于 P1，但 M、P1、P2 都仍在历史中。若以后需要恢复原合入内容，还要同时考虑这份撤销提交与后续分支的祖先关系。</p></details>
+
+
+<h2 id="接着读"><a href="#接着读" class="headerlink" title="接着读"></a>接着读</h2><ul>
+<li><a href="/esblog/52716.html">Git 差异审查</a>：先区分工作区、暂存区与提交，检查这次准备记录什么。</li>
+<li><a href="/esblog/52847.html">Git bisect</a>：先定位并核实问题提交，再决定修复或撤销的粒度。</li>
+<li><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具分类</a>与<a href="/resources/">资源索引</a>：按现有路线继续阅读。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/52963.html">https://eulersail.com/esblog/52963.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Git/">Git</a><a class="post-meta__tags" href="/tags/%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/">版本控制</a><a class="post-meta__tags" href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5/">代码审查</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/65492.html" title="PCA 入门 从方差方向到重构误差"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">PCA 入门 从方差方向到重构误差</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/52716.html" title="Git 差异审查 从工作区到暂存区与提交"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">Git 差异审查 从工作区到暂存区与提交</div></div></a></div><div><a href="/esblog/52847.html" title="Git bisect 从判定器到首个坏提交"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-20</div><div class="title">Git bisect 从判定器到首个坏提交</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">124</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">211</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E6%8F%90%E4%BA%A4%E5%92%8C%E5%BF%AB%E7%85%A7%E5%88%86%E5%BC%80"><span class="toc-text">先把提交和快照分开</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E6%96%87%E4%BB%B6%E7%9A%84%E6%89%8B%E7%AE%97%EF%BC%9A%E5%90%8E%E6%9D%A5%E7%9A%84%E8%AF%B4%E6%98%8E%E4%BF%9D%E7%95%99%E4%B8%8B%E6%9D%A5"><span class="toc-text">两个文件的手算：后来的说明保留下来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E5%8D%95%E6%8F%90%E4%BA%A4%E6%92%A4%E9%94%80%E7%9A%84%E5%AE%A1%E6%9F%A5%E9%A1%BA%E5%BA%8F"><span class="toc-text">一次单提交撤销的审查顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B2%E7%AA%81%E4%B9%8B%E5%90%8E%EF%BC%8C%E7%BB%A7%E7%BB%AD%E4%B8%8E%E4%B8%AD%E6%AD%A2%E5%88%86%E5%88%AB%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-text">冲突之后，继续与中止分别做什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E6%8F%90%E4%BA%A4%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB%E9%80%89%E6%8B%A9%E7%88%B6%E7%89%88%E6%9C%AC"><span class="toc-text">合并提交为什么必须选择父版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E5%90%88%E5%B9%B6%E4%B9%8B%E5%90%8E%EF%BC%8C%E5%86%8D%E5%90%88%E5%B9%B6%E4%B8%BA%E4%BB%80%E4%B9%88%E6%B2%A1%E6%9C%89%E6%81%A2%E5%A4%8D%E6%97%A7%E5%8A%9F%E8%83%BD"><span class="toc-text">撤销合并之后，再合并为什么没有恢复旧功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E7%9C%9F%E5%AE%9E-Git-%E6%A0%B8%E9%AA%8C%E6%95%99%E5%AD%A6%E5%8E%86%E5%8F%B2"><span class="toc-text">用真实 Git 核验教学历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E7%9D%80%E8%AF%BB"><span class="toc-text">接着读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/52963.html" title="Git revert 从逆向补丁到合并主线">Git revert 从逆向补丁到合并主线</a><time datetime="2026-10-22T01:10:00.000Z" title="发表于 2026-10-22 09:10:00">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65492.html" title="PCA 入门 从方差方向到重构误差">PCA 入门 从方差方向到重构误差</a><time datetime="2026-10-22T01:00:00.000Z" title="发表于 2026-10-22 09:00:00">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46293.html" title="HTTP 缓存 从新鲜度到条件请求">HTTP 缓存 从新鲜度到条件请求</a><time datetime="2026-10-21T08:00:00.000Z" title="发表于 2026-10-21 16:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72864.html" title="LayerNorm 原理 从特征轴到归一化梯度">LayerNorm 原理 从特征轴到归一化梯度</a><time datetime="2026-10-21T07:00:00.000Z" title="发表于 2026-10-21 15:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98768.html" title="圣桑第三交响曲 从两部结构到管风琴的两种角色">圣桑第三交响曲 从两部结构到管风琴的两种角色</a><time datetime="2026-10-21T03:00:00.000Z" title="发表于 2026-10-21 11:00:00">2026-10-21</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>PCA 入门 从方差方向到重构误差 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从中心化和样本协方差出发，手算 PCA 的正交方向、解释方差与重构误差，区分误差口径、尺度选择和数据泄漏，附 NumPy 实现及独立谱分解核验。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PCA 入门 从方差方向到重构误差">
+<meta property="og:url" content="https://eulersail.com/esblog/65492.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从中心化和样本协方差出发，手算 PCA 的正交方向、解释方差与重构误差，区分误差口径、尺度选择和数据泄漏，附 NumPy 实现及独立谱分解核验。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-22T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-22T01:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="NumPy">
+<meta property="article:tag" content="PCA">
+<meta property="article:tag" content="线性代数">
+<meta property="article:tag" content="降维">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/65492.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PCA 入门 从方差方向到重构误差',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-22 09:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261021-2"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">124</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">211</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">PCA 入门 从方差方向到重构误差</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-22T01:00:00.000Z" title="发表于 2026-10-22 09:00:00">2026-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-22T01:00:00.000Z" title="更新于 2026-10-22 09:00:00">2026-10-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="PCA 入门 从方差方向到重构误差" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="data"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DATA NOTEBOOK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>6</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>6</strong><small>组图片与图表</small></span></div></div><p>先确认变量、单位与假设，再核对手算、图表和解释范围。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>6 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先中心化，再讨论方向"><span>01</span><strong>先中心化，再讨论方向</strong></a></li><li><a href="#最大方差为什么对应特征向量"><span>02</span><strong>最大方差为什么对应特征向量</strong></a></li><li><a href="#四个点的完整手算"><span>03</span><strong>四个点的完整手算</strong></a></li><li><a href="#舍弃的方差，怎样变成重构误差"><span>04</span><strong>舍弃的方差，怎样变成重构误差</strong></a></li><li><a href="#尺度、常量列与训练集边界"><span>05</span><strong>尺度、常量列与训练集边界</strong></a></li><li><a href="#完整-NumPy-实现与合成核验"><span>06</span><strong>完整 NumPy 实现与合成核验</strong></a></li></ol></nav></details></section><p><a href="/esblog/64712.html">NumPy 统计</a>能分别描述每一列的均值和方差。当两列一起变化时，还需要回答一个几何问题：<strong>把点投影到哪个方向，才能保留最多的变化？</strong></p>
+<p>主成分分析（PCA）把这个问题写成正交投影。本文用四个合成点走通中心化、协方差、方向、投影和重构，再说明“解释了 80% 方差”究竟对应多少误差。这里讨论实数、有限、完整的矩阵，不做缺失值填补、白化或非线性降维。</p>
+<span id="more"></span>
+
+<h2 id="先中心化，再讨论方向"><a href="#先中心化，再讨论方向" class="headerlink" title="先中心化，再讨论方向"></a>先中心化，再讨论方向</h2><p>约定数据矩阵 X 有 n 行样本、p 列特征，n≥2。每一列减去训练集的均值，得到中心化矩阵 C；本文采用分母为 n−1 的样本协方差 S：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">μ = 每列在训练集上的均值</span><br><span class="line">C = X − μ</span><br><span class="line">S = CᵀC / (n−1)</span><br></pre></td></tr></table></figure>
+
+<p>中心化把坐标原点移到数据均值。否则 XᵀX 同时包含均值偏移与围绕均值的变化；它所找到的方向可能主要指向远离原点的均值。PCA 重构时要把 μ 加回去，所以最终拟合的是<strong>经过均值的仿射子空间</strong>。</p>
+<p><a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">scikit-learn 的 PCA 文档</a>采用中心化、默认不逐列缩放的约定，解释方差也使用 n−1 分母。若全篇一致改用 n，所有协方差特征值会乘同一个因子，方向和解释方差比例保持不变；涉及绝对误差的公式则必须跟随分母改变。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[先划分训练集与测试集] --&gt; B[仅在训练集求每列均值]
+  B --&gt; C[中心化训练矩阵 C]
+  C --&gt; D[对 C 做奇异值分解]
+  D --&gt; E[保留前 k 个正交方向]
+  E --&gt; F[新数据使用同一均值与方向投影]
+  F --&gt; G[需要重构时投回原特征并加回均值]
+  </pre></div>
+
+<h2 id="最大方差为什么对应特征向量"><a href="#最大方差为什么对应特征向量" class="headerlink" title="最大方差为什么对应特征向量"></a>最大方差为什么对应特征向量</h2><p>取单位列向量 v，中心化数据在这个方向上的得分为 z&#x3D;Cv。因为各列已经中心化，z 的均值也为零，样本方差是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Var(z) = zᵀz / (n−1) = vᵀSv，约束 vᵀv=1</span><br></pre></td></tr></table></figure>
+
+<p>S 是实对称半正定矩阵，可以取一组正交单位特征向量 v₁,…,vₚ，特征值按 λ₁≥…≥λₚ≥0 排列。把任意单位方向展开为 v&#x3D;Σ_j a_j v_j，有 Σ_j a_j²&#x3D;1，于是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vᵀSv = Σ_j λ_j a_j² ≤ λ₁</span><br></pre></td></tr></table></figure>
+
+<p>v₁ 达到上界，就是第一主成分方向。在与 v₁ 正交的方向中重复这个论证，得到第二方向，依此类推。<a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/modules/decomposition.html#pca">scikit-learn 的分解指南</a>将 PCA 表述为依次解释最大方差的正交成分；上面的展开直接给出有限维情况下的理由。</p>
+<p><strong>方向与得分要分开。</strong> v_j 是 p 维特征空间里的方向；Cv_j 才是 n 个样本在该方向上的坐标。把 v_j 和全部对应得分同时取反，投影与重构不变。若多个特征值相等，该特征空间内还可以旋转基底；若截断边界恰好切过一组相等特征值，最优子空间本身也可能不唯一。</p>
+<p>不同主成分得分在这份中心化样本上的协方差为零，因为 v_iᵀSv_j&#x3D;0；这不等于一般意义下的统计独立，也不能从主成分方向直接推出因果关系。</p>
+<p>不同主成分得分在这份中心化样本上的协方差为零，因为 v_iᵀSv_j&#x3D;0；这不等于一般意义下的统计独立，也不能从主成分方向直接推出因果关系。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="PCA 四个中心化点与两个正交方差方向图，可左右滚动"><img class="no-lazy" src="/images/posts/pca-variance-directions.svg" width="900" height="520" loading="lazy" decoding="async" alt="四个中心化点为3和1、1和3、负1和负3、负3和负1，第一方向沿两坐标相同的对角线，第二方向与其正交；两方向样本方差分别32除以3与8除以3"></div><figcaption><strong>方差比较沿方向进行。</strong> 原创几何图，使用下文四个合成点；箭头只标示正交方向，不把箭头长度当作方差刻度，也不代表真实数据或实测效果。<a href="/images/posts/pca-variance-directions.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="四个点的完整手算"><a href="#四个点的完整手算" class="headerlink" title="四个点的完整手算"></a>四个点的完整手算</h2><p>原始四行数据取 (13,21)、(11,23)、(9,17)、(7,19)，均值为 μ&#x3D;(10,20)。中心化后为 (3,1)、(1,3)、(−1,−3)、(−3,−1)，从而：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CᵀC = [[20,12],[12,20]]</span><br><span class="line">S = [[20/3,4],[4,20/3]]</span><br><span class="line">v₁ = (1,1)/√2，λ₁ = 32/3</span><br><span class="line">v₂ = (1,−1)/√2，λ₂ = 8/3</span><br></pre></td></tr></table></figure>
+
+<p>保留 k&#x3D;1 时，第一方向的解释方差比例为 (32&#x2F;3)&#x2F;(40&#x2F;3)&#x3D;0.8。每行的重构是 μ+(c·v₁)v₁；下面把每行两个坐标的平方误差相加。</p>
+
+<div class="table-wrap" tabindex="0" role="region" aria-label="PCA 四个样本的中心化投影与重构七列手算表"><table id="pca-hand-table"><thead><tr><th>样本</th><th>原始 x</th><th>中心化 c</th><th>第一得分 c·v₁</th><th>第二得分 c·v₂</th><th>一维重构 x̂</th><th>行平方误差</th></tr></thead><tbody><tr><td>1</td><td>(13,21)</td><td>(3,1)</td><td>2√2</td><td>√2</td><td>(12,22)</td><td>2</td></tr><tr><td>2</td><td>(11,23)</td><td>(1,3)</td><td>2√2</td><td>−√2</td><td>(12,22)</td><td>2</td></tr><tr><td>3</td><td>(9,17)</td><td>(−1,−3)</td><td>−2√2</td><td>√2</td><td>(8,18)</td><td>2</td></tr><tr><td>4</td><td>(7,19)</td><td>(−3,−1)</td><td>−2√2</td><td>−√2</td><td>(8,18)</td><td>2</td></tr></tbody></table></div>
+
+
+<p>结果有三个不同口径：总平方误差 SSE&#x3D;8；平均每行平方误差 SSE&#x2F;n&#x3D;2；平均每坐标平方误差 MSE&#x3D;SSE&#x2F;(np)&#x3D;1。报告误差时，应写出分母。80% 解释率也不表示“80% 样本被正确分类”。</p>
+<h2 id="舍弃的方差，怎样变成重构误差"><a href="#舍弃的方差，怎样变成重构误差" class="headerlink" title="舍弃的方差，怎样变成重构误差"></a>舍弃的方差，怎样变成重构误差</h2><p>把前 k 个方向按列放进 V_k，满足 V_kᵀV_k&#x3D;I。中心化重构为 Ĉ&#x3D;CV_kV_kᵀ，残差与保留子空间正交。每行沿完整正交基展开后，平方长度等于各方向坐标的平方和；因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SSE_k = ‖C − CV_kV_kᵀ‖_F²</span><br><span class="line">      = Σ_&#123;j&gt;k&#125; ‖Cv_j‖²</span><br><span class="line">      = (n−1) Σ_&#123;j&gt;k&#125; λ_j</span><br></pre></td></tr></table></figure>
+
+<p>这个等式针对<strong>参与拟合的中心化数据、普通欧氏距离与正交投影</strong>。用同一模型重构测试集时仍能直接计算残差，但训练谱的尾和不再等于测试集误差。</p>
+<p>为什么前 k 个方向也是最小误差方案？设任意 p×k 正交列矩阵为 Q，它保留的平方长度是 (n−1)tr(QᵀSQ)。在 S 的特征基中，这个迹可写成 Σ_j λ_j b_j，其中 0≤b_j≤1、Σ_j b_j&#x3D;k；最大值为前 k 个特征值之和。总平方长度固定，保留最多就使残差最小。这个结论只比较维数为 k 的线性正交投影，并不覆盖任意非线性编码器。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="PCA 一维投影残差与误差口径图，可左右滚动"><img class="no-lazy" src="/images/posts/pca-reconstruction-loss.svg" width="900" height="520" loading="lazy" decoding="async" alt="四个中心化点垂直投影到第一主成分直线，每个点的残差平方长度为2；总中心化平方长度40中保留32舍弃8，总误差8、每行2、每坐标1"></div><figcaption><strong>损失等于被舍弃方向的平方坐标之和。</strong> 原创合成手算图；保留 32 与舍弃 8 使用同一平方长度单位，图中的误差口径来自四点算术，不是模型评测结果。<a href="/images/posts/pca-reconstruction-loss.svg">查看原图</a></figcaption></figure>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[总平方长度固定] --&gt; B[沿正交方向分解]
+  B --&gt; C[保留前 k 个方向的平方坐标]
+  B --&gt; D[其余方向成为重构残差]
+  C --&gt; E[保留量最大]
+  D --&gt; F[残差最小]
+  E --&gt; G[取最大的 k 个协方差特征值]
+  F --&gt; G
+  </pre></div>
+
+<h2 id="尺度、常量列与训练集边界"><a href="#尺度、常量列与训练集边界" class="headerlink" title="尺度、常量列与训练集边界"></a>尺度、常量列与训练集边界</h2><p>改变某一列的单位会改变欧氏距离和协方差，因此可能改变 PCA 方向。中心化保留原始单位下的变动；逐列标准化则把“相对自身标准差的变化”作为比较尺度。两者对应不同问题，应根据特征含义选择。标准化后的重构误差也在标准化坐标中计量，不能直接当成原始单位误差。</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>应怎样理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>某列是常量</td>
+<td>中心化后为零；若另做标准化，要单独处理零标准差</td>
+</tr>
+<tr>
+<td>全部行完全相同</td>
+<td>总方差为零，解释比例的分母为零；本文程序约定返回全零比例</td>
+</tr>
+<tr>
+<td>p 大于 n</td>
+<td>中心化矩阵秩至多 n−1，协方差里必有零特征值</td>
+</tr>
+<tr>
+<td>特征值相等或非常接近</td>
+<td>具体方向可能改变；比较投影矩阵、子空间和误差更合适</td>
+</tr>
+<tr>
+<td>低方差方向含有预测信号</td>
+<td>PCA 没有使用标签，不能保证保留它，也不能保证提升预测效果</td>
+</tr>
+<tr>
+<td>存在异常点、缺失值或极端量级</td>
+<td>先处理数据质量与数值范围；本文不提供稳健 PCA 或缺失值算法</td>
+</tr>
+</tbody></table>
+<p>均值、可选的标准差和 PCA 方向都只能在训练部分拟合。测试集减去保存的训练均值，再使用保存的方向，不重新估计测试集均值；交叉验证时，每一折都要在自己的训练部分重新拟合。<a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/common_pitfalls.html#data-leakage">scikit-learn 的数据泄漏说明</a>明确把 PCA 列为需要遵守这一规则的预处理步骤。</p>
+
+<details class="mechanism-check"><summary>自检：给每列都加上常数，PCA 方向会变吗？</summary><p>如果重新在平移后的训练集拟合，中心化矩阵保持不变，协方差、方向子空间和训练重构误差也保持不变；均值与最终重构一起平移。对已有模型的新输入单独平移，却不调整模型均值，则不是同一情形。</p></details>
+<details class="mechanism-check"><summary>自检：保留一维解释了 80%，测试集误差一定也是总量的 20% 吗？</summary><p>不一定。80% 来自当前训练样本的谱分解。新样本可能沿舍弃方向变化更多；要使用训练均值与方向，直接计算测试集重构残差。若评价下游预测任务，还需要独立评价其目标指标。</p></details>
+
+
+<h2 id="完整-NumPy-实现与合成核验"><a href="#完整-NumPy-实现与合成核验" class="headerlink" title="完整 NumPy 实现与合成核验"></a>完整 NumPy 实现与合成核验</h2><p>下面需要安装 NumPy，本文实际运行环境为 Python 3 与 NumPy 1.24.4。程序直接对中心化矩阵做精简 SVD：若 C&#x3D;U diag(s) Vᵀ，则 λ_j&#x3D;s_j²&#x2F;(n−1)，Vᵀ 的行就是方向。<a target="_blank" rel="noopener" href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html">NumPy SVD 文档</a>给出分解的形状、奇异值降序与正交性质；没有必要先显式形成协方差矩阵再用于正文实现。</p>
+<p>此实现允许 0≤k≤min(n,p)，k&#x3D;0 代表只用训练均值重构。精简 SVD 未列出的 p−min(n,p) 个协方差特征值均为零。模型的 <code>components</code> 只保存前 k 个方向，<code>variance</code> 与 <code>ratio</code> 则保留精简 SVD 的完整谱，便于观察舍弃部分；这与 scikit-learn 同名概念属性只保留所选成分的接口不同。程序统一拒绝布尔（包括混入数值列表的布尔元素）、复数、文本、非有限值、非法形状与产生非有限中间结果的输入；它仍是浮点教学实现，不提供任意精度或极端病态矩阵保证。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">matrix</span>(<span class="params">values, name, min_rows=<span class="number">1</span>, width=<span class="literal">None</span></span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        elements = np.asarray(values, dtype=<span class="built_in">object</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">any</span>(<span class="built_in">isinstance</span>(v, (<span class="built_in">bool</span>, np.bool_)) <span class="keyword">for</span> v <span class="keyword">in</span> elements.flat):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;boolean element&quot;</span>)</span><br><span class="line">        raw = np.asarray(values)</span><br><span class="line">        <span class="keyword">if</span> raw.dtype.kind <span class="keyword">not</span> <span class="keyword">in</span> <span class="string">&quot;iuf&quot;</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected real numeric values&quot;</span>)</span><br><span class="line">        x = np.array(raw, dtype=np.float64, copy=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">except</span> (TypeError, ValueError, OverflowError) <span class="keyword">as</span> exc:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot;: invalid numeric matrix&quot;</span>) <span class="keyword">from</span> exc</span><br><span class="line">    <span class="keyword">if</span> x.ndim != <span class="number">2</span> <span class="keyword">or</span> x.shape[<span class="number">0</span>] &lt; min_rows:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot;: invalid shape&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> (width <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">and</span> x.shape[<span class="number">1</span>] == <span class="number">0</span>) <span class="keyword">or</span> (</span><br><span class="line">        width <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> x.shape[<span class="number">1</span>] != width</span><br><span class="line">    ):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot;: invalid feature count&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> np.isfinite(x).<span class="built_in">all</span>():</span><br><span class="line">        <span class="keyword">raise</span> ValueError(name + <span class="string">&quot;: non-finite value&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">readonly</span>(<span class="params">values</span>):</span><br><span class="line">    x = np.array(values, dtype=np.float64, copy=<span class="literal">True</span>)</span><br><span class="line">    x.setflags(write=<span class="literal">False</span>)</span><br><span class="line">    <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PCA</span>:</span><br><span class="line">    mean: np.ndarray</span><br><span class="line">    components: np.ndarray</span><br><span class="line">    variance: np.ndarray</span><br><span class="line">    ratio: np.ndarray</span><br><span class="line">    training_sse: <span class="built_in">float</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">transform</span>(<span class="params">self, values</span>):</span><br><span class="line">        x = matrix(values, <span class="string">&quot;X&quot;</span>, width=self.mean.size)</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">with</span> np.errstate(over=<span class="string">&quot;raise&quot;</span>, invalid=<span class="string">&quot;raise&quot;</span>):</span><br><span class="line">                z = (x - self.mean) @ self.components.T</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> np.isfinite(z).<span class="built_in">all</span>():</span><br><span class="line">                <span class="keyword">raise</span> ValueError(<span class="string">&quot;non-finite projection&quot;</span>)</span><br><span class="line">            <span class="keyword">return</span> z</span><br><span class="line">        <span class="keyword">except</span> FloatingPointError <span class="keyword">as</span> exc:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;projection overflow&quot;</span>) <span class="keyword">from</span> exc</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">inverse_transform</span>(<span class="params">self, values</span>):</span><br><span class="line">        z = matrix(values, <span class="string">&quot;Z&quot;</span>, width=self.components.shape[<span class="number">0</span>])</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">with</span> np.errstate(over=<span class="string">&quot;raise&quot;</span>, invalid=<span class="string">&quot;raise&quot;</span>):</span><br><span class="line">                x = z @ self.components + self.mean</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> np.isfinite(x).<span class="built_in">all</span>():</span><br><span class="line">                <span class="keyword">raise</span> ValueError(<span class="string">&quot;non-finite reconstruction&quot;</span>)</span><br><span class="line">            <span class="keyword">return</span> x</span><br><span class="line">        <span class="keyword">except</span> FloatingPointError <span class="keyword">as</span> exc:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;reconstruction overflow&quot;</span>) <span class="keyword">from</span> exc</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fit_pca</span>(<span class="params">values, k</span>):</span><br><span class="line">    x = matrix(values, <span class="string">&quot;X&quot;</span>, min_rows=<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(k, (<span class="built_in">bool</span>, np.bool_)) <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(k, (<span class="built_in">int</span>, np.integer)):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;k must be an integer&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= k &lt;= <span class="built_in">min</span>(x.shape):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;k out of range&quot;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">with</span> np.errstate(over=<span class="string">&quot;raise&quot;</span>, invalid=<span class="string">&quot;raise&quot;</span>, divide=<span class="string">&quot;raise&quot;</span>):</span><br><span class="line">            mean = x.mean(axis=<span class="number">0</span>)</span><br><span class="line">            centered = x - mean</span><br><span class="line">            _, singular, vt = np.linalg.svd(centered, full_matrices=<span class="literal">False</span>)</span><br><span class="line">            squared = singular * singular</span><br><span class="line">            variance = squared / (x.shape[<span class="number">0</span>] - <span class="number">1</span>)</span><br><span class="line">            total = squared.<span class="built_in">sum</span>()</span><br><span class="line">            ratio = squared / total <span class="keyword">if</span> total &gt; <span class="number">0</span> <span class="keyword">else</span> np.zeros_like(squared)</span><br><span class="line">            sse = <span class="built_in">float</span>(squared[k:].<span class="built_in">sum</span>())</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">all</span>(np.isfinite(a).<span class="built_in">all</span>() <span class="keyword">for</span> a <span class="keyword">in</span> (mean, vt, variance, ratio)):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;non-finite decomposition&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> np.isfinite(sse):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;non-finite loss&quot;</span>)</span><br><span class="line">    <span class="keyword">except</span> (FloatingPointError, np.linalg.LinAlgError) <span class="keyword">as</span> exc:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;decomposition failed or overflowed&quot;</span>) <span class="keyword">from</span> exc</span><br><span class="line">    <span class="comment"># 固定每行最大绝对分量的符号；不消除重特征值子空间的旋转自由度。</span></span><br><span class="line">    <span class="keyword">for</span> row <span class="keyword">in</span> vt:</span><br><span class="line">        pivot = <span class="built_in">int</span>(np.argmax(np.<span class="built_in">abs</span>(row)))</span><br><span class="line">        <span class="keyword">if</span> row[pivot] &lt; <span class="number">0</span>:</span><br><span class="line">            row *= -<span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> PCA(readonly(mean), readonly(vt[:k]), readonly(variance),</span><br><span class="line">               readonly(ratio), sse)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    x = np.array([[<span class="number">13</span>, <span class="number">21</span>], [<span class="number">11</span>, <span class="number">23</span>], [<span class="number">9</span>, <span class="number">17</span>], [<span class="number">7</span>, <span class="number">19</span>]], dtype=<span class="built_in">float</span>)</span><br><span class="line">    model = fit_pca(x, <span class="number">1</span>)</span><br><span class="line">    restored = model.inverse_transform(model.transform(x))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;mean:&quot;</span>, model.mean)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;variance:&quot;</span>, model.variance)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;ratio:&quot;</span>, model.ratio)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;reconstructed:&quot;</span>, np.<span class="built_in">round</span>(restored, <span class="number">8</span>))</span><br><span class="line">    sse = <span class="built_in">float</span>(np.<span class="built_in">sum</span>((x - restored) ** <span class="number">2</span>))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;SSE / mean row loss / coordinate MSE:&quot;</span>,</span><br><span class="line">          <span class="built_in">round</span>(sse, <span class="number">8</span>), <span class="built_in">round</span>(sse / <span class="built_in">len</span>(x), <span class="number">8</span>), <span class="built_in">round</span>(sse / x.size, <span class="number">8</span>))</span><br></pre></td></tr></table></figure>
+
+<p>合成例输出的均值为 [10,20]，谱约为 [10.66666667,2.66666667]，比例为 [0.8,0.2]；一维重构四行为 [12,22]、[12,22]、[8,18]、[8,18]，最后三个误差为 8、2、1。</p>
+<p>内部核验位于 <code>tests/verify-pca-article.cjs</code> 与 <code>tests/fixtures/pca-checks.py</code>：提取并运行正文代码，使用独立协方差特征分解、二维闭式谱和随机正交旋转检查投影、损失及边界。验证只涉及这些合成矩阵与数学关系，没有运行真实任务，也没有把训练重构误差当成预测收益。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/65492.html">https://eulersail.com/esblog/65492.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/NumPy/">NumPy</a><a class="post-meta__tags" href="/tags/PCA/">PCA</a><a class="post-meta__tags" href="/tags/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/">线性代数</a><a class="post-meta__tags" href="/tags/%E9%99%8D%E7%BB%B4/">降维</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/52963.html" title="Git revert 从逆向补丁到合并主线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Git revert 从逆向补丁到合并主线</div></div></a></div><div class="next-post pull-right"><a href="/esblog/46293.html" title="HTTP 缓存 从新鲜度到条件请求"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">HTTP 缓存 从新鲜度到条件请求</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/64775.html" title="NumPy 现代基础：数组、索引、广播与向量化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">NumPy 现代基础：数组、索引、广播与向量化</div></div></a></div><div><a href="/esblog/64712.html" title="NumPy 数据读写与常用统计方法"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">NumPy 数据读写与常用统计方法</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">124</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">211</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E4%B8%AD%E5%BF%83%E5%8C%96%EF%BC%8C%E5%86%8D%E8%AE%A8%E8%AE%BA%E6%96%B9%E5%90%91"><span class="toc-text">先中心化，再讨论方向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%A4%A7%E6%96%B9%E5%B7%AE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AF%B9%E5%BA%94%E7%89%B9%E5%BE%81%E5%90%91%E9%87%8F"><span class="toc-text">最大方差为什么对应特征向量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E4%B8%AA%E7%82%B9%E7%9A%84%E5%AE%8C%E6%95%B4%E6%89%8B%E7%AE%97"><span class="toc-text">四个点的完整手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%88%8D%E5%BC%83%E7%9A%84%E6%96%B9%E5%B7%AE%EF%BC%8C%E6%80%8E%E6%A0%B7%E5%8F%98%E6%88%90%E9%87%8D%E6%9E%84%E8%AF%AF%E5%B7%AE"><span class="toc-text">舍弃的方差，怎样变成重构误差</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%BA%E5%BA%A6%E3%80%81%E5%B8%B8%E9%87%8F%E5%88%97%E4%B8%8E%E8%AE%AD%E7%BB%83%E9%9B%86%E8%BE%B9%E7%95%8C"><span class="toc-text">尺度、常量列与训练集边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4-NumPy-%E5%AE%9E%E7%8E%B0%E4%B8%8E%E5%90%88%E6%88%90%E6%A0%B8%E9%AA%8C"><span class="toc-text">完整 NumPy 实现与合成核验</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/52963.html" title="Git revert 从逆向补丁到合并主线">Git revert 从逆向补丁到合并主线</a><time datetime="2026-10-22T01:10:00.000Z" title="发表于 2026-10-22 09:10:00">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65492.html" title="PCA 入门 从方差方向到重构误差">PCA 入门 从方差方向到重构误差</a><time datetime="2026-10-22T01:00:00.000Z" title="发表于 2026-10-22 09:00:00">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46293.html" title="HTTP 缓存 从新鲜度到条件请求">HTTP 缓存 从新鲜度到条件请求</a><time datetime="2026-10-21T08:00:00.000Z" title="发表于 2026-10-21 16:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72864.html" title="LayerNorm 原理 从特征轴到归一化梯度">LayerNorm 原理 从特征轴到归一化梯度</a><time datetime="2026-10-21T07:00:00.000Z" title="发表于 2026-10-21 15:00:00">2026-10-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98768.html" title="圣桑第三交响曲 从两部结构到管风琴的两种角色">圣桑第三交响曲 从两部结构到管风琴的两种角色</a><time datetime="2026-10-21T03:00:00.000Z" title="发表于 2026-10-21 11:00:00">2026-10-21</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

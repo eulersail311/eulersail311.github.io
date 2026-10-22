@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="title desc">
+  <title id="title">Git revert：新提交保留独立后续修改</title>
+  <desc id="desc">教学历史A到B到C到R。B打开功能，C更新独立说明，R撤销B后关闭功能但保留新说明。祖先关系仍完整，R的父是C，R不等于A的快照。</desc>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#596b83"/></marker></defs>
+  <rect width="900" height="500" rx="20" fill="#f6f8fc"/>
+  <g font-family="'Microsoft YaHei','PingFang SC',sans-serif" fill="#172941">
+    <text x="42" y="48" font-size="25" font-weight="700">撤销 B 的影响，在 C 后面新增 R</text>
+    <text x="42" y="80" font-size="15" fill="#52637b">两个已有文本文件的教学状态 · 线条表示提交顺序，旧提交仍可到达</text>
+    <g stroke="#596b83" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M201 155H260"/><path d="M411 155H470"/><path d="M621 155H680"/>
+    </g>
+    <g fill="#fff" stroke="#c8d3e3" stroke-width="2">
+      <rect x="42" y="111" width="160" height="194" rx="14"/>
+      <rect x="252" y="111" width="160" height="194" rx="14"/>
+      <rect x="462" y="111" width="160" height="194" rx="14"/>
+    </g>
+    <rect x="672" y="111" width="186" height="194" rx="14" fill="#edf4ff" stroke="#386dba" stroke-width="2"/>
+    <g font-size="23" font-weight="700" text-anchor="middle">
+      <text x="122" y="151">A</text><text x="332" y="151">B</text><text x="542" y="151">C</text><text x="765" y="151" fill="#255394">R</text>
+    </g>
+    <g font-size="15" text-anchor="middle">
+      <text x="122" y="186">初始快照</text><text x="332" y="186">打开功能</text><text x="542" y="186">更新说明</text><text x="765" y="186">撤销 B</text>
+      <text x="122" y="230">功能：关</text><text x="332" y="230" fill="#9b472d">功能：开</text><text x="542" y="230" fill="#9b472d">功能：开</text><text x="765" y="230" fill="#255394">功能：关</text>
+      <text x="122" y="264">说明：旧</text><text x="332" y="264">说明：旧</text><text x="542" y="264" fill="#217260">说明：新</text><text x="765" y="264" fill="#217260">说明：新</text>
+    </g>
+    <path d="M332 312V337H765V312" fill="none" stroke="#386dba" stroke-width="2" stroke-dasharray="6 5"/>
+    <rect x="388" y="325" width="318" height="27" rx="12" fill="#f6f8fc"/>
+    <text x="547" y="344" font-size="15" text-anchor="middle" fill="#255394">只反向应用 B 引入的开关变化</text>
+    <rect x="42" y="383" width="816" height="77" rx="13" fill="#e7edf7"/>
+    <text x="64" y="413" font-size="18" font-weight="700">内容不同：R 保留 C 的新说明，因此 R 的快照 ≠ A 的快照</text>
+    <text x="64" y="442" font-size="15">历史向前：R 的父提交是 C；A、B、C 都留在祖先链中。</text>
+  </g>
+</svg>

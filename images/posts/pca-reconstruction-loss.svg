@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">PCA 一维重构与舍弃误差</title><desc id="desc">四点沿垂直方向投影到第一主成分直线，每个残差平方长度为2。总平方长度40中保留32，舍弃8；总误差8，平均每行2，平均每坐标1。原创合成手算，非实测。</desc>
+<rect width="900" height="520" rx="18" fill="#f6f8fc"/>
+<g font-family="'Microsoft YaHei',Arial,sans-serif" fill="#172338"><text x="36" y="43" font-size="25" font-weight="700">舍弃方向上的坐标，成为重构残差</text><text x="36" y="72" font-size="16" fill="#475569">保留 k = 1 · 虚线连接原始样本与其正交投影 · 同一四点合成例</text>
+<rect x="35" y="94" width="480" height="383" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<path d="M100 275H490M300 110V445" stroke="#cbd5e1" stroke-width="1.5"/>
+<path d="M155 420L455 120" stroke="#2563eb" stroke-width="3"/>
+<path d="M435 230L390 185M345 140L390 185M255 410L210 365M165 320L210 365" stroke="#c65c17" stroke-width="2.5" stroke-dasharray="6 4"/>
+<g fill="#e77820" stroke="#9a410b" stroke-width="1.5"><circle cx="435" cy="230" r="7"/><circle cx="345" cy="140" r="7"/><circle cx="255" cy="410" r="7"/><circle cx="165" cy="320" r="7"/></g>
+<g fill="#2563eb" stroke="#163d88" stroke-width="1.5"><rect x="383" y="178" width="14" height="14"/><rect x="203" y="358" width="14" height="14"/></g>
+<g font-size="16"><text x="399" y="174" fill="#1d4ed8">(2,2)</text><text x="78" y="391" fill="#1d4ed8">(−2,−2)</text><text x="391" y="258" fill="#a5440a">残差² = 2</text><text x="310" y="295" fill="#64748b">0</text></g>
+<text x="543" y="125" font-size="20" font-weight="700">总中心化平方长度 = 40</text>
+<rect x="543" y="147" width="256" height="38" fill="#2563eb"/><rect x="799" y="147" width="64" height="38" fill="#d46925"/>
+<text x="562" y="173" font-size="17" fill="#fff">保留 32 · 80%</text><text x="799" y="211" font-size="16" fill="#a5440a">舍弃 8</text>
+<rect x="540" y="237" width="324" height="203" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<text x="560" y="270" font-size="19" font-weight="700">三个误差口径</text><text x="560" y="309" font-size="18">总 SSE：8</text><text x="560" y="348" font-size="18">平均每行：8 / 4 = 2</text><text x="560" y="387" font-size="18">每坐标 MSE：8 / 8 = 1</text><text x="560" y="420" font-size="16" fill="#475569">SSE = (n−1) × λ₂ = 8</text>
+<text x="36" y="503" font-size="15" fill="#475569">原创合成手算；图中坐标已经中心化，重构原始数据时须加回均值。</text></g></svg>

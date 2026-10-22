@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">PCA 中心化点与正交方差方向</title><desc id="desc">四个中心化点为3和1、1和3、负1和负3、负3和负1，第一方向为1和1除以根号2，方差32除以3；第二方向与其正交，方差8除以3。数据为原创合成手算。</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#2563eb"/></marker></defs>
+<rect width="900" height="520" rx="18" fill="#f6f8fc"/>
+<g font-family="'Microsoft YaHei',Arial,sans-serif" fill="#172338"><text x="36" y="43" font-size="25" font-weight="700">先移到均值，再比较投影方向</text><text x="36" y="72" font-size="16" fill="#475569">四个合成样本 · 横纵坐标采用相同尺度 · n = 4</text>
+<rect x="35" y="94" width="480" height="383" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<path d="M100 275H490M300 110V445" stroke="#94a3b8" stroke-width="1.5"/>
+<g fill="#64748b" font-size="14"><text x="473" y="299">c₁</text><text x="311" y="123">c₂</text><text x="307" y="295">0</text><text x="428" y="295">3</text><text x="161" y="295">−3</text><text x="307" y="145">3</text><text x="307" y="415">−3</text></g>
+<path d="M155 420L445 130" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M205 180L395 370" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="8 5"/>
+<g fill="#e77820" stroke="#9a410b" stroke-width="1.5"><circle cx="435" cy="230" r="7"/><circle cx="345" cy="140" r="7"/><circle cx="255" cy="410" r="7"/><circle cx="165" cy="320" r="7"/></g>
+<g font-size="16"><text x="440" y="219">(3,1)</text><text x="350" y="126">(1,3)</text><text x="256" y="435">(−1,−3)</text><text x="82" y="345">(−3,−1)</text><text x="370" y="181" fill="#1d4ed8">v₁</text><text x="366" y="386" fill="#0f766e">v₂</text></g>
+<rect x="540" y="105" width="324" height="158" rx="12" fill="#eaf1ff" stroke="#b7cdf6"/>
+<text x="560" y="136" font-size="20" font-weight="700" fill="#1d4ed8">第一方向：共同增减</text><text x="560" y="169" font-size="19">v₁ = (1,1) / √2</text><text x="560" y="202" font-size="19">λ₁ = 32/3</text><text x="560" y="235" font-size="18">解释比例 80%</text>
+<rect x="540" y="282" width="324" height="158" rx="12" fill="#eaf7f3" stroke="#add5cb"/>
+<text x="560" y="313" font-size="20" font-weight="700" fill="#0f766e">第二方向：反向变化</text><text x="560" y="346" font-size="19">v₂ = (1,−1) / √2</text><text x="560" y="379" font-size="19">λ₂ = 8/3</text><text x="560" y="412" font-size="18">与第一方向正交</text>
+<text x="36" y="503" font-size="15" fill="#475569">原创合成示意；方向箭头长度不代表方差大小。原始均值为 (10,20)。</text></g></svg>
