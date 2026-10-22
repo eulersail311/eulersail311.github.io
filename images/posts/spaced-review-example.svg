@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">累计天数与相邻间隔分开记录</title>
+  <desc id="desc">教学日历：2026年10月22日初学，D1十月23日、D3十月25日、D7十月29日、D14十一月5日；间隔1、2、4、7天，卡片位置只表示顺序，不是时间比例尺，不是实测或最优安排。</desc>
+  <rect width="900" height="520" rx="22" fill="#fcfaf5"/>
+  <g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#302c26">
+    <text x="42" y="54" font-size="27" font-weight="700">一份可以修改的复习安排</text>
+    <text x="42" y="88" font-size="16" fill="#665d50">教学示例 · 卡片等距排列只表示顺序，不是时间比例尺</text>
+    <g data-review-day="0" data-review-date="2026-10-22" data-review-minutes="8">
+      <rect x="42" y="132" width="140" height="165" rx="14" fill="#e9eee4" stroke="#64735b"/>
+      <text x="112" y="173" text-anchor="middle" font-size="25" font-weight="700">D0</text>
+      <text x="112" y="211" text-anchor="middle" font-size="18">10-22</text>
+      <text x="112" y="247" text-anchor="middle" font-size="17">初学与制卡</text>
+      <text x="112" y="277" text-anchor="middle" font-size="16" fill="#5c6555">8 分钟</text>
+    </g>
+    <g data-review-day="1" data-review-date="2026-10-23" data-review-gap="1" data-review-minutes="3">
+      <rect x="211" y="132" width="140" height="165" rx="14" fill="#f1e8d9" stroke="#957449"/>
+      <text x="281" y="173" text-anchor="middle" font-size="25" font-weight="700">D1</text>
+      <text x="281" y="211" text-anchor="middle" font-size="18">10-23</text>
+      <text x="281" y="247" text-anchor="middle" font-size="17">回答与核对</text>
+      <text x="281" y="277" text-anchor="middle" font-size="16" fill="#735e42">3 分钟</text>
+    </g>
+    <g data-review-day="3" data-review-date="2026-10-25" data-review-gap="2" data-review-minutes="3">
+      <rect x="380" y="132" width="140" height="165" rx="14" fill="#f1e8d9" stroke="#957449"/>
+      <text x="450" y="173" text-anchor="middle" font-size="25" font-weight="700">D3</text>
+      <text x="450" y="211" text-anchor="middle" font-size="18">10-25</text>
+      <text x="450" y="247" text-anchor="middle" font-size="17">重查遗漏</text>
+      <text x="450" y="277" text-anchor="middle" font-size="16" fill="#735e42">3 分钟</text>
+    </g>
+    <g data-review-day="7" data-review-date="2026-10-29" data-review-gap="4" data-review-minutes="3">
+      <rect x="549" y="132" width="140" height="165" rx="14" fill="#f1e8d9" stroke="#957449"/>
+      <text x="619" y="173" text-anchor="middle" font-size="25" font-weight="700">D7</text>
+      <text x="619" y="211" text-anchor="middle" font-size="18">10-29</text>
+      <text x="619" y="247" text-anchor="middle" font-size="17">换一个情境</text>
+      <text x="619" y="277" text-anchor="middle" font-size="16" fill="#735e42">3 分钟</text>
+    </g>
+    <g data-review-day="14" data-review-date="2026-11-05" data-review-gap="7" data-review-minutes="3">
+      <rect x="718" y="132" width="140" height="165" rx="14" fill="#f1e8d9" stroke="#957449"/>
+      <text x="788" y="173" text-anchor="middle" font-size="25" font-weight="700">D14</text>
+      <text x="788" y="211" text-anchor="middle" font-size="18">11-05</text>
+      <text x="788" y="247" text-anchor="middle" font-size="17">无提示再试</text>
+      <text x="788" y="277" text-anchor="middle" font-size="16" fill="#735e42">3 分钟</text>
+    </g>
+    <g stroke="#796244" stroke-width="2" fill="none"><path d="M182 214 H211"/><path d="M351 214 H380"/><path d="M520 214 H549"/><path d="M689 214 H718"/></g>
+    <g font-size="16" fill="#665d50" text-anchor="middle"><text x="196" y="328">1 天</text><text x="365" y="328">2 天</text><text x="534" y="328">4 天</text><text x="703" y="328">7 天</text></g>
+    <rect x="42" y="358" width="816" height="116" rx="14" fill="#e5edf1"/>
+    <text x="64" y="393" font-size="19" font-weight="700">计划预算：8 + 4 × 3 = 20 分钟</text>
+    <text x="64" y="424" font-size="17">不含 D21（11-12）的额外检验，也不含补读；实际用时另记。</text>
+    <text x="64" y="454" font-size="16" fill="#486574">本图没有实测保持率，不声称这是通用最优间隔。</text>
+  </g>
+</svg>

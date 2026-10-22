@@ -514,6 +514,10 @@
   --route-ink: #67e8f9;
   --route-fill: #163442;
 }
+#article-container .resource-path[data-tone='notes'] { --route-ink: #875a32; --route-fill: #f9f3e9; }
+#article-container .resource-path[data-tone='materials'] { --route-ink: #806129; --route-fill: #f8f4e6; }
+[data-theme='dark'] #article-container .resource-path[data-tone='notes'] { --route-ink: #e2c49f; --route-fill: #332d27; }
+[data-theme='dark'] #article-container .resource-path[data-tone='materials'] { --route-ink: #e3c98b; --route-fill: #332f22; }
 #article-container .resource-path-top {
   display: flex;
   flex-wrap: wrap;
@@ -2960,4 +2964,93 @@
   #post .reading-article .algorithm-topic { background: #fff; border-color: #aaa; color: #111; }
   #post .reading-article .reading-tools,
   #post .reading-article .sail-reading-progress { display: none; }
+}
+
+/* Reading components inherit the post palette, including earlier articles
+   whose cards predate the eight-category reading surface. Page hubs keep
+   their own palettes. Native disclosure and scroll regions need no script. */
+#post .reading-article :is(.mechanism-map, .mechanism-check, .invariant-steps, .scope-note) {
+  --mechanism-bg: var(--article-soft);
+  --mechanism-ink: var(--sail-reading-ink);
+  --mechanism-accent: var(--article-accent);
+  --mechanism-border: var(--article-rule);
+}
+#post .reading-article :is(.reading-brief, .reflection-panel) {
+  --brief-ink: var(--article-accent);
+  --brief-tint: var(--article-soft);
+}
+#post .reading-article :is(.reading-brief > div, .reflection-panel) { border-color: var(--article-rule); }
+#post .reading-article .reading-brief > div > strong { color: var(--article-accent); }
+#post .reading-article .concept-ribbon { --ribbon-ink: var(--article-accent); }
+#post .reading-article :is(.mechanism-check, .reflection-panel) > summary {
+  min-height: 48px;
+  padding: 0.9em 1.25em;
+  line-height: 1.8;
+}
+#post .reading-article :is(.mechanism-check, .reflection-panel)[open] > summary {
+  border-bottom: 1px solid var(--article-rule);
+}
+#post .reading-article :is(.mechanism-check, .reflection-panel) > p {
+  margin: 0;
+  padding: 1em 1.25em;
+  line-height: 1.95;
+  overflow-wrap: anywhere;
+}
+#post .reading-article :is(.mechanism-check, .reflection-panel) > p + p { padding-top: 0; }
+#post .reading-article :is(.mechanism-check, .reflection-panel) > div {
+  padding: 1em 1.25em;
+  border-top: 0;
+  line-height: 1.95;
+  overflow-wrap: anywhere;
+}
+#post .reading-article :is(.mechanism-check, .reflection-panel) > div > :is(p, ul, ol) { margin-block: 0.75em; }
+#post .reading-article :is(.mechanism-check, .reflection-panel) > div > :first-child { margin-top: 0; }
+#post .reading-article :is(.mechanism-check, .reflection-panel) > div > :last-child { margin-bottom: 0; }
+#post .reading-article > :is(ul, ol):not([class]) :is(ul, ol):not([class]),
+#post .reading-article > blockquote :is(ul, ol):not([class]) {
+  margin-block: 0.5em 0.8em;
+  padding-inline-start: 1.5em;
+}
+#post .reading-article > :is(ul, ol):not([class]) :is(ul, ol):not([class]) > li { margin-block: 0.35em; }
+#post .reading-article > :is(ul, ol):not([class]) :is(ul, ol):not([class]) > li::marker { color: var(--article-accent); }
+#post .reading-article > blockquote > :first-child { margin-top: 0; }
+#post .reading-article > blockquote > p + p { margin-top: 0.8em; }
+#post .reading-article :is(p, li, dd, figcaption) a:not(.fancybox) {
+  overflow-wrap: anywhere;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+#post .reading-article :is(.mechanism-check, .reflection-panel, .scope-note, .reading-brief, figcaption) a:not(.fancybox) {
+  color: var(--article-accent);
+  text-decoration-line: underline;
+}
+#post .reading-article :is(a, summary, button):focus-visible {
+  outline: 2px solid var(--article-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+#post #article-container.reading-article > h2:target { border-bottom-color: var(--article-accent); }
+#post #article-container.reading-article > h3:target { border-left-color: var(--article-accent); }
+#post .reading-article .reading-font-status,
+#post .reading-article .reading-chapter-list a > span { color: var(--article-accent); }
+#post .reading-article .reading-chapter-list a { min-height: 44px; overflow-wrap: anywhere; }
+#post .reading-article .reading-chapter-list a > strong {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.65;
+}
+#post .reading-article .reading-chapter-list a:is(:hover, :focus-visible, [aria-current='location']),
+#post .reading-article .reading-font-controls button:is(:hover, :focus-visible):not(:disabled),
+#post .reading-article .reading-chapters-toggle:is(:hover, :focus-visible) {
+  color: var(--article-accent);
+  border-color: var(--article-accent);
+  background: var(--article-soft);
+}
+@media (max-width: 600px) {
+  #post .reading-article :is(.mechanism-check, .reflection-panel) > :is(summary, p, div) { padding-inline: 1em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #post .reading-article :is(.mechanism-check, .reflection-panel, .reading-brief) *,
+  #post .reading-article :is(a, summary, button) { transition: none; }
 }

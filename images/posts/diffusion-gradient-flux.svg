@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">浓度斜率与净扩散通量</title>
+  <desc id="desc">教学稳态平板，厚100微米，D为10的负12次方平方米每秒。浓度从左3到右1，梯度负20000，通量向右为2乘10的负8次方。</desc>
+  <defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#167e91" stroke-width="1.6"/></marker></defs>
+  <rect width="900" height="520" rx="22" fill="#f7faf9"/>
+  <g font-family="system-ui, sans-serif" fill="#213b43">
+    <text x="45" y="48" font-size="26" font-weight="700">斜率向下，净通量向右</text>
+    <text x="45" y="80" font-size="17" fill="#50646b">一维平板 · 恒定 D · 无反应 · 两端浓度由储库固定</text>
+    <path d="M120 120V330H800" fill="none" stroke="#93aaa9" stroke-width="2"/>
+    <text x="43" y="114" font-size="16">c / (mol/m³)</text>
+    <text x="773" y="380" font-size="16">x / μm</text>
+    <path d="M120 155H780M120 225H780M120 295H780" stroke="#d6e1de" stroke-dasharray="5 6"/>
+    <text x="91" y="161" font-size="17">3</text><text x="91" y="231" font-size="17">2</text><text x="91" y="301" font-size="17">1</text>
+    <text x="114" y="357" font-size="17">0</text><text x="434" y="357" font-size="17">50</text><text x="761" y="357" font-size="17">100</text>
+    <line id="steady-profile" data-length="0.0001" data-left="3" data-right="1" x1="120" y1="155" x2="780" y2="295" stroke="#167e91" stroke-width="5"/>
+    <circle cx="120" cy="155" r="6" fill="#167e91"/><circle cx="780" cy="295" r="6" fill="#167e91"/>
+    <text x="185" y="146" font-size="18" font-weight="600">浓度梯度 −20000 mol/m⁴</text>
+    <path d="M300 280H575" fill="none" stroke="#167e91" stroke-width="4" marker-end="url(#arrow)"/>
+    <text x="297" y="314" font-size="18" font-weight="600">J = +2×10⁻⁸ mol/(m²·s)</text>
+    <rect x="45" y="389" width="810" height="87" rx="14" fill="#e5efeb"/>
+    <text x="67" y="422" font-size="18" font-weight="650">D = 10⁻¹² m²/s，L = 10⁻⁴ m</text>
+    <text x="67" y="453" font-size="17">稳态仍有传输：每个小体积的流入与流出相等，浓度不再积累。</text>
+    <text x="45" y="502" font-size="14" fill="#50646b">原创解析示意；浓度与参数均为合成算例，不是材料截面实测。</text>
+  </g>
+</svg>

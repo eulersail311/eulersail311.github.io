@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">把回答与核对分成两个时刻</title>
+  <desc id="desc">原创教学流程：读懂一个例子，盖住答案回答，打开来源核对，修订卡片并安排下次；没有测得效果或遗忘曲线。</desc>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="none" stroke="#796244" stroke-width="1.8"/></marker></defs>
+  <rect width="900" height="520" rx="22" fill="#fcfaf5"/>
+  <g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#302c26">
+    <text x="44" y="54" font-size="27" font-weight="700">先作答，再核对，留下两份不同的记录</text>
+    <text x="44" y="86" font-size="16" fill="#665d50">原创教学流程 · 不是测得的记忆改善，也不要求逐字背诵</text>
+    <rect x="44" y="120" width="364" height="126" rx="16" fill="#e9eee4" stroke="#64735b"/>
+    <text x="66" y="154" font-size="20" font-weight="700">1  读懂一个例子</text>
+    <text x="66" y="187" font-size="17">写下问题、条件与判定要点</text>
+    <text x="66" y="216" font-size="16" fill="#5c6555">来源负责支持答案</text>
+    <rect x="492" y="120" width="364" height="126" rx="16" fill="#f1e8d9" stroke="#957449"/>
+    <text x="514" y="154" font-size="20" font-weight="700">2  盖住答案，独立回答</text>
+    <text x="514" y="187" font-size="17">解释、画图，或完成一个小任务</text>
+    <text x="514" y="216" font-size="16" fill="#735e42">先保存原回答，再打开依据</text>
+    <rect x="492" y="302" width="364" height="126" rx="16" fill="#e5edf1" stroke="#5c7c8b"/>
+    <text x="514" y="336" font-size="20" font-weight="700">3  对照来源，核对条件</text>
+    <text x="514" y="369" font-size="17">标记遗漏、误解与提示介入</text>
+    <text x="514" y="398" font-size="16" fill="#486574">把修正与原回答分开</text>
+    <rect x="44" y="302" width="364" height="126" rx="16" fill="#eee8f0" stroke="#826e8c"/>
+    <text x="66" y="336" font-size="20" font-weight="700">4  修订卡片，安排下次</text>
+    <text x="66" y="369" font-size="17">缩小问题，或换一个情境</text>
+    <text x="66" y="398" font-size="16" fill="#6f5b79">记录实际日期，不把计划当结果</text>
+    <path d="M419 183 H478" stroke="#796244" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M674 257 V288" stroke="#796244" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M480 365 H420" stroke="#796244" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M226 438 V448 H878 V183 H866" fill="none" stroke="#796244" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="44" y="478" font-size="17" fill="#665d50">下一次从问题开始；反复漏掉同一条件时，回到解释与例子。</text>
+  </g>
+</svg>
