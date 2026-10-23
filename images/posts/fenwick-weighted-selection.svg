@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">树状数组倍增跳过不超过目标的前缀</title><desc id="desc">初始剩余值1到5，目标6。步长4尝试前缀10拒绝；步长2尝试前缀3接受；步长1尝试前缀6接受；最大可跳过位置3加1得到值4。</desc>
+<defs><style>text{font-family:"Segoe UI","Microsoft YaHei",sans-serif;fill:#21364b}.title{font-size:28px;font-weight:700}.sub{font-size:17px;fill:#51677b}.head{font-size:18px;font-weight:600}.num{font-size:20px}.result{font-size:24px;font-weight:700;fill:#245b8f}.small{font-size:18px}</style></defs>
+<rect width="900" height="520" rx="18" fill="#f6f9fc"/><text x="36" y="48" class="title">倍增选择：等号仍留在可跳过的一侧</text><text x="36" y="78" class="sub">恢复 p₅：U = {1, 2, 3, 4, 5}，目标 s₅ = 6；初始 pos = 0，acc = 0。</text>
+<rect x="36" y="106" width="828" height="54" rx="10" fill="#dfeaf4"/>
+<g class="head"><text x="56" y="140">步长</text><text x="150" y="140">原 pos</text><text x="265" y="140">next</text><text x="375" y="140">块权重</text><text x="515" y="140">候选前缀和</text><text x="696" y="140">决定</text></g>
+<rect x="36" y="170" width="828" height="63" rx="9" fill="#eceff2"/><rect x="36" y="243" width="828" height="63" rx="9" fill="#e5eff8"/><rect x="36" y="316" width="828" height="63" rx="9" fill="#d4e5f4"/>
+<g class="num"><text x="70" y="209">4</text><text x="175" y="209">0</text><text x="280" y="209">4</text><text x="410" y="209">10</text><text x="550" y="209">0 + 10 = 10</text><text x="696" y="209">10 &gt; 6，拒绝</text>
+<text x="70" y="282">2</text><text x="175" y="282">0</text><text x="280" y="282">2</text><text x="410" y="282">3</text><text x="550" y="282">0 + 3 = 3</text><text x="696" y="282">3 ≤ 6，接受</text>
+<text x="70" y="355">1</text><text x="175" y="355">2</text><text x="280" y="355">3</text><text x="410" y="355">3</text><text x="550" y="355">3 + 3 = 6</text><text x="696" y="355">6 ≤ 6，接受</text></g>
+<text x="36" y="423" class="result">最大可跳过位置 pos = 3　→　答案 p₅ = pos + 1 = 4</text>
+<text x="36" y="462" class="small">F(3) = 6 是答案之前的和值；加入值 4 后，F(4) = 10 才首次超过 6。</text>
+<text x="36" y="495" class="sub">原创整数步骤；每轮使用树状数组的一块权重，不逐次重新查询完整前缀。</text>
+</svg>

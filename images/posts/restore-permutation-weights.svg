@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">逆序恢复把左侧条件变成剩余集合</title><desc id="desc">排列3、1、5、2、4与输入0、0、4、1、6；恢复第四项前删除值4，权重为1、2、3、0、5，前缀为1、3、6、6、11，目标1选择值2。</desc>
+<defs><style>text{font-family:"Segoe UI","Microsoft YaHei",sans-serif;fill:#21364b}.title{font-size:28px;font-weight:700}.sub{font-size:17px;fill:#51677b}.label{font-size:19px;font-weight:600}.num{font-size:23px;font-weight:700}.small{font-size:17px}.muted{fill:#78838b}.blue{fill:#245b8f}.white{fill:white}</style><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8Z" fill="#245b8f"/></marker></defs>
+<rect width="900" height="520" rx="18" fill="#f6f9fc"/><text x="36" y="48" class="title">倒着恢复：集合确定，值域上找边界</text><text x="36" y="78" class="sub">自拟排列 p = [3, 1, 5, 2, 4]　｜　s = [0, 0, 4, 1, 6]</text>
+<rect x="36" y="100" width="828" height="82" rx="12" fill="#e7f0f8"/>
+<text x="58" y="132" class="label">已恢复 p₅ = 4，当前要恢复 p₄</text><text x="58" y="162" class="small">U = {1, 2, 3, 5}，这些值恰好构成原排列的前四项；s₄ = 1。</text>
+<text x="44" y="224" class="label">值域 v</text><text x="44" y="293" class="label">权重 w[v]</text><text x="44" y="363" class="label">前缀 F(v)</text>
+<g text-anchor="middle">
+<text x="210" y="224" class="num">1</text><text x="345" y="224" class="num">2</text><text x="480" y="224" class="num">3</text><text x="615" y="224" class="num muted">4</text><text x="750" y="224" class="num">5</text>
+<rect x="160" y="247" width="100" height="64" rx="9" fill="#e3ebf3"/><rect x="295" y="247" width="100" height="64" rx="9" fill="#245b8f"/><rect x="430" y="247" width="100" height="64" rx="9" fill="#e3ebf3"/><rect x="565" y="247" width="100" height="64" rx="9" fill="#e8e9e9" stroke="#9ca7b0" stroke-dasharray="5 4"/><rect x="700" y="247" width="100" height="64" rx="9" fill="#e3ebf3"/>
+<text x="210" y="287" class="num">1</text><text x="345" y="287" class="num white">2</text><text x="480" y="287" class="num">3</text><text x="615" y="287" class="num muted">0</text><text x="750" y="287" class="num">5</text>
+<text x="210" y="363" class="num">1</text><text x="345" y="363" class="num blue">3</text><text x="480" y="363" class="num">6</text><text x="615" y="363" class="num muted">6</text><text x="750" y="363" class="num">11</text>
+</g>
+<path d="M210 386 H345" stroke="#245b8f" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="36" y="431" class="label blue">F(1) = 1 ≤ s₄　→　F(2) = 3 &gt; s₄　→　选择值 2</text>
+<text x="36" y="468" class="small">删除值 4 只把权重改为 0，不压缩数值下标；F(3) = F(4) 形成平坦段。</text>
+<text x="36" y="497" class="sub">原创整数演算示意；矩形高度不表示权重大小，不是实验测量。</text>
+</svg>

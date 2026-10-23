@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="bolero-contrast-title bolero-contrast-desc">
+  <title id="bolero-contrast-title">波莱罗：渐强之外还有哪些观察对象</title>
+  <desc id="bolero-contrast-desc">Three abstract listening windows distinguish a solo source, combined sources, and a larger ensemble without counting actual instruments. Timbre, texture, and dynamics are separate listening questions. The ending tonal event is C to E major and back to C. Not a measured loudness curve, score, complete orchestration chart, or proportional timeline.</desc>
+  <defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#796b5a" stroke-width="1.5"/></marker></defs>
+  <rect width="900" height="520" rx="20" fill="#fcfaf5"/>
+  <g font-family="'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif" fill="#302d2a">
+    <text x="38" y="47" font-size="25" font-weight="700">渐强之内，追踪声音怎样组合</text>
+    <text x="38" y="77" font-size="16" fill="#60594f">色层表示听觉来源的概念，不表示真实乐器数量或声压。</text>
+    <g fill="#fffefb" stroke="#d4cfc4"><rect x="38" y="101" width="254" height="200" rx="14"/><rect x="322" y="101" width="254" height="200" rx="14"/><rect x="606" y="101" width="254" height="200" rx="14"/></g>
+    <g text-anchor="middle" font-size="20" font-weight="700"><text x="165" y="136">独奏前景</text><text x="449" y="136">音色组合</text><text x="733" y="136">更厚的合奏</text></g>
+    <path d="M63 216C83 164 109 245 137 193S185 171 212 210S251 226 267 186" fill="none" stroke="#40786f" stroke-width="8" stroke-linecap="round"/>
+    <path d="M347 191C367 165 393 224 421 185S469 178 496 201S535 217 551 177" fill="none" stroke="#506c95" stroke-width="5" stroke-linecap="round"/>
+    <path d="M347 211C367 185 393 244 421 205S469 198 496 221S535 237 551 197" fill="none" stroke="#8d5984" stroke-width="5" stroke-linecap="round"/>
+    <path d="M347 231C367 205 393 264 421 225S469 218 496 241S535 257 551 217" fill="none" stroke="#40786f" stroke-width="5" stroke-linecap="round"/>
+    <g stroke-width="8" stroke-linecap="round"><path d="M636 171H830" stroke="#506c95"/><path d="M636 190H830" stroke="#8d5984"/><path d="M636 209H830" stroke="#40786f"/><path d="M636 228H830" stroke="#aa7750"/><path d="M636 247H830" stroke="#79739a"/></g>
+    <g text-anchor="middle" font-size="15" fill="#60594f"><text x="165" y="280">谁在唱这条旋律？</text><text x="449" y="280">哪些声音融在一起？</text><text x="733" y="280">还能分出前景与背景吗？</text></g>
+    <rect x="38" y="315" width="822" height="46" rx="10" fill="#eae7f2"/>
+    <text x="58" y="345" font-size="17" fill="#514d78">力度另问：强弱怎样走向？“更厚”与“更快”不是同一件事。</text>
+    <text x="38" y="396" font-size="18" font-weight="700">终段还要听：调性中心的偏移与回归</text>
+    <g fill="#e7e7f6" stroke="#79739a"><rect x="38" y="415" width="224" height="52" rx="11"/><rect x="636" y="415" width="224" height="52" rx="11"/></g>
+    <rect x="337" y="415" width="224" height="52" rx="11" fill="#f2e4d6" stroke="#aa7750"/>
+    <g text-anchor="middle" font-size="18" font-weight="700"><text x="150" y="448" fill="#514d78">C 大调中心</text><text x="449" y="448" fill="#825330">短暂 E 大调</text><text x="748" y="448" fill="#514d78">返回 C 大调</text></g>
+    <g fill="none" stroke="#796b5a" stroke-width="2" marker-end="url(#arrow)"><path d="M274 441H322"/><path d="M574 441H622"/></g>
+    <text x="38" y="501" font-size="13" fill="#60594f">原创聆听示意；各窗口等宽只便于比较，不对应实际段落长度或小节数量。</text>
+  </g>
+</svg>

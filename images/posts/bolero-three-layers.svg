@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="bolero-layers-title bolero-layers-desc">
+  <title id="bolero-layers-title">波莱罗：开头四次旋律的三层比较</title>
+  <desc id="bolero-layers-desc">Four early melody statements are A on flute, A on clarinet, B on bassoon, B on E-flat clarinet. Identical abstract loops indicate the continuing rhythmic reference. This is an original listening concept, not score notation, measured sound, or a proportional timeline.</desc>
+  <defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#796b5a" stroke-width="1.5"/></marker></defs>
+  <rect width="900" height="520" rx="20" fill="#fcfaf5"/>
+  <g font-family="'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif" fill="#302d2a">
+    <text x="38" y="47" font-size="25" font-weight="700">旋律相同，声音也可以不同</text>
+    <text x="38" y="77" font-size="16" fill="#60594f">只看开头四次陈述：把旋律身份、音色来源与背景循环分开。</text>
+    <g font-size="15" fill="#60594f" text-anchor="middle"><text x="287" y="113">第 1 次</text><text x="451" y="113">第 2 次</text><text x="615" y="113">第 3 次</text><text x="779" y="113">第 4 次</text></g>
+    <text x="38" y="160" font-size="18" font-weight="700">旋律身份</text>
+    <text x="38" y="186" font-size="14" fill="#60594f">同字母 = 同一条旋律</text>
+    <g fill="#e7e7f6" stroke="#79739a" stroke-width="1.5"><rect x="218" y="131" width="138" height="64" rx="12"/><rect x="382" y="131" width="138" height="64" rx="12"/></g>
+    <g fill="#f2e4d6" stroke="#aa7750" stroke-width="1.5"><rect x="546" y="131" width="138" height="64" rx="12"/><rect x="710" y="131" width="138" height="64" rx="12"/></g>
+    <g text-anchor="middle" font-size="28" font-weight="700"><text x="287" y="174" fill="#514d78">A</text><text x="451" y="174" fill="#514d78">A</text><text x="615" y="174" fill="#825330">B</text><text x="779" y="174" fill="#825330">B</text></g>
+    <g stroke="#796b5a" stroke-width="1.5" marker-end="url(#arrow)"><path d="M357 163H378"/><path d="M521 163H542"/><path d="M685 163H706"/></g>
+    <text x="38" y="249" font-size="18" font-weight="700">音色来源</text>
+    <text x="38" y="275" font-size="14" fill="#60594f">同旋律，可换前景</text>
+    <g><rect x="218" y="222" width="138" height="66" rx="12" fill="#dcebe8" stroke="#40786f"/><rect x="382" y="222" width="138" height="66" rx="12" fill="#e2e9f3" stroke="#506c95"/><rect x="546" y="222" width="138" height="66" rx="12" fill="#f1e4d9" stroke="#97603c"/><rect x="710" y="222" width="138" height="66" rx="12" fill="#eee0ec" stroke="#8d5984"/></g>
+    <g text-anchor="middle" font-size="19" font-weight="700"><text x="287" y="263" fill="#315f58">长笛</text><text x="451" y="263" fill="#425a7d">单簧管</text><text x="615" y="263" fill="#825330">大管</text><text x="779" y="263" fill="#76466f">降 E 单簧管</text></g>
+    <text x="38" y="340" font-size="18" font-weight="700">背景循环</text>
+    <text x="38" y="366" font-size="14" fill="#60594f">抽象单元，非原谱</text>
+    <path d="M218 354H848" stroke="#a49c90" stroke-width="2"/>
+    <g fill="#655e54"><circle cx="231" cy="337" r="6"/><circle cx="250" cy="337" r="3"/><circle cx="262" cy="337" r="3"/><circle cx="274" cy="337" r="3"/><circle cx="313" cy="337" r="6"/><circle cx="332" cy="337" r="3"/><circle cx="395" cy="337" r="6"/><circle cx="414" cy="337" r="3"/><circle cx="426" cy="337" r="3"/><circle cx="438" cy="337" r="3"/><circle cx="477" cy="337" r="6"/><circle cx="496" cy="337" r="3"/><circle cx="559" cy="337" r="6"/><circle cx="578" cy="337" r="3"/><circle cx="590" cy="337" r="3"/><circle cx="602" cy="337" r="3"/><circle cx="641" cy="337" r="6"/><circle cx="660" cy="337" r="3"/><circle cx="723" cy="337" r="6"/><circle cx="742" cy="337" r="3"/><circle cx="754" cy="337" r="3"/><circle cx="766" cy="337" r="3"/><circle cx="805" cy="337" r="6"/><circle cx="824" cy="337" r="3"/></g>
+    <g font-size="14" fill="#60594f" text-anchor="middle"><text x="287" y="379">循环仍在</text><text x="451" y="379">循环仍在</text><text x="615" y="379">循环仍在</text><text x="779" y="379">循环仍在</text></g>
+    <rect x="38" y="408" width="810" height="74" rx="12" fill="#efede7"/>
+    <text x="57" y="438" font-size="17" font-weight="700">一次只换一个问题</text>
+    <text x="57" y="465" font-size="16">听出“仍是 A，但声音换了”之后，再回听小鼓的循环。</text>
+    <text x="38" y="506" font-size="12" fill="#60594f">原创概念图；不是原谱、录音波形或按时长比例绘制的时间轴。</text>
+  </g>
+</svg>

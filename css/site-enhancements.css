@@ -3054,3 +3054,115 @@
   #post .reading-article :is(.mechanism-check, .reflection-panel, .reading-brief) *,
   #post .reading-article :is(a, summary, button) { transition: none; }
 }
+
+/* Figures and scrollable explanations use the same category palette as prose.
+   The original diagram paper and its readable minimum width stay unchanged. */
+#post #article-container.reading-article :is(.concept-figure, .evidence-figure, .table-wrap, .mermaid-wrap) {
+  border-color: var(--article-rule);
+}
+#post #article-container.reading-article :is(.concept-figure, .evidence-figure) figcaption {
+  border-top-color: var(--article-rule);
+  background: var(--article-soft);
+}
+#post #article-container.reading-article .concept-figure-label { color: var(--article-accent); }
+#post #article-container.reading-article :is(.concept-figure-canvas, .table-wrap, .mermaid-wrap, figure.highlight):focus-visible {
+  outline: 2px solid var(--article-accent);
+  outline-offset: -2px;
+}
+#post #article-container.reading-article .diagram-tools button {
+  color: var(--article-accent);
+  border-color: var(--article-rule);
+  background: var(--article-soft);
+}
+
+/* Printed pages cannot scroll: fit original diagrams to paper, let prose
+   tables wrap, and use white paper even when the screen theme is dark. */
+@media print {
+  body:has(#post .reading-article) {
+    color: #111;
+    background: #fff !important;
+  }
+  body:has(#post .reading-article) :is(#web_bg, #nav, #aside-content, #footer, #rightside, #live2d-widget, #waifu),
+  #post :is(.tag_share, .post-reward, #pagination, .relatedPosts, #post-comment),
+  #post .reading-article :is(.reading-overview, .reading-tools, .diagram-tools, .reading-scroll-hint, .sail-reading-progress) {
+    display: none !important;
+  }
+  body:has(#post .reading-article) #body-wrap { display: block; min-height: 0; }
+  body:has(#post .reading-article) #content-inner.layout {
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  body:has(#post .reading-article) #page-header {
+    height: auto !important;
+    min-height: 0;
+    background: #fff !important;
+    box-shadow: none;
+  }
+  body:has(#post .reading-article) #page-header::before { display: none; }
+  body:has(#post .reading-article) #post-info {
+    position: static !important;
+    padding: 0;
+    margin: 0 0 1.5em;
+    color: #111;
+    text-align: left;
+    transform: none;
+  }
+  body:has(#post .reading-article) #post-info :is(.post-title, #post-meta, a) { color: #111; }
+  #content-inner.layout > #post {
+    width: 100% !important;
+    max-width: none;
+    padding: 0 !important;
+    border: 0;
+    border-radius: 0;
+    background: #fff !important;
+    box-shadow: none;
+  }
+  #post #article-container.reading-article {
+    --article-accent: #333;
+    --article-soft: #f4f4f4;
+    --article-rule: #bbb;
+    --sail-reading-ink: #111;
+    --sail-surface-strong: #fff;
+    --font-color: #111;
+    color: #111;
+    font-size: 11pt;
+    line-height: 1.8;
+  }
+  #post #article-container.reading-article :is(.concept-figure, .evidence-figure) {
+    overflow: visible;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none;
+  }
+  #post #article-container.reading-article .concept-figure-canvas { overflow: visible; }
+  #post #article-container.reading-article .concept-figure-canvas::after { display: none; }
+  #post #article-container.reading-article :is(.concept-figure, .evidence-figure) img {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    height: auto;
+    filter: none;
+  }
+  #post #article-container.reading-article :is(.table-wrap, .mermaid-wrap) { overflow: visible; }
+  #post #article-container.reading-article table:not(figure.highlight table) {
+    display: table;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+    border-collapse: collapse;
+    box-shadow: none;
+  }
+  #post #article-container.reading-article table:not(figure.highlight table) :is(th, td) {
+    min-width: 0;
+    padding: 0.45em 0.55em;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  #post #article-container.reading-article table:not(figure.highlight table) thead { display: table-header-group; }
+  #post #article-container.reading-article table:not(figure.highlight table) tr { break-inside: avoid; }
+  #post #article-container.reading-article > :is(h2, h3, h4) { break-after: avoid; }
+  #post #article-container.reading-article :is(p, li) { orphans: 3; widows: 3; }
+}
