@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">切回main后，提交关系与引用入口不同</title>
+<desc id="desc">教学历史A到B到D。脱离分支创建D后切回main，main与HEAD在B，HEAD日志仍可记录D；创建rescue-notes为D保留新的分支入口。</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9" fill="none" stroke="#a66a3b" stroke-width="1.5"/></marker></defs>
+<rect width="900" height="520" rx="22" fill="#fcf9f5"/>
+<g font-family="'Microsoft YaHei','PingFang SC',sans-serif" fill="#30374a">
+<text x="36" y="48" font-size="27" font-weight="700">从 main 看不到 D，不等于 D 已不存在</text>
+<text x="36" y="78" font-size="16">刚从脱离状态切回 main；A、B、D 只是教学标签。</text>
+<path d="M194 207H386M466 207H658" fill="none" stroke="#a66a3b" stroke-width="3"/>
+<circle cx="154" cy="207" r="40" fill="#eee3d5" stroke="#bd8a61" stroke-width="2"/>
+<circle cx="426" cy="207" r="40" fill="#eee3d5" stroke="#bd8a61" stroke-width="2"/>
+<circle cx="698" cy="207" r="40" fill="#fff" stroke="#a66a3b" stroke-width="2.5" stroke-dasharray="7 5"/>
+<g text-anchor="middle" font-size="26" font-weight="700"><text x="154" y="216">A</text><text x="426" y="216">B</text><text x="698" y="216">D</text></g>
+<g text-anchor="middle" font-size="17"><text x="154" y="273">version=A</text><text x="426" y="273">version=B</text><text x="698" y="273">version=D</text></g>
+<rect x="324" y="112" width="204" height="43" rx="10" fill="#a66a3b"/>
+<text x="426" y="140" fill="#fff" text-anchor="middle" font-size="19" font-weight="700">HEAD → main</text>
+<path d="M426 155V164" stroke="#a66a3b" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="426" y="319" text-anchor="middle" font-size="17">main 的父关系：B → A</text>
+<text x="698" y="319" text-anchor="middle" font-size="17">D 的父提交仍是 B</text>
+<rect x="36" y="354" width="828" height="102" rx="15" fill="#f0e7dc"/>
+<text x="56" y="384" font-size="20" font-weight="700">找到位置，再给它一个名字</text>
+<text x="56" y="414" font-size="18">HEAD 引用日志可记录曾经位于 D；核对后创建 rescue-notes → D。</text>
+<text x="56" y="441" font-size="16">新名字增加入口；不会自动把 main 移到 D，也没有改变 D 的父关系。</text>
+<text x="36" y="489" font-size="14">原创关系示意：线段表示父子关系；对象可用与日志保留仍需实际检查。</text>
+</g></svg>

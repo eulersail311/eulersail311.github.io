@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">HEAD与main查询不同的本地引用日志</title>
+<desc id="desc">严格按教学顺序刚切回main时，HEAD日志0为B、1为D、2为B，main日志0为B、1为A。创建并切换救援分支后HEAD增加D条目，原序号向后移动。</desc>
+<rect width="900" height="520" rx="22" fill="#fcf9f5"/>
+<g font-family="'Microsoft YaHei','PingFang SC',sans-serif" fill="#30374a">
+<text x="36" y="48" font-size="27" font-weight="700">同一个序号，查询的日志可以不同</text>
+<text x="36" y="78" font-size="16">时刻：刚切回 main，尚未创建救援分支；没有额外引用更新。</text>
+<rect x="36" y="104" width="400" height="236" rx="16" fill="#f0e7dc"/>
+<rect x="464" y="104" width="400" height="236" rx="16" fill="#f4ede5"/>
+<text x="56" y="139" font-size="22" font-weight="700">HEAD 的位置记录</text>
+<text x="484" y="139" font-size="22" font-weight="700">main 的分支记录</text>
+<g font-size="19"><text x="56" y="182">HEAD@{0} → B　切回 main</text><text x="56" y="229" fill="#92582e" font-weight="700">HEAD@{1} → D　脱离时提交</text><text x="56" y="276">HEAD@{2} → B　进入脱离状态</text><text x="484" y="182">main@{0} → B　提交 B</text><text x="484" y="229" fill="#92582e" font-weight="700">main@{1} → A　提交 A</text></g>
+<text x="56" y="315" font-size="16">切换也产生条目，同一对象可多次出现。</text>
+<text x="484" y="315" font-size="16">脱离期间提交，没有推进 main。</text>
+<rect x="36" y="365" width="828" height="91" rx="15" fill="#a66a3b"/>
+<text x="56" y="397" font-size="20" font-weight="700" fill="#fff">创建并切换到 rescue-notes 后，HEAD 新增一行</text>
+<text x="56" y="431" font-size="18" fill="#fff">新的 HEAD@{0}=D，新的 HEAD@{1}=B；核对后保存完整对象 ID。</text>
+<text x="36" y="489" font-size="14">原创日志对照：序号依赖本地操作顺序，不是提交的永久编号或祖先深度。</text>
+</g></svg>

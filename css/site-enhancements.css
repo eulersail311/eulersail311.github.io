@@ -3195,3 +3195,18 @@
 @media screen and (max-width: 768px) {
   #content-inner.layout > #post:has(.reading-article) { padding-right: 47px; }
 }
+
+/* Keep multi-line comparison rows aligned in native, enhanced and printed
+   tables. Syntax-highlight line-number tables retain their own alignment. */
+#post #article-container.reading-article table:not(figure.highlight table) :is(th, td) {
+  vertical-align: top;
+}
+@media screen {
+  #post #article-container.reading-article table:not(figure.highlight table) :is(th, td) {
+    min-width: 8.5em;
+  }
+  #post #article-container.reading-article table:not(figure.highlight table):focus-visible {
+    outline: 2px solid var(--article-accent);
+    outline-offset: -2px;
+  }
+}

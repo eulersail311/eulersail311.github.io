@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">同一份记录转发时，TTL 不重新起算</title><desc id="desc">原创整秒时间线：上游100收到TTL60，150剩余10；下游150收到TTL10，两者都160到期。错误重置60会延长到210，多用50秒。坐标按每秒5像素缩放。</desc>
+<rect width="900" height="520" rx="20" fill="#f4f8fc"/>
+<g font-family="Microsoft YaHei,Arial,sans-serif" fill="#233c58">
+<text x="36" y="48" font-size="27" font-weight="700">命中缓存，不会把旧记录变成新记录</text>
+<text x="36" y="80" font-size="18">同一份 A 记录；整秒示例，忽略本图未建模的传输耗时</text>
+<path d="M260 128 H810" stroke="#7189a0" stroke-width="2"/>
+<g font-size="18" text-anchor="middle"><text x="260" y="114">100</text><text x="510" y="114">150</text><text x="560" y="114">160</text><text x="810" y="114">210</text></g>
+<path d="M260 120 V382 M510 120 V382 M560 120 V382 M810 120 V382" stroke="#cbd9e5" stroke-dasharray="4 5"/>
+<text x="36" y="184" font-size="21" font-weight="700">上游：收到 TTL 60</text>
+<rect id="upstream-window" x="260" y="157" width="300" height="44" rx="8" fill="#5c86ad"/>
+<text x="279" y="185" font-size="18" fill="#fff">可复用 60 秒</text>
+<text x="36" y="265" font-size="21" font-weight="700">下游：收到 TTL 10</text>
+<rect id="downstream-window" x="510" y="238" width="50" height="44" rx="7" fill="#427e80"/>
+<text x="579" y="266" font-size="19">150 + 10 = 160</text>
+<text x="36" y="346" font-size="21" font-weight="700">错误：重新给 60</text>
+<rect id="incorrect-window" x="510" y="319" width="300" height="44" rx="8" fill="#cba37e"/>
+<text x="575" y="347" font-size="18" fill="#283b4c">错误多用 50 秒</text>
+<rect x="36" y="408" width="828" height="66" rx="12" fill="#e4edf5"/>
+<text x="55" y="436" font-size="20" font-weight="700">150 时只剩 10；160 时到期，相等边界不能继续命中。</text>
+<text x="55" y="461" font-size="18">有效窗口按同一刻度绘制；框表示缓存许可，不是服务器响应耗时。</text>
+<text x="36" y="503" font-size="16">原创概念与算术图，不是网络抓包、性能测量或真实解析器的测试结果。</text>
+</g></svg>

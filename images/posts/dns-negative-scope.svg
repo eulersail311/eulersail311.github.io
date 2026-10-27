@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">名称不存在与某种记录缺失，匹配范围不同</title><desc id="desc">原创查询范围示意：NXDOMAIN按名称与类匹配，同一名称IN类的A和AAAA均能匹配；NODATA还包括类型，AAAA缺失不能否定A。SERVFAIL和超时是独立的解析失败，不证明名称不存在。</desc>
+<rect width="900" height="520" rx="20" fill="#f4f8fc"/>
+<g font-family="Microsoft YaHei,Arial,sans-serif" fill="#233c58">
+<text x="36" y="48" font-size="27" font-weight="700">同名换一种类型，结论还能沿用吗？</text>
+<text x="36" y="80" font-size="18">仅比较相同 QNAME 的 IN 查询；假定无 CNAME，否定已确认</text>
+<rect x="36" y="111" width="402" height="246" rx="14" fill="#e4edf7"/>
+<rect x="462" y="111" width="402" height="246" rx="14" fill="#e7f0f0"/>
+<text x="56" y="146" font-size="24" font-weight="700">NXDOMAIN：名称不存在</text>
+<text x="56" y="181" font-size="18">键：QNAME + QCLASS</text>
+<text x="56" y="218" font-size="19">missing.example. IN A</text>
+<path d="M75 230 V262 H343" stroke="#5c86ad" stroke-width="2" fill="none"/>
+<path d="M180 262 V282 M343 262 V282" stroke="#5c86ad" stroke-width="2"/>
+<text x="58" y="313" font-size="20">A：匹配</text><text x="236" y="313" font-size="20">AAAA：匹配</text>
+<text x="482" y="146" font-size="24" font-weight="700">NODATA：所问类型没有</text>
+<text x="482" y="181" font-size="18">键：QNAME + QTYPE + QCLASS</text>
+<text x="482" y="218" font-size="19">api.example. IN AAAA</text>
+<path d="M501 230 V262 H769" stroke="#548b8b" stroke-width="2" fill="none"/>
+<path d="M606 262 V282 M769 262 V282" stroke="#548b8b" stroke-width="2"/>
+<text x="483" y="313" font-size="20">AAAA：匹配</text><text x="678" y="313" font-size="20">A：不匹配</text>
+<rect x="36" y="384" width="828" height="84" rx="12" fill="#eef0f3"/>
+<text x="56" y="418" font-size="21" font-weight="700">SERVFAIL / 超时：走单独的解析失败缓存规则</text>
+<text x="56" y="450" font-size="19">它们没有证明名称不存在；本文不把故障策略实现成 NXDOMAIN。</text>
+<text x="36" y="503" font-size="16">原创范围示意；未画别名链、后代名称推断或 DNSSEC 证明，不是实测拓扑。</text>
+</g></svg>
