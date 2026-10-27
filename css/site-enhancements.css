@@ -3166,3 +3166,32 @@
   #post #article-container.reading-article > :is(h2, h3, h4) { break-after: avoid; }
   #post #article-container.reading-article :is(p, li) { orphans: 3; widows: 3; }
 }
+
+/* Explanatory text participates in the reader's font choice. Small labels,
+   diagram artwork and code blocks keep their existing independent sizing. */
+@media screen {
+  #post #article-container.reading-article :is(.mechanism-map, .invariant-steps) p {
+    font-size: 0.95em;
+    line-height: 1.9;
+  }
+  #post #article-container.reading-article .scope-note p {
+    font-size: 1em;
+    line-height: 1.9;
+  }
+  /* Markdown list items live inside ul/ol, not directly inside the article. */
+  #post #article-container.reading-article :is(ul, ol):not([class]) li code:not(pre code, figure.highlight code) {
+    padding: 0.1em 0.35em;
+    border: 1px solid var(--article-rule);
+    border-radius: 5px;
+    color: var(--article-accent);
+    background: var(--article-soft);
+    font-size: 0.88em;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Keep the existing mobile reading tools beside the text, in a reserved gutter.
+   The 35px controls remain available without covering paragraph or answer lines. */
+@media screen and (max-width: 768px) {
+  #content-inner.layout > #post:has(.reading-article) { padding-right: 47px; }
+}

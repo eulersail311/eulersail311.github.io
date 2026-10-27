@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+<title id="title">AdamW 的矩状态与解耦衰减两条路径</title><desc id="desc">数据梯度进入m和v，经偏差修正得到自适应位移；旧参数乘1减学习率乘衰减系数，两路相减得到新参数。衰减不直接进入矩状态，但参数变化会影响后续梯度。</desc>
+<defs><style>text{font-family:"Segoe UI","Microsoft YaHei",sans-serif;fill:#352d46}.title{font-size:28px;font-weight:700}.sub{font-size:17px;fill:#655b76}.label{font-size:20px;font-weight:600}.body{font-size:18px}.small{font-size:17px}</style><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8Z" fill="#785b9b"/></marker></defs>
+<rect width="900" height="520" rx="18" fill="#faf8fc"/><text x="36" y="48" class="title">AdamW：状态读梯度，衰减读旧参数</text><text x="36" y="78" class="sub">按坐标计算；m₀ = v₀ = 0，epsilon 放在根号外，未启用 AMSGrad。</text>
+<rect x="36" y="110" width="196" height="152" rx="12" fill="#ede6f4"/><text x="57" y="148" class="label">数据损失梯度 gₜ</text><text x="57" y="182" class="body">在旧参数 θₜ₋₁ 上求导</text><text x="57" y="220" class="small">本路径不先加 λθ</text>
+<rect x="278" y="108" width="256" height="70" rx="10" fill="#e7ddef"/><text x="298" y="137" class="label">一阶矩 mₜ</text><text x="298" y="163" class="small">平滑 gₜ，再除以 1−β₁ᵗ</text>
+<rect x="278" y="200" width="256" height="70" rx="10" fill="#e7ddef"/><text x="298" y="229" class="label">二阶原始矩 vₜ</text><text x="298" y="255" class="small">平滑 gₜ²，再除以 1−β₂ᵗ</text>
+<path d="M232 150 H278 M232 226 H278" fill="none" stroke="#785b9b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="584" y="145" width="280" height="96" rx="12" fill="#dccce9"/><text x="604" y="182" class="label">自适应位移</text><text x="604" y="217" class="body">αₜ · m̂ₜ / (√v̂ₜ + ε)</text><path d="M534 143 H558 V174 H584 M534 235 H558 V210 H584" fill="none" stroke="#785b9b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="36" y="310" width="498" height="91" rx="12" fill="#f0ebf5"/><text x="57" y="344" class="label">独立衰减旧参数</text><text x="57" y="379" class="body">θₜ₋₁ × (1 − αₜλ)</text><rect x="584" y="310" width="280" height="91" rx="12" fill="#6f518f"/><text x="604" y="345" style="fill:white;font-size:20px;font-weight:600">新参数 θₜ</text><text x="604" y="379" style="fill:white;font-size:18px">衰减结果 − 自适应位移</text><path d="M534 355 H584 M724 241 V310" fill="none" stroke="#785b9b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="36" y="446" class="body">解耦的是本步直接进入矩状态的项；λ 仍会改变参数路径及后续重新计算的梯度。</text><text x="36" y="487" class="sub">原创更新流程示意；箭头表示数据依赖，不是网络结构或训练效果测量。</text>
+</svg>

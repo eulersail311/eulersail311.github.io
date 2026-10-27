@@ -1,0 +1,381 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AdamW 原理 从自适应步长到解耦权重衰减 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从零初始化矩估计推导偏差修正，明确 epsilon 的位置与学习率约定，用两步手算和标准库实现比较 Adam 加 L2 与 AdamW 的状态路径，不把更新公式等同于训练收益。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AdamW 原理 从自适应步长到解耦权重衰减">
+<meta property="og:url" content="https://eulersail.com/esblog/72975.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从零初始化矩估计推导偏差修正，明确 epsilon 的位置与学习率约定，用两步手算和标准库实现比较 Adam 加 L2 与 AdamW 的状态路径，不把更新公式等同于训练收益。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-23T09:10:00.000Z">
+<meta property="article:modified_time" content="2026-10-23T09:10:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="神经网络">
+<meta property="article:tag" content="优化器">
+<meta property="article:tag" content="AdamW">
+<meta property="article:tag" content="权重衰减">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/72975.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AdamW 原理 从自适应步长到解耦权重衰减',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-23 17:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261026-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">130</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">224</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">AdamW 原理 从自适应步长到解耦权重衰减</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-23T09:10:00.000Z" title="发表于 2026-10-23 17:10:00">2026-10-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-23T09:10:00.000Z" title="更新于 2026-10-23 17:10:00">2026-10-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="AdamW 原理 从自适应步长到解耦权重衰减" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="ai"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>AI ENGINEERING</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>7</strong><small>组图片与图表</small></span></div></div><p>沿定义、计算与实验边界阅读，分开模型原理、教学验证和实际系统效果。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#固定这一篇的更新约定"><span>01</span><strong>固定这一篇的更新约定</strong></a></li><li><a href="#零初始化修正了什么偏差"><span>02</span><strong>零初始化修正了什么偏差</strong></a></li><li><a href="#epsilon-不是可以随手移动的括号"><span>03</span><strong>epsilon 不是可以随手移动的括号</strong></a></li><li><a href="#L2-为什么没有自然变成解耦衰减"><span>04</span><strong>L2 为什么没有自然变成解耦衰减</strong></a></li><li><a href="#两步手算：零梯度还会继续移动"><span>05</span><strong>两步手算：零梯度还会继续移动</strong></a></li><li><a href="#一个可直接运行的标准库实现"><span>06</span><strong>一个可直接运行的标准库实现</strong></a></li><li><a href="#调度、参数分组与恢复状态的边界"><span>07</span><strong>调度、参数分组与恢复状态的边界</strong></a></li><li><a href="#验证范围与继续阅读"><span>08</span><strong>验证范围与继续阅读</strong></a></li></ol></nav></details></section><p><a href="/esblog/71926.html">反向传播与优化器</a>已经区分了“求梯度”和“使用梯度”。这篇继续追踪梯度交给 Adam 以后经历的几次变换：为什么要保存两份状态，为什么除以偏差修正项，以及权重衰减究竟在哪一步参与。</p>
+<p><a href="/esblog/72753.html">Dropout</a>在训练前向里引入随机性，<a href="/esblog/72864.html">LayerNorm</a>改变特征的归一化。AdamW 则直接规定参数如何更新。这几件事可以同时出现，却不能彼此替代，也不能仅凭某次参数变小就认定泛化改善。</p>
+<span id="more"></span>
+
+
+<section class="mechanism-map" aria-label="AdamW 阅读路线"><div><strong>先跟踪状态</strong><p>m 平滑梯度，v 平滑平方梯度；v 不是中心化方差。</p></div><div><strong>再固定约定</strong><p>epsilon 在根号外；学习率也乘在衰减项上。</p></div><div><strong>最后分清路径</strong><p>L2 进入梯度和矩估计；解耦衰减直接作用于旧参数。</p></div></section>
+
+
+<h2 id="固定这一篇的更新约定"><a href="#固定这一篇的更新约定" class="headerlink" title="固定这一篇的更新约定"></a>固定这一篇的更新约定</h2><p>讨论实数、稠密的一组参数，最小化可微数据损失 fₜ；<code>gₜ=∇fₜ(θₜ₋₁)</code> 在更新前的参数上计算。各坐标独立进行下面的算术，共享时间步 t 与超参数。初始 m₀&#x3D;v₀&#x3D;0；<code>0≤β₁,β₂&lt;1</code>、学习率 αₜ≥0、衰减系数 λ≥0、epsilon ε&gt;0。</p>
+<p>采用 <a target="_blank" rel="noopener" href="https://docs.pytorch.org/docs/2.14/generated/torch.optim.AdamW.html">PyTorch 2.14 AdamW</a> 的非 AMSGrad、非 maximize 公式：</p>
+<blockquote>
+<p>mₜ &#x3D; β₁mₜ₋₁ + (1−β₁)gₜ；vₜ &#x3D; β₂vₜ₋₁ + (1−β₂)gₜ²。</p>
+<p>m̂ₜ &#x3D; mₜ&#x2F;(1−β₁ᵗ)；v̂ₜ &#x3D; vₜ&#x2F;(1−β₂ᵗ)。</p>
+<p>θₜ &#x3D; (1−αₜλ)θₜ₋₁ − αₜm̂ₜ&#x2F;(√v̂ₜ+ε)。</p>
+</blockquote>
+<p>平方、开根号、除法都按坐标执行。这里的 <code>weight_decay=λ</code> 与学习率相乘；不能把别处记号中“每一步直接减去 λθ”的 λ 原样搬来。<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1711.05101">AdamW 原论文</a>的 Algorithm 2 使用调度倍数 ηₜ，把更新写成 <code>−ηₜ(α·自适应方向+λ_paper·θ)</code>。当 αₜ&#x3D;ηₜα 时，匹配本文约定需要 <code>λ_paper=α·λ</code>，而非假定同名符号总有相同数值。</p>
+<p>本文不实现混合精度、稀疏梯度、AMSGrad、参数组或框架内核，也不声称这些公式验证了具体训练任务。生产实现的状态保存、跳步与调度顺序仍需单独处理。</p>
+<h2 id="零初始化修正了什么偏差"><a href="#零初始化修正了什么偏差" class="headerlink" title="零初始化修正了什么偏差"></a>零初始化修正了什么偏差</h2><p>把一阶递推展开，可得 <code>mₜ=(1−β₁)Σₖ₌₁ᵗ β₁ᵗ⁻ᵏgₖ</code>。这些系数的和为 <code>1−β₁ᵗ</code>，初期小于 1；除以它，就把已有梯度的指数权重归一化为和为 1。</p>
+<p>若各步梯度的期望均为同一个 μ，则 <code>E[mₜ]=(1−β₁ᵗ)μ</code>，于是 <code>E[m̂ₜ]=μ</code>。同理，若平方梯度的期望恒为 ν，<code>E[v̂ₜ]=ν</code>。这说明<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1412.6980">Adam 原论文 Algorithm 1</a>中修正项的来历；<strong>不表示真实训练中变化的梯度分布也被变成了平稳分布</strong>。</p>
+<p>v 保存的是二阶原始矩，即平方梯度的平滑值，不是 <code>E[g²]−E[g]²</code>。即使每步梯度恒为 c，修正后仍有 m̂&#x3D;c、v̂&#x3D;c²，因此方向为 <code>c/(|c|+ε)</code>。ε 很小时，不同幅值的恒定梯度可能给出相近的单步位移，但全局学习率仍然决定尺度。</p>
+
+<figure class="evidence-figure concept-figure" aria-labelledby="adamw-moment-caption"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="AdamW 梯度状态与独立衰减路径图，可横向滚动"><img class="no-lazy" src="/images/posts/adamw-moment-paths.svg" width="900" height="520" loading="lazy" decoding="async" alt="数据梯度分别进入一阶矩与平方梯度二阶矩，经偏差修正得到自适应位移；旧参数另乘1减学习率乘衰减系数，二者合成新参数，衰减不直接进入矩状态。"></div><figcaption id="adamw-moment-caption">原创数据流示意。两条路径在参数更新处合并；后续梯度仍可能因新参数不同而改变，不代表 λ 对未来训练轨迹没有影响。<a href="/images/posts/adamw-moment-paths.svg">查看原图</a></figcaption></figure>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[旧参数计算数据梯度] --&gt; B[平滑梯度与平方梯度]
+  B --&gt; C[用时间步修正零初始化偏差]
+  C --&gt; D[自适应位移]
+  E[旧参数乘衰减因子] --&gt; F[相减得到新参数]
+  D --&gt; F
+  F --&gt; G[下一步重新计算数据梯度]
+  G --&gt; A
+  </pre></div>
+
+<h2 id="epsilon-不是可以随手移动的括号"><a href="#epsilon-不是可以随手移动的括号" class="headerlink" title="epsilon 不是可以随手移动的括号"></a>epsilon 不是可以随手移动的括号</h2><p>本文分母是 <code>√v̂+ε</code>，而非 <code>√(v̂+ε)</code>。例如 v̂&#x3D;4、ε&#x3D;0.5 时，前者为 2.5，后者约为 2.1213，两者产生不同更新。手算故意用较大的 ε 展示差异，它不是默认超参数建议。</p>
+<p>若把偏差修正合进学习率，也要连同 epsilon 一起变换。令 c₁&#x3D;1−β₁ᵗ、c₂&#x3D;1−β₂ᵗ，则同一个自适应位移可以写成：</p>
+<blockquote>
+<p>αₜmₜ&#x2F;[c₁(√(vₜ&#x2F;c₂)+ε)]</p>
+<p>&#x3D; [αₜ√c₂&#x2F;c₁] · mₜ&#x2F;[√vₜ+ε√c₂]。</p>
+</blockquote>
+<p>在后一式中继续使用未缩放的 ε，一般不与前一式完全相同。阅读不同库或论文时，应把完整分母和偏差项对齐，再判断只是重排还是改变了算法。</p>
+<h2 id="L2-为什么没有自然变成解耦衰减"><a href="#L2-为什么没有自然变成解耦衰减" class="headerlink" title="L2 为什么没有自然变成解耦衰减"></a>L2 为什么没有自然变成解耦衰减</h2><p>对没有动量、没有自适应缩放的普通 SGD，把 <code>λ‖θ‖²/2</code> 加入损失后，梯度变为 <code>g+λθ</code>；一步为 <code>θ−α(g+λθ)=(1−αλ)θ−αg</code>。在这个特定约定下，它与同因子的直接衰减相同。</p>
+<p>Adam 加 L2 则把 <code>ĝₜ=gₜ+λθₜ₋₁</code> 放入 m、v 两个递推，L2 的影响同时进入方向、尺度和历史状态。AdamW 只把数据梯度 g 放入这两个状态，额外从旧参数扣除 <code>αλθ</code>。自适应缩放和状态递推使普通 SGD 的那一步代数拆分无法直接照搬。</p>
+<p>固定 θ₀&#x3D;(2,2)、数据梯度 g₁&#x3D;(1,4)、β₁&#x3D;β₂&#x3D;0.5、α&#x3D;0.1、λ&#x3D;0.2、ε&#x3D;0.5，两种算法的第一步可以完整算出：</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>进入矩估计的梯度</th>
+<th>第一对修正矩 m̂、v̂</th>
+<th>更新后参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AdamW</td>
+<td>(1,4)</td>
+<td>m̂&#x3D;(1,4)，v̂&#x3D;(1,16)</td>
+<td>(1.8933333, 1.8711111)</td>
+</tr>
+<tr>
+<td>Adam 加 L2</td>
+<td>(1.4,4.4)</td>
+<td>m̂&#x3D;(1.4,4.4)，v̂&#x3D;(1.96,19.36)</td>
+<td>(1.9263158, 1.9102041)</td>
+</tr>
+</tbody></table>
+<p>AdamW 的两个坐标都先乘 0.98，再减去各自的自适应位移；Adam 加 L2 没有再额外乘一次 0.98。两者在相同初值和同名 λ 下已经不同，这个反例足以说明它们不普遍等价，并不是比较某个任务的好坏。</p>
+
+<figure class="evidence-figure concept-figure" aria-labelledby="adamw-decay-caption"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="相同初值下 AdamW 与 Adam 加 L2 的两坐标更新对照图，可横向滚动"><img class="no-lazy" src="/images/posts/adamw-decay-geometry.svg" width="900" height="520" loading="lazy" decoding="async" alt="初值2和2、数据梯度1和4。AdamW用原梯度估计状态并独立乘0.98，结果1.8933333和1.8711111；Adam加L2将梯度改成1.4和4.4，状态及结果不同，得到1.9263158和1.9102041。"></div><figcaption id="adamw-decay-caption">原创确定性算术对照，所有数值来自上表。框与箭头表示更新顺序，不是损失曲面、训练曲线或泛化测试。<a href="/images/posts/adamw-decay-geometry.svg">查看原图</a></figcaption></figure>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[同一旧参数与数据梯度] --&gt; B[Adam 加 L2]
+  A --&gt; C[AdamW]
+  B --&gt; D[先加 lambda 乘旧参数]
+  D --&gt; E[增广梯度进入两个矩状态]
+  C --&gt; F[仅数据梯度进入两个矩状态]
+  C --&gt; G[旧参数独立乘衰减因子]
+  E --&gt; H[自适应更新]
+  F --&gt; I[自适应位移与衰减合并]
+  G --&gt; I
+  </pre></div>
+
+<h2 id="两步手算：零梯度还会继续移动"><a href="#两步手算：零梯度还会继续移动" class="headerlink" title="两步手算：零梯度还会继续移动"></a>两步手算：零梯度还会继续移动</h2><p>现在只看一个坐标 θ₀&#x3D;2，超参数仍为 β₁&#x3D;β₂&#x3D;0.5、α&#x3D;0.1、λ&#x3D;0.2、ε&#x3D;0.5，给定数据梯度序列 <code>[2,0]</code>。这是用来审查更新公式的外部输入，不是声称某个模型恰好产生这些梯度。</p>
+
+<div class="table-wrap" id="adamw-hand-table" tabindex="0" role="region" aria-label="AdamW 两步手算表，可横向滚动"><table><thead><tr><th>t 与 gₜ</th><th>mₜ，vₜ</th><th>修正除数 c₁=c₂</th><th>m̂ₜ，v̂ₜ</th><th>衰减后的旧参数</th><th>自适应位移</th><th>新参数 θₜ</th></tr></thead><tbody><tr><td>1；2</td><td>1，2</td><td>1/2</td><td>2，4</td><td>2×0.98=1.96</td><td>0.1×2/(2+0.5)=0.08</td><td>1.88</td></tr><tr><td>2；0</td><td>1/2，1</td><td>3/4</td><td>2/3，4/3</td><td>1.88×0.98=1.8424</td><td>0.1×(2/3)/(√(4/3)+0.5)≈0.0402893</td><td>≈1.8021107</td></tr></tbody></table></div>
+
+
+<p>第二步 g₂&#x3D;0，历史 m₂ 仍为正，因此自适应位移没有立刻消失。只要本步修正一阶矩 m̂ₜ 为零，自适应位移就为零；全部历史梯度均为零是一种充分情形，历史正负贡献抵消也可能得到同样结果。例如 β₁&#x3D;β₂&#x3D;0.5、梯度为 <code>[2,−1]</code> 时，第二步 m₂&#x3D;0、v₂&#x3D;1.5，仍然只有衰减贡献，并不要求 v₂ 为零。</p>
+
+<details class="mechanism-check"><summary>自检：AdamW 解耦后，改变 λ 会永远不影响 m、v 吗？</summary><p>不成立。若外部固定给定相同梯度序列，m、v 的公式确实不含 λ；但实际训练的参数路径会随 λ 改变，下一步重新计算的梯度也可能不同，继而改变后续状态。</p></details>
+<details class="mechanism-check"><summary>自检：当前数据梯度为零，能断定本步只有权重衰减吗？</summary><p>不能。还要看一阶矩是否保留了过去的梯度。两步手算的第二步仍扣除约 0.0402893 的自适应位移；零梯度与缺失梯度也不能混为一谈。</p></details>
+
+
+<h2 id="一个可直接运行的标准库实现"><a href="#一个可直接运行的标准库实现" class="headerlink" title="一个可直接运行的标准库实现"></a>一个可直接运行的标准库实现</h2><p>代码用不可变状态返回新值，不原地改参数或旧状态；同时提供 Adam 加 L2 的对照入口。状态是同一组参数连续更新的状态，β 应沿该序列保持不变。若中途更换 β，简单使用当前 βᵗ 不再代表此前全部权重的修正，因此应重新定义状态协议。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">number</span>(<span class="params">value</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(value, <span class="built_in">bool</span>) <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(value, (<span class="built_in">int</span>, <span class="built_in">float</span>)):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected a finite real number&quot;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        result = <span class="built_in">float</span>(value)</span><br><span class="line">    <span class="keyword">except</span> (OverflowError, ValueError):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;number is outside float range&quot;</span>) <span class="keyword">from</span> <span class="literal">None</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> math.isfinite(result):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected a finite real number&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">vector</span>(<span class="params">values</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(values, (<span class="built_in">list</span>, <span class="built_in">tuple</span>)) <span class="keyword">or</span> <span class="keyword">not</span> values:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;expected a nonempty vector&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">tuple</span>(number(value) <span class="keyword">for</span> value <span class="keyword">in</span> values)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AdamState</span>:</span><br><span class="line">    step: <span class="built_in">int</span></span><br><span class="line">    m: <span class="built_in">tuple</span></span><br><span class="line">    v: <span class="built_in">tuple</span></span><br><span class="line">    betas: <span class="built_in">tuple</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">adamw_step</span>(<span class="params">params, gradients, state=<span class="literal">None</span>, *, lr=<span class="number">0.001</span>,</span></span><br><span class="line"><span class="params">               betas=(<span class="params"><span class="number">0.9</span>, <span class="number">0.999</span></span>), eps=<span class="number">1e-8</span>, weight_decay=<span class="number">0.01</span></span>):</span><br><span class="line">    x, g = vector(params), vector(gradients)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(x) != <span class="built_in">len</span>(g):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;gradient shape mismatch&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(betas, (<span class="built_in">list</span>, <span class="built_in">tuple</span>)) <span class="keyword">or</span> <span class="built_in">len</span>(betas) != <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;betas must have two elements&quot;</span>)</span><br><span class="line">    b1, b2 = (number(value) <span class="keyword">for</span> value <span class="keyword">in</span> betas)</span><br><span class="line">    lr, eps, wd = number(lr), number(eps), number(weight_decay)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> (<span class="number">0</span> &lt;= b1 &lt; <span class="number">1</span> <span class="keyword">and</span> <span class="number">0</span> &lt;= b2 &lt; <span class="number">1</span>):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;betas must lie in [0, 1)&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> lr &lt; <span class="number">0</span> <span class="keyword">or</span> eps &lt;= <span class="number">0</span> <span class="keyword">or</span> wd &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid lr, epsilon or decay&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> state <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        state = AdamState(<span class="number">0</span>, (<span class="number">0.0</span>,) * <span class="built_in">len</span>(x), (<span class="number">0.0</span>,) * <span class="built_in">len</span>(x), (b1, b2))</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(state, AdamState):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid optimizer state&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(state.step) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> state.step &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid step counter&quot;</span>)</span><br><span class="line">    old_m, old_v = vector(state.m), vector(state.v)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(old_m) != <span class="built_in">len</span>(x) <span class="keyword">or</span> <span class="built_in">len</span>(old_v) != <span class="built_in">len</span>(x):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;state shape mismatch&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> vector(state.betas) != (b1, b2) <span class="keyword">or</span> <span class="built_in">any</span>(value &lt; <span class="number">0</span> <span class="keyword">for</span> value <span class="keyword">in</span> old_v):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;inconsistent state&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> state.step == <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">any</span>(value != <span class="number">0</span> <span class="keyword">for</span> value <span class="keyword">in</span> old_m + old_v):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;initial state must have zero moments&quot;</span>)</span><br><span class="line">    t = state.step + <span class="number">1</span></span><br><span class="line">    m = <span class="built_in">tuple</span>(number(b1 * a + (<span class="number">1</span> - b1) * b) <span class="keyword">for</span> a, b <span class="keyword">in</span> <span class="built_in">zip</span>(old_m, g))</span><br><span class="line">    v = <span class="built_in">tuple</span>(number(b2 * a + (<span class="number">1</span> - b2) * (b * b)) <span class="keyword">for</span> a, b <span class="keyword">in</span> <span class="built_in">zip</span>(old_v, g))</span><br><span class="line">    c1, c2 = <span class="number">1</span> - b1 ** t, <span class="number">1</span> - b2 ** t</span><br><span class="line">    mh = <span class="built_in">tuple</span>(number(value / c1) <span class="keyword">for</span> value <span class="keyword">in</span> m)</span><br><span class="line">    vh = <span class="built_in">tuple</span>(number(value / c2) <span class="keyword">for</span> value <span class="keyword">in</span> v)</span><br><span class="line">    adaptive = <span class="built_in">tuple</span>(number(lr * (a / (math.sqrt(b) + eps)))</span><br><span class="line">                     <span class="keyword">for</span> a, b <span class="keyword">in</span> <span class="built_in">zip</span>(mh, vh))</span><br><span class="line">    factor = number(<span class="number">1</span> - number(lr * wd))</span><br><span class="line">    updated = <span class="built_in">tuple</span>(number(number(value * factor) - delta)</span><br><span class="line">                    <span class="keyword">for</span> value, delta <span class="keyword">in</span> <span class="built_in">zip</span>(x, adaptive))</span><br><span class="line">    <span class="keyword">return</span> updated, AdamState(t, m, v, (b1, b2)), &#123;</span><br><span class="line">        <span class="string">&quot;m_hat&quot;</span>: mh, <span class="string">&quot;v_hat&quot;</span>: vh,</span><br><span class="line">        <span class="string">&quot;adaptive_step&quot;</span>: adaptive, <span class="string">&quot;decay_factor&quot;</span>: factor,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">adam_l2_step</span>(<span class="params">params, gradients, state=<span class="literal">None</span>, *, lr=<span class="number">0.001</span>,</span></span><br><span class="line"><span class="params">                 betas=(<span class="params"><span class="number">0.9</span>, <span class="number">0.999</span></span>), eps=<span class="number">1e-8</span>, l2=<span class="number">0.01</span></span>):</span><br><span class="line">    x, g, coefficient = vector(params), vector(gradients), number(l2)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(x) != <span class="built_in">len</span>(g) <span class="keyword">or</span> coefficient &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;invalid L2 comparison inputs&quot;</span>)</span><br><span class="line">    augmented = <span class="built_in">tuple</span>(number(a + coefficient * b) <span class="keyword">for</span> a, b <span class="keyword">in</span> <span class="built_in">zip</span>(g, x))</span><br><span class="line">    <span class="keyword">return</span> adamw_step(x, augmented, state, lr=lr, betas=betas,</span><br><span class="line">                      eps=eps, weight_decay=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    config = <span class="built_in">dict</span>(lr=<span class="number">0.1</span>, betas=(<span class="number">0.5</span>, <span class="number">0.5</span>), eps=<span class="number">0.5</span>)</span><br><span class="line">    x, state = (<span class="number">2.0</span>,), <span class="literal">None</span></span><br><span class="line">    trace = []</span><br><span class="line">    <span class="keyword">for</span> gradient <span class="keyword">in</span> [(<span class="number">2.0</span>,), (<span class="number">0.0</span>,)]:</span><br><span class="line">        x, state, info = adamw_step(x, gradient, state,</span><br><span class="line">                                   weight_decay=<span class="number">0.2</span>, **config)</span><br><span class="line">        trace.append(&#123;<span class="string">&quot;step&quot;</span>: state.step, <span class="string">&quot;theta&quot;</span>: x,</span><br><span class="line">                      <span class="string">&quot;m&quot;</span>: state.m, <span class="string">&quot;v&quot;</span>: state.v, **info&#125;)</span><br><span class="line">    decoupled = adamw_step([<span class="number">2</span>, <span class="number">2</span>], [<span class="number">1</span>, <span class="number">4</span>], weight_decay=<span class="number">0.2</span>, **config)[<span class="number">0</span>]</span><br><span class="line">    coupled = adam_l2_step([<span class="number">2</span>, <span class="number">2</span>], [<span class="number">1</span>, <span class="number">4</span>], l2=<span class="number">0.2</span>, **config)[<span class="number">0</span>]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(&#123;<span class="string">&quot;trace&quot;</span>: trace, <span class="string">&quot;adamw&quot;</span>: decoupled,</span><br><span class="line">                      <span class="string">&quot;adam_l2&quot;</span>: coupled&#125;, ensure_ascii=<span class="literal">False</span>))</span><br></pre></td></tr></table></figure>
+
+<p>第一段轨迹的参数应依次为 1.88、约 1.8021107；二维对照与前表一致。实现拒绝非有限数值及会产生非有限中间值的输入，不承诺任意极端 float 都能稳定更新。返回的额外信息用于核对手算，不是训练监控系统。</p>
+<h2 id="调度、参数分组与恢复状态的边界"><a href="#调度、参数分组与恢复状态的边界" class="headerlink" title="调度、参数分组与恢复状态的边界"></a>调度、参数分组与恢复状态的边界</h2><table>
+<thead>
+<tr>
+<th>需要明确的事</th>
+<th>本文约定或应检查的结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>学习率变化</td>
+<td>每步的 αₜ 同时乘自适应项与 λ；λ 固定不表示每步收缩比例固定</td>
+</tr>
+<tr>
+<td>想把它叫作收缩</td>
+<td>需有 0≤αₜλ≤1；大于 1 时因子为负，不能继续描述为非负比例缩小</td>
+</tr>
+<tr>
+<td>λ&#x3D;0</td>
+<td>退化为本文 epsilon 约定下的 Adam</td>
+</tr>
+<tr>
+<td>αₜ&#x3D;0</td>
+<td>本实现参数不变，但仍更新矩状态与步数，不等于整步跳过</td>
+</tr>
+<tr>
+<td>某些坐标不衰减</td>
+<td>可按模型目标划分参数组，不把“排除所有偏置或归一化参数”当作无条件定理</td>
+</tr>
+<tr>
+<td>没有梯度与梯度为零</td>
+<td>本实现只接受完整数值向量；不模拟框架对 <code>grad=None</code> 的跳过行为</td>
+</tr>
+<tr>
+<td>暂停后恢复</td>
+<td>参数、m、v、步数、超参数与调度位置应一起恢复；只存 θ 不足以续接相同轨迹</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="https://docs.pytorch.org/docs/2.14/generated/torch.optim.Adam.html">PyTorch 2.14 Adam</a> 还提供 <code>decoupled_weight_decay=True</code>。因此阅读当前配置不能只看类名，应连同这个开关与参数组一起核对。不同实现的浮点执行顺序可能产生微小差异，本文没有声称已经逐内核验证 PyTorch。</p>
+<h2 id="验证范围与继续阅读"><a href="#验证范围与继续阅读" class="headerlink" title="验证范围与继续阅读"></a>验证范围与继续阅读</h2><p><code>tests/verify-adamw-article.cjs</code> 提取上面的原样 Python 并实际执行。专门参考在高精度 Decimal 中把历史梯度展开为有限加权和，不沿用待测 m、v 的递推；另检查增广二次损失的数值梯度、epsilon 重排、零梯度历史和状态恢复。原图中的两组参数与手算表同时接受数值核验。</p>
+<p>600 组预定种子的随机轨迹共 5020 步、17245 个坐标通过 70 位 Decimal 参考，并核对坐标置换、固定梯度序列下的解耦状态和 600 次断点恢复。另有 100 组恒定梯度的 2000 步、1406 个数值导数、500 次 epsilon 等价重排、历史梯度抵消反例和 33 类非法输入。两图共 33 个文字节点均位于画布内，原图已逐张查看。</p>
+<p>这些检查验证更新算术和输入约定，没有训练真实神经网络，没有测量速度、泛化、正则化收益或证明一般非凸问题的收敛。继续阅读可回到<a href="/esblog/71926.html">反向传播</a>检查数据梯度的来源，或比较<a href="/esblog/72753.html">Dropout 的期望损失</a>与<a href="/esblog/72864.html">LayerNorm 的特征梯度</a>，把前向随机性、归一化与优化器状态放在各自的位置。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/72975.html">https://eulersail.com/esblog/72975.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">神经网络</a><a class="post-meta__tags" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/">优化器</a><a class="post-meta__tags" href="/tags/AdamW/">AdamW</a><a class="post-meta__tags" href="/tags/%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F/">权重衰减</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/65583.html" title="概率校准 从可靠性图到 Brier 分解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">概率校准 从可靠性图到 Brier 分解</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div><div><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div><div><a href="/esblog/72684.html" title="BatchNorm 原理 从批次统计到训练推理差异"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-15</div><div class="title">BatchNorm 原理 从批次统计到训练推理差异</div></div></a></div><div><a href="/esblog/72753.html" title="Dropout 原理 从随机掩码到期望损失与梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-19</div><div class="title">Dropout 原理 从随机掩码到期望损失与梯度</div></div></a></div><div><a href="/esblog/72864.html" title="LayerNorm 原理 从特征轴到归一化梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-21</div><div class="title">LayerNorm 原理 从特征轴到归一化梯度</div></div></a></div><div><a href="/esblog/71926.html" title="反向传播、自动微分与优化器：神经网络怎样学到参数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-20</div><div class="title">反向传播、自动微分与优化器：神经网络怎样学到参数</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">130</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">224</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E5%AE%9A%E8%BF%99%E4%B8%80%E7%AF%87%E7%9A%84%E6%9B%B4%E6%96%B0%E7%BA%A6%E5%AE%9A"><span class="toc-text">固定这一篇的更新约定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BF%AE%E6%AD%A3%E4%BA%86%E4%BB%80%E4%B9%88%E5%81%8F%E5%B7%AE"><span class="toc-text">零初始化修正了什么偏差</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#epsilon-%E4%B8%8D%E6%98%AF%E5%8F%AF%E4%BB%A5%E9%9A%8F%E6%89%8B%E7%A7%BB%E5%8A%A8%E7%9A%84%E6%8B%AC%E5%8F%B7"><span class="toc-text">epsilon 不是可以随手移动的括号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#L2-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%B2%A1%E6%9C%89%E8%87%AA%E7%84%B6%E5%8F%98%E6%88%90%E8%A7%A3%E8%80%A6%E8%A1%B0%E5%87%8F"><span class="toc-text">L2 为什么没有自然变成解耦衰减</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E6%AD%A5%E6%89%8B%E7%AE%97%EF%BC%9A%E9%9B%B6%E6%A2%AF%E5%BA%A6%E8%BF%98%E4%BC%9A%E7%BB%A7%E7%BB%AD%E7%A7%BB%E5%8A%A8"><span class="toc-text">两步手算：零梯度还会继续移动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E5%8F%AF%E7%9B%B4%E6%8E%A5%E8%BF%90%E8%A1%8C%E7%9A%84%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E7%8E%B0"><span class="toc-text">一个可直接运行的标准库实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E3%80%81%E5%8F%82%E6%95%B0%E5%88%86%E7%BB%84%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%8A%B6%E6%80%81%E7%9A%84%E8%BE%B9%E7%95%8C"><span class="toc-text">调度、参数分组与恢复状态的边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E8%8C%83%E5%9B%B4%E4%B8%8E%E7%BB%A7%E7%BB%AD%E9%98%85%E8%AF%BB"><span class="toc-text">验证范围与继续阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72975.html" title="AdamW 原理 从自适应步长到解耦权重衰减">AdamW 原理 从自适应步长到解耦权重衰减</a><time datetime="2026-10-23T09:10:00.000Z" title="发表于 2026-10-23 17:10:00">2026-10-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65583.html" title="概率校准 从可靠性图到 Brier 分解">概率校准 从可靠性图到 Brier 分解</a><time datetime="2026-10-23T09:10:00.000Z" title="发表于 2026-10-23 17:10:00">2026-10-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79759.html" title="Codeforces 1208D 从加权前缀到逆序重建排列">Codeforces 1208D 从加权前缀到逆序重建排列</a><time datetime="2026-10-22T10:40:00.000Z" title="发表于 2026-10-22 18:40:00">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98879.html" title="拉威尔波莱罗 从固定节奏到音色与渐强">拉威尔波莱罗 从固定节奏到音色与渐强</a><time datetime="2026-10-22T10:40:00.000Z" title="发表于 2026-10-22 18:40:00">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85526.html" title="Fick 扩散 从浓度梯度到长度与时间尺度">Fick 扩散 从浓度梯度到长度与时间尺度</a><time datetime="2026-10-22T08:05:00.000Z" title="发表于 2026-10-22 16:05:00">2026-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

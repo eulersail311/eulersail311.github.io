@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="calibration-title calibration-desc">
+  <title id="calibration-title">十二条合成记录的经验可靠性图</title>
+  <desc id="calibration-desc">An original plot of the article's twelve synthetic records. Model A has four observations at each probability 0.25, 0.5, and 0.75, with observed positive fractions 0, 0.5, and 1. A constant 0.5 baseline has one empirical point. These sample proportions are not measured model performance or population calibration guarantees; no confidence intervals are shown.</desc>
+  <rect width="900" height="520" rx="20" fill="#f8fbfc"/>
+  <g font-family="'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif" fill="#24363b">
+    <text x="36" y="45" font-size="25" font-weight="700">校准与区分，先看成两个问题</text>
+    <text x="36" y="74" font-size="16" fill="#52676d">同一批十二条合成记录；模型 A 的每个概率值各有四条。</text>
+    <g stroke="#d4e1e4" stroke-width="1"><path d="M100 400H500M100 250H500M100 100H500M100 100V400M200 100V400M300 100V400M400 100V400M500 100V400"/></g>
+    <path d="M100 100V400H500" fill="none" stroke="#52676d" stroke-width="2"/>
+    <path id="calibration-diagonal" d="M100 400L500 100" stroke="#8a969b" stroke-width="2" stroke-dasharray="7 6"/>
+    <g font-size="14" fill="#52676d" text-anchor="end"><text x="86" y="405">0</text><text x="86" y="255">0.5</text><text x="86" y="105">1</text></g>
+    <g font-size="14" fill="#52676d" text-anchor="middle"><text x="100" y="424">0</text><text x="200" y="424">0.25</text><text x="300" y="424">0.5</text><text x="400" y="424">0.75</text><text x="500" y="424">1</text></g>
+    <text x="100" y="93" font-size="15" fill="#52676d">经验正例率 q</text><text x="260" y="452" font-size="15" fill="#52676d">平均预测概率 p</text>
+    <g stroke="#29767c" stroke-width="2" stroke-dasharray="4 4"><path d="M200 400V325"/><path d="M400 100V175"/></g>
+    <path id="constant-point" data-p="0.5" data-q="0.5" data-count="12" d="M300 235L315 250L300 265L285 250Z" fill="#f5cf93" stroke="#946524" stroke-width="2"/>
+    <g fill="#29767c" stroke="#fff" stroke-width="2.5"><circle class="calibration-point" data-p="0.25" data-q="0" data-count="4" cx="200" cy="400" r="7"/><circle class="calibration-point" data-p="0.5" data-q="0.5" data-count="4" cx="300" cy="250" r="7"/><circle class="calibration-point" data-p="0.75" data-q="1" data-count="4" cx="400" cy="100" r="7"/></g>
+    <g font-size="14" fill="#245b61"><text x="211" y="388">n=4</text><text x="320" y="256">n=4</text><text x="412" y="116">n=4</text></g>
+    <rect x="555" y="100" width="308" height="214" rx="14" fill="#eef5f6" stroke="#cadcde"/>
+    <text x="575" y="131" font-size="18" font-weight="700">模型 A：三个经验组</text>
+    <g font-size="17"><text x="575" y="172">p=0.25 → q=0</text><text x="575" y="207">p=0.50 → q=0.50</text><text x="575" y="242">p=0.75 → q=1</text></g>
+    <text x="575" y="283" font-size="15" fill="#52676d">每组四条，未绘制置信区间。</text>
+    <circle cx="568" cy="342" r="6" fill="#29767c"/><text x="585" y="347" font-size="15">模型 A：BS=1/8</text>
+    <path d="M568 362L576 370L568 378L560 370Z" fill="#f5cf93" stroke="#946524"/><text x="585" y="375" font-size="15">恒报 0.5：BS=1/4</text>
+    <path d="M560 403H578" stroke="#8a969b" stroke-width="2" stroke-dasharray="5 4"/><text x="585" y="408" font-size="15">对角线仅作校准参考</text>
+    <text x="555" y="448" font-size="15" fill="#52676d">中心点重合，不代表区分能力相同。</text>
+    <rect x="36" y="471" width="827" height="31" rx="8" fill="#e8f0f2"/>
+    <text x="50" y="492" font-size="13" fill="#52676d">原创合成数据图：显示本批经验比例，不等于总体校准检验，也不是实际模型实验。</text>
+  </g>
+</svg>
