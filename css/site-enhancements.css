@@ -2915,7 +2915,7 @@
 
 #post #article-container.reading-article > h2 { padding: 0.5em 0.65em 0.6em; border-bottom-width: 2px; border-radius: 8px 8px 0 0; background: linear-gradient(90deg, var(--article-soft), transparent 85%); text-wrap: pretty; }
 #post #article-container.reading-article[data-reading-tone='music'] > h2 { padding-left: 0; background: none; font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif; letter-spacing: 0.03em; }
-#post #article-container.reading-article > h4 { margin: 1.75em 0 0.7em; color: var(--article-accent); font-size: 1.05em; line-height: 1.7; }
+#post #article-container.reading-article > h4 { margin: 1.75em 0 0.7em; padding-left: 0; color: var(--article-accent); font-size: 1.05em; line-height: 1.7; transition: none; }
 #post #article-container.reading-article > p > strong { color: var(--article-accent); }
 #post #article-container.reading-article > :is(p, li, blockquote) code,
 #post #article-container.reading-article :is(td, th) > code { padding: 0.1em 0.35em; border: 1px solid var(--article-rule); border-radius: 5px; color: var(--article-accent); background: var(--article-soft); font-size: 0.88em; overflow-wrap: anywhere; }

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">先辨别任务，再选择方法与核对错因</title>
+  <desc id="desc">原创概念示意。无类别题面先要求说明目标和条件，再选择方法并解释。核对时区分方法选错、方法对但解释错以及当前题完整，分别回到相近情境对照、方法内例子或延迟后的新题；不是实验结果。</desc>
+  <defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L8 4.5 L0 9" fill="none" stroke="#796244" stroke-width="1.6"/></marker></defs>
+  <rect width="900" height="520" rx="22" fill="#fcfaf5"/>
+  <g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#302c26">
+    <text x="42" y="54" font-size="27" font-weight="700">选择理由，比一个方法名称多留一步</text>
+    <text x="42" y="86" font-size="16" fill="#665d50">原创概念示意 · 箭头表示记录流程，没有学习效果数据</text>
+    <rect x="42" y="119" width="238" height="108" rx="15" fill="#e9eee4" stroke="#64735b"/>
+    <text x="62" y="151" font-size="20" font-weight="700">1  只看情境</text>
+    <text x="62" y="181" font-size="17">盖住类别与答案</text>
+    <text x="62" y="207" font-size="16" fill="#5c6555">题目缺条件时可以追问</text>
+    <rect x="331" y="119" width="238" height="108" rx="15" fill="#f1e8d9" stroke="#957449"/>
+    <text x="351" y="151" font-size="20" font-weight="700">2  说明任务</text>
+    <text x="351" y="181" font-size="17">需要得到什么？</text>
+    <text x="351" y="207" font-size="16" fill="#735e42">哪些条件决定方法？</text>
+    <rect x="620" y="119" width="238" height="108" rx="15" fill="#e5edf1" stroke="#5c7c8b"/>
+    <text x="640" y="151" font-size="20" font-weight="700">3  选择与解释</text>
+    <text x="640" y="181" font-size="17">写方法和适用理由</text>
+    <text x="640" y="207" font-size="16" fill="#486574">保留核对前的原回答</text>
+    <path d="M290 173 H318" stroke="#796244" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M579 173 H607" stroke="#796244" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M739 237 V258 H161 V282 M450 258 V282 M739 258 V282" fill="none" stroke="#796244" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="42" y="297" width="238" height="129" rx="15" fill="#f1e8d9" stroke="#957449"/>
+    <text x="62" y="331" font-size="20" font-weight="700">方法选错</text>
+    <text x="62" y="364" font-size="17">比较相近情境</text>
+    <text x="62" y="394" font-size="16" fill="#735e42">圈出改变目标的条件</text>
+    <rect x="331" y="297" width="238" height="129" rx="15" fill="#eee8f0" stroke="#826e8c"/>
+    <text x="351" y="331" font-size="20" font-weight="700">方法对，解释错</text>
+    <text x="351" y="364" font-size="17">补读该方法的一组例子</text>
+    <text x="351" y="394" font-size="16" fill="#6f5b79">先理清内部共同结构</text>
+    <rect x="620" y="297" width="238" height="129" rx="15" fill="#e9eee4" stroke="#64735b"/>
+    <text x="640" y="331" font-size="20" font-weight="700">当前题完整</text>
+    <text x="640" y="364" font-size="17">换表述与条件再试</text>
+    <text x="640" y="394" font-size="16" fill="#5c6555">不把这题通过当作迁移</text>
+    <text x="42" y="471" font-size="18" font-weight="700">核对目标、条件与理由；记录提示介入、实际日期和用时。</text>
+    <text x="42" y="499" font-size="15" fill="#665d50">单个真实任务可能用到多种工具；这里判断当前缺少哪一种信息。</text>
+  </g>
+</svg>

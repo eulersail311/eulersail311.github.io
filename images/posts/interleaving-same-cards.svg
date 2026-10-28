@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">相同九张卡片的分块与交错安排</title>
+  <desc id="desc">原创概念示意。两行包含完全相同的九张卡片，每类三张，每张预留两分钟。分块顺序A1A2A3B1B2B3C1C2C3，交错示例A1B1C1B2C2A2C3A3B3；两行的类别切换数分别为二与八，没有学习成绩数据。</desc>
+  <rect width="900" height="520" rx="22" fill="#fcfaf5"/>
+  <g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#302c26">
+    <text x="42" y="54" font-size="27" font-weight="700">相同的题目，改变相邻关系</text>
+    <text x="42" y="86" font-size="16" fill="#665d50">原创概念示意 · A 差异审查 / B 逆向修订 / C 本地位置记录</text>
+    <text x="42" y="134" font-size="20" font-weight="700">分块</text>
+    <text x="128" y="134" font-size="16" fill="#665d50">每类连续三张；类别切换 2 次</text>
+    <g data-order="blocked" data-cards="A1 A2 A3 B1 B2 B3 C1 C2 C3">
+      <g data-card-id="A1"><rect x="42" y="155" width="82" height="68" rx="10" fill="#e9eee4" stroke="#64735b"/><text x="83" y="197" text-anchor="middle" font-size="22" font-weight="700">A1</text></g>
+      <g data-card-id="A2"><rect x="134" y="155" width="82" height="68" rx="10" fill="#e9eee4" stroke="#64735b"/><text x="175" y="197" text-anchor="middle" font-size="22" font-weight="700">A2</text></g>
+      <g data-card-id="A3"><rect x="226" y="155" width="82" height="68" rx="10" fill="#e9eee4" stroke="#64735b"/><text x="267" y="197" text-anchor="middle" font-size="22" font-weight="700">A3</text></g>
+      <g data-card-id="B1"><rect x="318" y="155" width="82" height="68" rx="10" fill="#f1e8d9" stroke="#957449"/><text x="359" y="197" text-anchor="middle" font-size="22" font-weight="700">B1</text></g>
+      <g data-card-id="B2"><rect x="410" y="155" width="82" height="68" rx="10" fill="#f1e8d9" stroke="#957449"/><text x="451" y="197" text-anchor="middle" font-size="22" font-weight="700">B2</text></g>
+      <g data-card-id="B3"><rect x="502" y="155" width="82" height="68" rx="10" fill="#f1e8d9" stroke="#957449"/><text x="543" y="197" text-anchor="middle" font-size="22" font-weight="700">B3</text></g>
+      <g data-card-id="C1"><rect x="594" y="155" width="82" height="68" rx="10" fill="#e5edf1" stroke="#5c7c8b"/><text x="635" y="197" text-anchor="middle" font-size="22" font-weight="700">C1</text></g>
+      <g data-card-id="C2"><rect x="686" y="155" width="82" height="68" rx="10" fill="#e5edf1" stroke="#5c7c8b"/><text x="727" y="197" text-anchor="middle" font-size="22" font-weight="700">C2</text></g>
+      <g data-card-id="C3"><rect x="778" y="155" width="82" height="68" rx="10" fill="#e5edf1" stroke="#5c7c8b"/><text x="819" y="197" text-anchor="middle" font-size="22" font-weight="700">C3</text></g>
+    </g>
+    <text x="42" y="270" font-size="20" font-weight="700">交错</text>
+    <text x="128" y="270" font-size="16" fill="#665d50">一个非循环示例；类别切换 8 次</text>
+    <g data-order="interleaved" data-cards="A1 B1 C1 B2 C2 A2 C3 A3 B3">
+      <g data-card-id="A1"><rect x="42" y="291" width="82" height="68" rx="10" fill="#e9eee4" stroke="#64735b"/><text x="83" y="333" text-anchor="middle" font-size="22" font-weight="700">A1</text></g>
+      <g data-card-id="B1"><rect x="134" y="291" width="82" height="68" rx="10" fill="#f1e8d9" stroke="#957449"/><text x="175" y="333" text-anchor="middle" font-size="22" font-weight="700">B1</text></g>
+      <g data-card-id="C1"><rect x="226" y="291" width="82" height="68" rx="10" fill="#e5edf1" stroke="#5c7c8b"/><text x="267" y="333" text-anchor="middle" font-size="22" font-weight="700">C1</text></g>
+      <g data-card-id="B2"><rect x="318" y="291" width="82" height="68" rx="10" fill="#f1e8d9" stroke="#957449"/><text x="359" y="333" text-anchor="middle" font-size="22" font-weight="700">B2</text></g>
+      <g data-card-id="C2"><rect x="410" y="291" width="82" height="68" rx="10" fill="#e5edf1" stroke="#5c7c8b"/><text x="451" y="333" text-anchor="middle" font-size="22" font-weight="700">C2</text></g>
+      <g data-card-id="A2"><rect x="502" y="291" width="82" height="68" rx="10" fill="#e9eee4" stroke="#64735b"/><text x="543" y="333" text-anchor="middle" font-size="22" font-weight="700">A2</text></g>
+      <g data-card-id="C3"><rect x="594" y="291" width="82" height="68" rx="10" fill="#e5edf1" stroke="#5c7c8b"/><text x="635" y="333" text-anchor="middle" font-size="22" font-weight="700">C3</text></g>
+      <g data-card-id="A3"><rect x="686" y="291" width="82" height="68" rx="10" fill="#e9eee4" stroke="#64735b"/><text x="727" y="333" text-anchor="middle" font-size="22" font-weight="700">A3</text></g>
+      <g data-card-id="B3"><rect x="778" y="291" width="82" height="68" rx="10" fill="#f1e8d9" stroke="#957449"/><text x="819" y="333" text-anchor="middle" font-size="22" font-weight="700">B3</text></g>
+    </g>
+    <rect x="42" y="393" width="818" height="76" rx="12" fill="#f0ebe2"/>
+    <text x="62" y="423" font-size="18" font-weight="700">每行 9 张 × 2 分钟 = 18 分钟；每类都是 3 张</text>
+    <text x="62" y="451" font-size="16" fill="#665d50">类别标签只用于备课；练习时盖住。等宽表示预留时长，不是实际耗时。</text>
+    <text x="42" y="499" font-size="15" fill="#665d50">同类题间隔也随顺序改变；切换数不代表学习收益。</text>
+  </g>
+</svg>

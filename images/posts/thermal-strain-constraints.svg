@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">自由热伸长与完全轴向约束</title>
+  <desc id="desc">合成升温50K带来正600微应变。自由杆弹性应变零，伸长0.30毫米；完全轴向约束杆的负600微应变弹性贡献抵消热贡献，应力负120MPa。几何变形放大。</desc>
+  <defs><marker id="arrow-green" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#167e91" stroke-width="1.5"/></marker><marker id="arrow-rust" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#a54531" stroke-width="1.5"/></marker><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8L8 0" stroke="#93aaa9" stroke-width="1"/></pattern></defs>
+  <rect width="900" height="520" rx="22" fill="#f7faf9"/>
+  <g font-family="system-ui, sans-serif" fill="#213b43">
+    <text x="40" y="48" font-size="26" font-weight="700">相同升温，边界决定实际伸长与应力</text>
+    <text x="40" y="80" font-size="17" fill="#50646b">ΔT = +50 K · α = 12×10⁻⁶ K⁻¹ · E = 200 GPa · L = 0.50 m</text>
+    <rect x="40" y="102" width="395" height="337" rx="15" fill="#eaf2ee"/>
+    <rect x="465" y="102" width="395" height="337" rx="15" fill="#f5ede7"/>
+    <text x="63" y="136" font-size="21" font-weight="700">右端自由</text>
+    <text x="488" y="136" font-size="21" font-weight="700">两端轴向位置固定</text>
+    <rect x="69" y="158" width="17" height="100" fill="url(#hatch)" stroke="#93aaa9"/>
+    <rect x="86" y="173" width="258" height="22" rx="3" fill="none" stroke="#93aaa9" stroke-width="2" stroke-dasharray="5 4"/>
+    <rect x="86" y="218" width="285" height="25" rx="3" fill="#9ccbb9" stroke="#167e91" stroke-width="2"/>
+    <path d="M345 202H385" stroke="#167e91" stroke-width="2.5" fill="none" marker-end="url(#arrow-green)"/>
+    <text x="112" y="167" font-size="15" fill="#50646b">虚线：初始无应力长度</text>
+    <text x="111" y="278" font-size="18" font-weight="650">u = +0.30 mm，σ = 0</text>
+    <rect x="495" y="172" width="17" height="86" fill="url(#hatch)" stroke="#93aaa9"/>
+    <rect x="810" y="172" width="17" height="86" fill="url(#hatch)" stroke="#93aaa9"/>
+    <rect x="512" y="212" width="298" height="26" rx="3" fill="#e5b7a7" stroke="#a54531" stroke-width="2"/>
+    <path d="M528 188H582M794 188H740" fill="none" stroke="#a54531" stroke-width="2.5" marker-end="url(#arrow-rust)"/>
+    <text x="549" y="167" font-size="15" fill="#50646b">升温后受到轴向压缩</text>
+    <text x="536" y="278" font-size="18" font-weight="650">u = 0，σ = −120 MPa</text>
+    <path d="M62 297H412M487 297H837" stroke="#cbd9d1"/>
+    <text x="63" y="326" font-size="17">热应变</text><text x="488" y="326" font-size="17">热应变</text>
+    <text x="63" y="370" font-size="17">弹性应变</text><text x="488" y="370" font-size="17">弹性应变</text>
+    <text x="63" y="414" font-size="17">总应变</text><text x="488" y="414" font-size="17">总应变</text>
+    <rect id="free-thermal-strain" data-strain="0.0006" x="164" y="308" width="180" height="22" rx="5" fill="#c5e2d6"/>
+    <rect id="fixed-thermal-strain" data-strain="0.0006" x="589" y="308" width="180" height="22" rx="5" fill="#c5e2d6"/>
+    <rect id="fixed-elastic-strain" data-strain="-0.0006" x="589" y="352" width="180" height="22" rx="5" fill="#edcdbf"/>
+    <rect id="free-total-strain" data-strain="0.0006" x="164" y="396" width="180" height="22" rx="5" fill="#c5e2d6"/>
+    <text x="179" y="326" font-size="17">+600 με</text><text x="604" y="326" font-size="17">+600 με</text>
+    <text x="179" y="370" font-size="17">0</text><text x="604" y="370" font-size="17">−600 με</text>
+    <text x="179" y="414" font-size="17">+600 με</text><text x="604" y="414" font-size="17">0</text>
+    <text x="40" y="474" font-size="18" font-weight="650">总应变 = 弹性应变 + 热应变；零伸长不等于没有热贡献。</text>
+    <text x="40" y="504" font-size="14" fill="#50646b">原创合成示意；几何伸长放大。仅约束轴向，横向表面自由，不是实测或屈曲模拟。</text>
+  </g>
+</svg>

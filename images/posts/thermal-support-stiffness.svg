@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">支承刚度如何分配位移与热应力</title>
+  <desc id="desc">横轴为r等于k除以EA每L，范围0至4。位移比例1除以1加r下降，应力比例r除以1加r上升。r为1时各半，为3时位移四分之一，应力四分之三。17个解析点连线。</desc>
+  <rect width="900" height="520" rx="22" fill="#f7faf9"/>
+  <g font-family="system-ui, sans-serif" fill="#213b43">
+    <text x="40" y="48" font-size="26" font-weight="700">支承越硬，保留的位移越少</text>
+    <text x="40" y="80" font-size="17" fill="#50646b">r = k / (EA/L) · 左端固定 · 右端弹簧可传拉压 · 非零自由热伸长</text>
+    <path d="M120 130H800M120 192.5H800M120 255H800M120 317.5H800M120 380H800" stroke="#d6e1de" stroke-dasharray="5 6"/>
+    <path d="M120 119V380H815" stroke="#93aaa9" stroke-width="2" fill="none"/>
+    <path d="M290 130V380M630 130V380" stroke="#bdcbc4" stroke-dasharray="4 5"/>
+    <text x="42" y="114" font-size="16">归一化比例</text>
+    <text x="83" y="136" font-size="16">1</text><text x="66" y="199" font-size="16">0.75</text><text x="75" y="261" font-size="16">0.5</text><text x="66" y="324" font-size="16">0.25</text><text x="83" y="386" font-size="16">0</text>
+    <text x="115" y="407" font-size="16">0</text><text x="285" y="407" font-size="16">1</text><text x="455" y="407" font-size="16">2</text><text x="625" y="407" font-size="16">3</text><text x="795" y="407" font-size="16">4</text>
+    <text x="825" y="385" font-size="17">r</text>
+    <polyline id="displacement-ratio" data-step="0.25" points="120,130 162.5,180 205,213.333333 247.5,237.142857 290,255 332.5,268.888889 375,280 417.5,289.090909 460,296.666667 502.5,303.076923 545,308.571429 587.5,313.333333 630,317.5 672.5,321.176471 715,324.444444 757.5,327.368421 800,330" fill="none" stroke="#167e91" stroke-width="4" stroke-linejoin="round"/>
+    <polyline id="stress-ratio" data-step="0.25" points="120,380 162.5,330 205,296.666667 247.5,272.857143 290,255 332.5,241.111111 375,230 417.5,220.909091 460,213.333333 502.5,206.923077 545,201.428571 587.5,196.666667 630,192.5 672.5,188.823529 715,185.555556 757.5,182.631579 800,180" fill="none" stroke="#a54531" stroke-width="4" stroke-linejoin="round"/>
+    <circle data-r="1" data-ratio="0.5" cx="290" cy="255" r="6" fill="#213b43"/>
+    <circle data-r="3" data-ratio="0.25" cx="630" cy="317.5" r="6" fill="#167e91"/>
+    <circle data-r="3" data-ratio="0.75" cx="630" cy="192.5" r="6" fill="#a54531"/>
+    <text x="337" y="166" font-size="18" font-weight="650" fill="#a54531">应力比例 r/(1+r)</text>
+    <text x="333" y="351" font-size="18" font-weight="650" fill="#167e91">位移比例 1/(1+r)</text>
+    <text x="196" y="225" font-size="16" font-weight="650">r=1：各半</text>
+    <text x="648" y="165" font-size="16" fill="#a54531">r=3：0.75</text>
+    <text x="648" y="355" font-size="16" fill="#167e91">r=3：0.25</text>
+    <rect x="40" y="431" width="820" height="48" rx="13" fill="#e5efeb"/>
+    <text x="60" y="461" font-size="17" font-weight="650">r→0：自由伸长、零应力；r→∞：零位移、完全轴向约束应力。</text>
+    <text x="40" y="504" font-size="14" fill="#50646b">原创解析示意；每条线17点连线，比例之和为1。不包含接触、塑性或横向失稳。</text>
+  </g>
+</svg>

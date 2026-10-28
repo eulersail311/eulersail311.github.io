@@ -1,0 +1,431 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>热膨胀 从自由伸长到约束热应力 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用热应变与弹性应变的分解解释自由伸长和完全轴向约束，再从弹簧支承的力平衡与位移兼容推导部分约束，手算单位、符号与刚度比例，说明压缩失稳和三维约束的适用边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="热膨胀 从自由伸长到约束热应力">
+<meta property="og:url" content="https://eulersail.com/esblog/85639.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用热应变与弹性应变的分解解释自由伸长和完全轴向约束，再从弹簧支承的力平衡与位移兼容推导部分约束，手算单位、符号与刚度比例，说明压缩失稳和三维约束的适用边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-27T16:50:00.000Z">
+<meta property="article:modified_time" content="2026-10-27T16:50:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="材料模型">
+<meta property="article:tag" content="热膨胀">
+<meta property="article:tag" content="热应力">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/85639.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '热膨胀 从自由伸长到约束热应力',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-28 00:50:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261028-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">134</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">231</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">热膨胀 从自由伸长到约束热应力</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-27T16:50:00.000Z" title="发表于 2026-10-28 00:50:00">2026-10-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-27T16:50:00.000Z" title="更新于 2026-10-28 00:50:00">2026-10-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/">化学与材料</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="热膨胀 从自由伸长到约束热应力" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="materials"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>MATERIALS NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>4</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>2</strong><small>组对照与手算表</small></span></div></div><p>把概念、模型计算与实测证据分开，阅读时留意条件、单位和比较口径。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先把热应变、弹性应变和总应变分开"><span>01</span><strong>先把热应变、弹性应变和总应变分开</strong></a></li><li><a href="#自由伸长与完全约束为什么给出不同应力"><span>02</span><strong>自由伸长与完全约束为什么给出不同应力</strong></a></li><li><a href="#一组单位完整的手算"><span>03</span><strong>一组单位完整的手算</strong></a></li><li><a href="#支承会让步时，要同时写平衡与兼容"><span>04</span><strong>支承会让步时，要同时写平衡与兼容</strong></a></li><li><a href="#同一根杆配不同支承，会得到什么"><span>05</span><strong>同一根杆配不同支承，会得到什么</strong></a></li><li><a href="#用储能再核对一次部分约束"><span>06</span><strong>用储能再核对一次部分约束</strong></a></li><li><a href="#哪些改变会让这些公式失效"><span>07</span><strong>哪些改变会让这些公式失效</strong></a></li><li><a href="#原始资料与继续阅读"><span>08</span><strong>原始资料与继续阅读</strong></a></li></ol></nav></details></section><p><a href="/esblog/85526.html">Fick 扩散</a>说明边界怎样改变物质输运；温度引起的变形也需要先问边界。两根相同的杆经历同样的均匀升温，一根可以伸长，另一根两端间距不变，它们的轴向应力会很不同。仅知道温度变化，还不足以得到热应力。</p>
+<p>本文限定为<strong>一维、小应变、均匀直杆的线弹性轴向模型</strong>：初始无应力，长度 L、截面积 A、杨氏模量 E 和线膨胀系数 α 恒定；整根杆有相同温度变化 ΔT，横向表面自由，没有外加轴向载荷。所有数值是<strong>教学合成参数</strong>，不对应某种真实材料，也不用于判断器件寿命或工程安全。</p>
+<span id="more"></span>
+
+<h2 id="先把热应变、弹性应变和总应变分开"><a href="#先把热应变、弹性应变和总应变分开" class="headerlink" title="先把热应变、弹性应变和总应变分开"></a>先把热应变、弹性应变和总应变分开</h2><p>以初始温度 T₀ 和无应力长度 L 为参考，定义 ΔT&#x3D;T−T₀，伸长和拉应力为正。恒定 α 下，自由热应变与自由伸长为：</p>
+<blockquote>
+<p><strong>ε_T &#x3D; αΔT；δ_free &#x3D; αΔT L</strong>。</p>
+</blockquote>
+<p>α 的单位是 K⁻¹，ΔT 是温差；摄氏温差的数值与开尔文温差相同，但不能把摄氏温度读数直接当成 ΔT。αΔT 没有单位，再乘 L 才是长度。<a target="_blank" rel="noopener" href="https://emweb.unl.edu/NEGAHBAN/Em325/05-Thermal-strain/Thermal%20strain.htm">Nebraska 大学热应变讲义</a>从自由伸长出发，并在小变形线性理论下叠加热与机械贡献。</p>
+<p>杆受到轴向应力 σ 后，弹性应变为 ε_e&#x3D;σ&#x2F;E。几何上真正发生的总轴向应变记为 ε&#x3D;u&#x2F;L，其中 u 是右端相对左端的位移变化。因此本篇的本构关系是：</p>
+<blockquote>
+<p><strong>ε &#x3D; ε_e + ε_T &#x3D; σ&#x2F;E + αΔT</strong>，也就是 **σ &#x3D; E(ε−αΔT)**。</p>
+</blockquote>
+<p>这里的 ε_T 是相同温变下材料的自由热应变；被约束后它仍是本构关系里的热贡献，不等于杆实际伸长除以 L。<a target="_blank" rel="noopener" href="https://ocw.mit.edu/courses/1-050-solid-mechanics-fall-2004/9f43eb70b869170202fcc4db3177d048_emech7_04.pdf">MIT 固体力学教材的应力—应变关系</a>将热应变加入弹性本构；横向应力为零时，其轴向关系就化为上式。</p>
+<p>不能直接写 σ&#x3D;Eε_T。胡克定律中的 σ&#x2F;E 对应弹性应变，热应变需要结合位移约束才能换算成应力。</p>
+<h2 id="自由伸长与完全约束为什么给出不同应力"><a href="#自由伸长与完全约束为什么给出不同应力" class="headerlink" title="自由伸长与完全约束为什么给出不同应力"></a>自由伸长与完全约束为什么给出不同应力</h2><p>先固定左端，只让它消除刚体平移，右端完全自由。没有外载，轴向力 N&#x3D;0，因而 σ&#x3D;N&#x2F;A&#x3D;0；于是 ε&#x3D;ε_T，杆按 δ_free 伸长。<strong>单端固定本身不阻止轴向自由膨胀。</strong></p>
+<p>再把右端的轴向位移也锁住，保持两端间距不变。几何约束给出 u&#x3D;0、ε&#x3D;0，而不是 ε_T&#x3D;0。代入本构关系：</p>
+<blockquote>
+<p><strong>σ &#x3D; −EαΔT；N &#x3D; −EAαΔT</strong>。</p>
+</blockquote>
+<p>当 α＞0、ΔT＞0 时，热应变为正，弹性应变必须为负来抵消它，所以 σ＜0，杆受压。温度降低时，若连接始终能传递拉力，杆产生拉应力。若支承只是接触挡块，降温可能脱离接触，这时不能沿用同一个双向约束条件。</p>
+
+<figure class="evidence-figure concept-figure editorial-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="相同升温下自由杆与完全轴向约束杆的热应变、弹性应变和总应变对照，可横向滚动"><img class="no-lazy" src="/images/posts/thermal-strain-constraints.svg" width="900" height="520" loading="lazy" alt="合成升温50K产生正600微应变，自由杆弹性应变为零、伸长0.30毫米；完全轴向约束杆弹性应变为负600微应变，总应变为零，应力为负120MPa"></div><figcaption><strong>完全约束令总轴向应变为零，热与弹性贡献仍分别存在。</strong> 左图右端自由，右图两端轴向位置固定；实际伸长在示意中放大，不按几何比例绘制。下方应变数值来自本篇同一组合成参数。<a href="/images/posts/thermal-strain-constraints.svg">查看原图</a></figcaption></figure>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+  A[给定参考温度与温差] --&gt; B[算自由热应变]
+  B --&gt; C{轴向边界是什么}
+  C -- 右端自由 --&gt; D[轴向力为零]
+  C -- 两端间距固定 --&gt; E[总轴向应变为零]
+  D --&gt; F[总应变等于热应变]
+  E --&gt; G[弹性应变抵消热应变]
+  G --&gt; H[升温且膨胀系数为正时受压]
+  </pre></div>
+
+<h2 id="一组单位完整的手算"><a href="#一组单位完整的手算" class="headerlink" title="一组单位完整的手算"></a>一组单位完整的手算</h2><p>选取 L&#x3D;0.50 m、A&#x3D;100 mm²&#x3D;10⁻⁴ m²、E&#x3D;200 GPa&#x3D;2×10¹¹ Pa、α&#x3D;12×10⁻⁶ K⁻¹、ΔT&#x3D;50 K。这是为了便于计算选择的参数组合，没有给它指定材料牌号。</p>
+<ol>
+<li>热应变：ε_T&#x3D;12×10⁻⁶×50&#x3D;0.0006，即 <strong>600 με</strong>。微应变 με 表示 10⁻⁶ 的应变。</li>
+<li>自由伸长：δ_free&#x3D;0.0006×0.50&#x3D;0.00030 m，即 <strong>0.30 mm</strong>。</li>
+<li>完全轴向约束：σ&#x3D;−2×10¹¹×0.0006&#x3D;−1.2×10⁸ Pa，即 <strong>−120 MPa</strong>。</li>
+<li>轴向力：N&#x3D;σA&#x3D;−1.2×10⁸×10⁻⁴&#x3D;−12000 N，即 <strong>−12 kN</strong>。</li>
+</ol>
+<p>在完全轴向约束公式中，L 没有出现，A 也没有出现；这只说明<strong>同一均匀温变下的轴向应力</strong>与它们无关。自由伸长仍与 L 成正比，轴向力仍与 A 成正比，而且长度、截面与支承会影响屈曲，不能据此说几何不重要。</p>
+<h2 id="支承会让步时，要同时写平衡与兼容"><a href="#支承会让步时，要同时写平衡与兼容" class="headerlink" title="支承会让步时，要同时写平衡与兼容"></a>支承会让步时，要同时写平衡与兼容</h2><p>“约束一半”需要一个物理定义。这里选定一个可解的支承：左端轴向固定；右端通过刚度为 k 的理想线性弹簧连接到固定墙。弹簧初始无变形、不受温变影响，并能持续传递拉力与压力；没有间隙、摩擦、脱离接触或其他外载。右端向右位移 u 时，弹簧对杆施加向左的力 −ku。</p>
+<p>杆的轴向刚度为 <strong>k_bar&#x3D;EA&#x2F;L</strong>，单位 N&#x2F;m。注意 E 是材料模量，EA&#x2F;L 才是整根杆的轴向刚度，两者的单位不同。</p>
+<p>把 N 定义为拉力为正的杆内轴向力，右端力平衡给出 N&#x3D;−ku。杆自身的本构与位移兼容给出 u&#x3D;δ_free+NL&#x2F;(EA)。联立得到：</p>
+<blockquote>
+<p>**u &#x3D; δ_free &#x2F;(1+k&#x2F;k_bar)**。</p>
+<p>**σ &#x3D; −EαΔT × r&#x2F;(1+r)**，其中 **r&#x3D;k&#x2F;k_bar&#x3D;kL&#x2F;(EA)**。</p>
+</blockquote>
+<p>这两式是本文对上述杆—弹簧系统的推导。<a target="_blank" rel="noopener" href="https://ocw.mit.edu/courses/16-001-unified-engineering-materials-and-structures-fall-2021/mit16_001_f21_pset04_sol.pdf">MIT 热载荷习题解答</a>在第12页把力平衡、含热伸长的本构关系与位移兼容分别列出；本例沿用这三类条件，没有把其中的多杆装配当作同一个弹簧模型。</p>
+<p>当 ΔT≠0 且 α≠0 时，可以把结果写成两个便于比较的比例：</p>
+<blockquote>
+<p>**u&#x2F;δ_free &#x3D; 1&#x2F;(1+r)<strong>；</strong>σ&#x2F;(−EαΔT) &#x3D; r&#x2F;(1+r)**。</p>
+</blockquote>
+<p>两比例之和为 1：自由伸长的一部分成为端点位移，另一部分由弹性压缩或拉伸补偿。若 ΔT&#x3D;0 或 α&#x3D;0，原始 u、σ 公式仍给出零，但这些以零为分母的归一化比例没有定义。</p>
+
+<figure class="evidence-figure concept-figure editorial-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="支承与杆的刚度比从0到4时，保留自由位移比例下降、热应力比例上升，可横向滚动"><img class="no-lazy" src="/images/posts/thermal-support-stiffness.svg" width="900" height="520" loading="lazy" alt="横轴为支承刚度除以杆轴向刚度，位移比例为1除以1加r，应力比例为r除以1加r；r等于1时两者各半，r等于3时分别为四分之一和四分之三"></div><figcaption><strong>部分约束取决于支承与杆的相对刚度。</strong> 每条线由17个解析采样点连线；纵轴为比例，参数 r 无单位。图示不是实测应力曲线，也没有模拟失稳后的变形。<a href="/images/posts/thermal-support-stiffness.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="同一根杆配不同支承，会得到什么"><a href="#同一根杆配不同支承，会得到什么" class="headerlink" title="同一根杆配不同支承，会得到什么"></a>同一根杆配不同支承，会得到什么</h2><p>前述合成杆的 k_bar&#x3D;EA&#x2F;L&#x3D;4×10⁷ N&#x2F;m，即 <strong>40 MN&#x2F;m</strong>。固定杆的 E、A、L、α 和温差，仅改变右端支承刚度：</p>
+
+<div class="table-wrap" id="thermal-hand-table" tabindex="0" role="region" aria-label="五种轴向支承条件的刚度比、实际伸长、应力和轴向力手算表">
+
+
+<table>
+<thead>
+<tr>
+<th>右端支承</th>
+<th>r&#x3D;k&#x2F;k_bar</th>
+<th>u &#x2F; mm</th>
+<th>σ &#x2F; MPa</th>
+<th>N &#x2F; kN</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>自由，k&#x3D;0</td>
+<td>0</td>
+<td>0.300</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>弹簧，k&#x3D;10 MN&#x2F;m</td>
+<td>0.25</td>
+<td>0.240</td>
+<td>−24</td>
+<td>−2.4</td>
+</tr>
+<tr>
+<td>弹簧，k&#x3D;40 MN&#x2F;m</td>
+<td>1</td>
+<td>0.150</td>
+<td>−60</td>
+<td>−6</td>
+</tr>
+<tr>
+<td>弹簧，k&#x3D;120 MN&#x2F;m</td>
+<td>3</td>
+<td>0.075</td>
+<td>−90</td>
+<td>−9</td>
+</tr>
+<tr>
+<td>两端轴向位置固定</td>
+<td>r→∞ 的极限</td>
+<td>0</td>
+<td>−120</td>
+<td>−12</td>
+</tr>
+</tbody></table>
+
+</div>
+
+
+<p>第三行可以反查：k&#x3D;40 MN&#x2F;m 乘 u&#x3D;0.000150 m 得弹簧力大小 6000 N；除以 A&#x3D;10⁻⁴ m² 得压应力大小 60 MPa。弹性应变为 −0.0003，与热应变 +0.0006 相加，得到实际应变 +0.0003；再乘 L&#x3D;0.50 m，恢复 u&#x3D;0.150 mm。</p>
+<p>把温差改为 −50 K 时，这个双向连接、始终线弹性的模型令 u、σ、N 全部反号。若仅有单向接触，这个反号检查就不能代替重新判断接触状态。</p>
+<p>这里还可以看出一个容易忽略的几何效应：<strong>固定支承刚度 k 时，增加 A 会使杆更难被同一个弹簧约束，热应力的绝对值下降</strong>。完全约束下应力与 A 无关，是 r→∞ 的另一种边界；不能把两种比较条件混用。</p>
+<h2 id="用储能再核对一次部分约束"><a href="#用储能再核对一次部分约束" class="headerlink" title="用储能再核对一次部分约束"></a>用储能再核对一次部分约束</h2><p>对于有限 k≥0 的理想系统，以右端位移 u 为唯一自由度，杆的弹性应变为 u&#x2F;L−ε_T，因而杆与弹簧的总储能为：</p>
+<blockquote>
+<p><strong>U(u) &#x3D; EA&#x2F;(2L) × (u−δ_free)² + ku²&#x2F;2</strong>。</p>
+</blockquote>
+<p>热应变改变了杆的无应力长度，所以杆的弹性储能取决于 u−δ_free；自由升温时 u&#x3D;δ_free，杆的弹性储能为零。这个 U 只计机械弹性储能，不是材料吸热量或完整热力学内能。</p>
+<p>对 u 求导并令其为零：k_bar(u−δ_free)+ku&#x3D;0，恢复上面的位移公式。二阶导数为 k_bar+k＞0，说明在<strong>只允许轴向位移的这个模型里</strong>解是唯一的能量极小值。这个结论没有检查横向弯曲自由度，不能据此宣称受压直杆一定稳定。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+  A[明确杆和支承的初始状态] --&gt; B[杆本构给出热与弹性伸长]
+  A --&gt; C[支承力由端点位移确定]
+  B --&gt; D[位移兼容]
+  C --&gt; E[端点力平衡]
+  D --&gt; F[联立求端点位移和轴向力]
+  E --&gt; F
+  F --&gt; G[用弹性储能极小值交叉核对]
+  G --&gt; H[另查屈曲与材料非线性边界]
+  </pre></div>
+
+<h2 id="哪些改变会让这些公式失效"><a href="#哪些改变会让这些公式失效" class="headerlink" title="哪些改变会让这些公式失效"></a>哪些改变会让这些公式失效</h2><table>
+<thead>
+<tr>
+<th>需要核对的条件</th>
+<th>本文采用</th>
+<th>条件改变后的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>参考状态</td>
+<td>初始无应力、弹簧无预变形</td>
+<td>预紧、残余应力与装配温度要另计</td>
+</tr>
+<tr>
+<td>应变与材料</td>
+<td>小应变、线弹性、恒定 E 和 α</td>
+<td>塑性、蠕变、参数随温度变化</td>
+</tr>
+<tr>
+<td>温度分布</td>
+<td>整根杆均匀温变</td>
+<td>温度沿长度或厚度变化，可能需要积分或弯曲模型</td>
+</tr>
+<tr>
+<td>约束方向</td>
+<td>仅限制轴向，横向表面自由</td>
+<td>三维约束时要加入横向应力和泊松耦合</td>
+</tr>
+<tr>
+<td>支承</td>
+<td>固定墙与可传拉压的线性弹簧</td>
+<td>间隙、摩擦、接触脱开、支承自身热变形</td>
+</tr>
+<tr>
+<td>几何稳定</td>
+<td>直杆轴向解</td>
+<td>细长受压杆还需单独检查横向失稳</td>
+</tr>
+</tbody></table>
+<p>特别是 σ&#x3D;−EαΔT 中的“完全约束”只指<strong>总轴向应变为零且横向应力为零</strong>，不是三个方向都锁死。三维各向同性约束需要完整本构，不能仅凭同一个“固定”字样套用轴向公式。</p>
+<p>压应力也不等于“已经屈曲”，更不等于“不会屈曲”。细杆的弯曲刚度、长度、端部转动条件与初始缺陷共同影响稳定性。<a target="_blank" rel="noopener" href="https://mechanics.ju.se/SolidMechanics/Buckling.html">Jönköping 大学的屈曲教材</a>从侧向平衡说明理想直杆的临界载荷及适用条件；本篇不指定截面二次矩和端部转动边界，因此没有计算屈曲温度。受压后是否仍能保持直杆形态，不能由上面的轴向储能单独回答。</p>
+<p>在<a href="/esblog/85306.html">钙钛矿材料概念图</a>涉及的器件语境中，薄膜与基底还可能有不同的膨胀系数和复杂界面约束；这里的单根均匀杆不能直接预测薄膜开裂。与<a href="/esblog/85417.html">一级衰减与 Arrhenius</a>对照时，也要区分温度改变瞬时自由长度与温度改变某种动力学速率；它们需要各自的模型和证据。</p>
+
+<details class="mechanism-check"><summary>自检：一根左端固定、右端自由的均匀杆升温50K，能直接算出−120MPa吗？</summary><p>不能。左端固定只消除刚体平移，右端可以自由伸长；本篇无外载、均匀温变时轴向应力为零，实际伸长为0.30mm。−120MPa对应两端轴向间距固定，并保持线弹性直杆状态的另一种边界条件。</p></details>
+<details class="mechanism-check"><summary>自检：支承刚度等于杆轴向刚度，是否意味着总应变为零？</summary><p>不是。r=1时右端保留一半自由伸长，即0.150mm；热应变为+600微应变，弹性应变为−300微应变，总应变为+300微应变。应力为−60MPa，只达到完全轴向约束结果的一半。</p></details>
+
+
+<p>内部数值检查位于 <code>tests/verify-thermal-expansion-article.cjs</code>：用独立分段杆刚度组装与力平衡求解核对随机参数，用一维储能的数值极小值交叉检查，另外验证单位、符号、极限与图中坐标。这些检查验证教学模型与图示一致，没有测量材料参数、验证真实支承或开展屈曲与寿命试验。</p>
+<h2 id="原始资料与继续阅读"><a href="#原始资料与继续阅读" class="headerlink" title="原始资料与继续阅读"></a>原始资料与继续阅读</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://emweb.unl.edu/NEGAHBAN/Em325/05-Thermal-strain/Thermal%20strain.htm">University of Nebraska–Lincoln：Thermal Strain</a>：自由热伸长以及小变形线性理论下的热、机械应变叠加。</li>
+<li><a target="_blank" rel="noopener" href="https://ocw.mit.edu/courses/1-050-solid-mechanics-fall-2004/9f43eb70b869170202fcc4db3177d048_emech7_04.pdf">MIT OpenCourseWare：1.050，Stress&#x2F;Strain Relations</a>：含温度变化的各向同性线弹性本构，尤其 PDF 第5页（正文203页）的热应变项。</li>
+<li><a target="_blank" rel="noopener" href="https://ocw.mit.edu/courses/16-001-unified-engineering-materials-and-structures-fall-2021/mit16_001_f21_pset04_sol.pdf">MIT OpenCourseWare：16.001，Problem Set 4 Solutions</a>：文件第12—13页的热载荷装配问题，分别列出平衡、本构与兼容。</li>
+<li><a target="_blank" rel="noopener" href="https://mechanics.ju.se/SolidMechanics/Buckling.html">Jönköping University：Applied Mechanics，Buckling</a>：理想弹性柱的侧向稳定及其假设。</li>
+</ul>
+<p>资料核对日期：2026-10-28。杆—弹簧算例、合成参数、手算与两张图为本文推导和制作。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/85639.html">https://eulersail.com/esblog/85639.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9D%90%E6%96%99%E6%A8%A1%E5%9E%8B/">材料模型</a><a class="post-meta__tags" href="/tags/%E7%83%AD%E8%86%A8%E8%83%80/">热膨胀</a><a class="post-meta__tags" href="/tags/%E7%83%AD%E5%BA%94%E5%8A%9B/">热应力</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/70957.html" title="交错练习 从题型辨别到方法选择"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">交错练习 从题型辨别到方法选择</div></div></a></div><div class="next-post pull-right"><a href="/esblog/46428.html" title="DNS 缓存 从 TTL 到否定响应的作用范围"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DNS 缓存 从 TTL 到否定响应的作用范围</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/85526.html" title="Fick 扩散 从浓度梯度到长度与时间尺度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-22</div><div class="title">Fick 扩散 从浓度梯度到长度与时间尺度</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">134</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">231</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E7%83%AD%E5%BA%94%E5%8F%98%E3%80%81%E5%BC%B9%E6%80%A7%E5%BA%94%E5%8F%98%E5%92%8C%E6%80%BB%E5%BA%94%E5%8F%98%E5%88%86%E5%BC%80"><span class="toc-text">先把热应变、弹性应变和总应变分开</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E7%94%B1%E4%BC%B8%E9%95%BF%E4%B8%8E%E5%AE%8C%E5%85%A8%E7%BA%A6%E6%9D%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E7%BB%99%E5%87%BA%E4%B8%8D%E5%90%8C%E5%BA%94%E5%8A%9B"><span class="toc-text">自由伸长与完全约束为什么给出不同应力</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BB%84%E5%8D%95%E4%BD%8D%E5%AE%8C%E6%95%B4%E7%9A%84%E6%89%8B%E7%AE%97"><span class="toc-text">一组单位完整的手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%AF%E6%89%BF%E4%BC%9A%E8%AE%A9%E6%AD%A5%E6%97%B6%EF%BC%8C%E8%A6%81%E5%90%8C%E6%97%B6%E5%86%99%E5%B9%B3%E8%A1%A1%E4%B8%8E%E5%85%BC%E5%AE%B9"><span class="toc-text">支承会让步时，要同时写平衡与兼容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E4%B8%80%E6%A0%B9%E6%9D%86%E9%85%8D%E4%B8%8D%E5%90%8C%E6%94%AF%E6%89%BF%EF%BC%8C%E4%BC%9A%E5%BE%97%E5%88%B0%E4%BB%80%E4%B9%88"><span class="toc-text">同一根杆配不同支承，会得到什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E5%82%A8%E8%83%BD%E5%86%8D%E6%A0%B8%E5%AF%B9%E4%B8%80%E6%AC%A1%E9%83%A8%E5%88%86%E7%BA%A6%E6%9D%9F"><span class="toc-text">用储能再核对一次部分约束</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%AA%E4%BA%9B%E6%94%B9%E5%8F%98%E4%BC%9A%E8%AE%A9%E8%BF%99%E4%BA%9B%E5%85%AC%E5%BC%8F%E5%A4%B1%E6%95%88"><span class="toc-text">哪些改变会让这些公式失效</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E5%A7%8B%E8%B5%84%E6%96%99%E4%B8%8E%E7%BB%A7%E7%BB%AD%E9%98%85%E8%AF%BB"><span class="toc-text">原始资料与继续阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/70957.html" title="交错练习 从题型辨别到方法选择">交错练习 从题型辨别到方法选择</a><time datetime="2026-10-27T16:50:00.000Z" title="发表于 2026-10-28 00:50:00">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85639.html" title="热膨胀 从自由伸长到约束热应力">热膨胀 从自由伸长到约束热应力</a><time datetime="2026-10-27T16:50:00.000Z" title="发表于 2026-10-28 00:50:00">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46428.html" title="DNS 缓存 从 TTL 到否定响应的作用范围">DNS 缓存 从 TTL 到否定响应的作用范围</a><time datetime="2026-10-27T03:45:00.000Z" title="发表于 2026-10-27 11:45:00">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53074.html" title="Git reflog 从本地记录到提交找回">Git reflog 从本地记录到提交找回</a><time datetime="2026-10-27T03:45:00.000Z" title="发表于 2026-10-27 11:45:00">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/72975.html" title="AdamW 原理 从自适应步长到解耦权重衰减">AdamW 原理 从自适应步长到解耦权重衰减</a><time datetime="2026-10-23T09:10:00.000Z" title="发表于 2026-10-23 17:10:00">2026-10-23</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
