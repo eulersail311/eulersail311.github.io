@@ -2819,6 +2819,15 @@
   }
 }
 
+/* Native task cards for the expanded tutorials. */
+#post .reading-article .article-workshop { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1em; margin: 1.6em 0 2em; }
+#post .reading-article .article-workshop > div { min-width: 0; padding: 1.15em; border: 1px solid var(--article-rule); border-top: 4px solid var(--article-accent); border-radius: 12px; background: var(--article-soft); overflow-wrap: anywhere; }
+#post .reading-article .workshop-kicker { color: var(--article-accent); font-size: 0.8em; font-weight: 700; }
+#post #article-container.reading-article .article-workshop .workshop-title { display: block; margin: 0.5em 0; color: var(--article-accent); font-size: 1.08em; line-height: 1.6; }
+#post .reading-article .article-workshop p { margin: 0; font-size: 0.95em; line-height: 1.9; }
+@media (max-width:600px) { #post .reading-article .article-workshop { grid-template-columns:minmax(0,1fr); } }
+@media print { #post .reading-article .article-workshop { display:block; } #post .reading-article .article-workshop > div { margin-bottom:0.8em; break-inside:avoid; background:white; color:black; border-color:#777; } }
+
 /* A shared reading surface for every post. Page hubs keep their own layout. */
 #post .reading-article { --article-accent: #315f9b; --article-soft: #edf3fb; --article-rule: #c7d6e8; }
 #post .reading-article[data-reading-tone='music'] { --article-accent: #964b3c; --article-soft: #fbf0e9; --article-rule: #e6c7b7; }
