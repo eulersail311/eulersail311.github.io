@@ -2869,6 +2869,13 @@
 #post #article-container.reading-article table:not(figure.highlight table) td { padding: 0.8em 1em; line-height: 1.8; }
 #post #article-container.reading-article table:not(figure.highlight table) tbody tr:nth-child(even), #post #article-container.reading-article table:not(figure.highlight table) tbody tr:hover td { background: var(--article-soft); }
 #post #article-container.reading-article table:not(figure.highlight table) tbody td:first-child { font-weight: 600; }
+#post #article-container.reading-article table:not(figure.highlight table) a:not(.fancybox) {
+  color: var(--article-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  overflow-wrap: anywhere;
+}
 #post #article-container.reading-article figure.highlight { border-top: 3px solid var(--article-rule); box-shadow: none; }
 #post #article-container.reading-article .concept-figure-canvas img[width='900'] { min-width: 900px; }
 #post #article-container.reading-article figure figcaption { font-size: 14px; line-height: 1.85; }

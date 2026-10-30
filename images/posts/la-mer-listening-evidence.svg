@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="lm-notes-title lm-notes-desc">
+  <title id="lm-notes-title">大海：从听感词返回声音依据</title>
+  <desc id="lm-notes-desc">A three-row original listening worksheet connects shimmer to timbre and register, motion to rhythm and layers, and familiarity to rhythmic and melodic identity. Not measured evidence, score notation or a performance timeline.</desc>
+  <rect width="900" height="520" rx="20" fill="#f8faf9"/>
+  <g font-family="'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif" fill="#263e49">
+    <text x="36" y="47" font-size="26" font-weight="700">先写感受，再给它一个可回听的问题</text>
+    <text x="36" y="79" font-size="16" fill="#516873">听感保留，结论留出证据与不确定性。</text>
+    <g font-size="15" font-weight="700" fill="#516873"><text x="58" y="119">我听起来觉得</text><text x="247" y="119">下一次比较什么</text><text x="578" y="119">不能直接推出</text></g>
+    <rect x="36" y="136" width="828" height="84" rx="13" fill="#e3efed" stroke="#83a9a2"/>
+    <rect x="36" y="232" width="828" height="84" rx="13" fill="#e6edf7" stroke="#91a8c7"/>
+    <rect x="36" y="328" width="828" height="84" rx="13" fill="#eee9f5" stroke="#ab98bd"/>
+    <g font-size="22" font-weight="700"><text x="58" y="185">“闪光”</text><text x="58" y="281">“涌动”</text><text x="58" y="377">“熟悉”</text></g>
+    <g stroke="#78929d" stroke-width="2"><path d="M190 176h25m-7-6l7 6-7 6"/><path d="M190 272h25m-7-6l7 6-7 6"/><path d="M190 368h25m-7-6l7 6-7 6"/></g>
+    <g font-size="16"><text x="247" y="169">音色、音区或力度变了吗？</text><text x="247" y="197">再检查和声是否也在转换。</text><text x="247" y="265">节奏层次怎样交接？</text><text x="247" y="293">短句是接续、打断，还是让位？</text><text x="247" y="361">节奏与音高走向相似吗？</text><text x="247" y="389">回听第一幅，保留待定部分。</text></g>
+    <g font-size="16" fill="#5f526e"><text x="578" y="169">更亮 ≠ 只是音量增加</text><text x="578" y="197">也不是光线的实测结果</text><text x="578" y="265">更激动 ≠ 速度必然更快</text><text x="578" y="293">不要把听感当作节拍器</text><text x="578" y="361">同乐器 ≠ 同一材料</text><text x="578" y="389">换乐器 ≠ 必定是新主题</text></g>
+    <rect x="36" y="435" width="828" height="47" rx="12" fill="#eaf0f1"/>
+    <text x="55" y="465" font-size="16">记录句式：我确认了 ______；我还需要复听 ______。</text>
+    <text x="36" y="507" font-size="12" fill="#516873">原创提问工具；不是演出测量，不指定固定出现秒数，也不判断唯一正确的听感。</text>
+  </g>
+</svg>

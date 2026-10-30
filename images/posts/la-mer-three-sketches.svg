@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="lm-map-title lm-map-desc">
+  <title id="lm-map-title">大海：三幅中的运动与回忆</title>
+  <desc id="lm-map-desc">Three equally sized panels present listening tasks, not equal movement lengths. The first to third link highlights returning material without claiming to list all relationships. Original concept, not a score, measured audio, wave simulation or proportional timeline.</desc>
+  <defs><marker id="lm-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 1L8 5L0 9" fill="none" stroke="#5a7893" stroke-width="2"/></marker></defs>
+  <rect width="900" height="520" rx="20" fill="#f8faf9"/>
+  <g font-family="'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif" fill="#263e49">
+    <text x="36" y="47" font-size="26" font-weight="700">声音在变，记忆把三幅连起来</text>
+    <text x="36" y="79" font-size="16" fill="#516873">每栏只带一个主要任务；同宽不代表同样长。</text>
+    <rect x="36" y="110" width="260" height="240" rx="16" fill="#e3efed" stroke="#65958e"/>
+    <rect x="320" y="110" width="260" height="240" rx="16" fill="#e6edf7" stroke="#7b96bd"/>
+    <rect x="604" y="110" width="260" height="240" rx="16" fill="#eee9f5" stroke="#9a86ae"/>
+    <g text-anchor="middle" font-weight="700"><text x="166" y="145" font-size="19">I · 从黎明到中午</text><text x="450" y="145" font-size="19">II · 波浪的嬉戏</text><text x="734" y="145" font-size="19">III · 风与海的对话</text></g>
+    <g fill="#4e857d"><rect x="76" y="220" width="42" height="25" rx="6"/><rect x="140" y="198" width="42" height="47" rx="6"/><rect x="204" y="173" width="42" height="72" rx="6"/></g>
+    <g stroke="#5b7caa" stroke-width="8" stroke-linecap="round"><path d="M355 189h47M422 220h49M492 185h50M380 240h35"/></g>
+    <g fill="none" stroke-width="4"><path d="M640 183h65l30 29h88" stroke="#806895"/><path d="M640 237h65l30-25" stroke="#4e857d"/><circle cx="785" cy="212" r="16" stroke="#806895"/></g>
+    <g text-anchor="middle" font-size="17" font-weight="700"><text x="166" y="283">听逐步展开</text><text x="450" y="283">听短小交接</text><text x="734" y="283">听对照与回归</text></g>
+    <g text-anchor="middle" font-size="15" fill="#516873"><text x="166" y="310">也留意局部的退开</text><text x="450" y="310">谁接续，谁让位？</text><text x="734" y="310">熟悉感来自哪里？</text></g>
+    <path d="M166 353V393H734V353" fill="none" stroke="#5a7893" stroke-width="2.5" marker-end="url(#lm-arrow)"/>
+    <rect x="276" y="375" width="348" height="36" rx="10" fill="#f8faf9"/>
+    <text x="450" y="399" text-anchor="middle" font-size="17" font-weight="700">第一幅的材料在第三幅中回归</text>
+    <rect x="36" y="431" width="828" height="52" rx="12" fill="#eaf0f1"/>
+    <text x="55" y="463" font-size="16">连线只突出一条回听线索；不表示第二幅与整体无关。</text>
+    <text x="36" y="507" font-size="12" fill="#516873">原创概念图：色块、短线和连线均非谱例、海浪、响度或时间测量。</text>
+  </g>
+</svg>
