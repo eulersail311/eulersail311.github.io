@@ -1,0 +1,351 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>稳态导热 从串联热阻到界面温度 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从一维稳态能量守恒推导平壁串联热阻，用两层合成材料手算热流率和界面温度，区分单位面积热阻、接触热阻及瞬态和辐射边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="稳态导热 从串联热阻到界面温度">
+<meta property="og:url" content="https://eulersail.com/esblog/85750.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从一维稳态能量守恒推导平壁串联热阻，用两层合成材料手算热流率和界面温度，区分单位面积热阻、接触热阻及瞬态和辐射边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-31T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-31T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="材料模型">
+<meta property="article:tag" content="导热">
+<meta property="article:tag" content="热阻">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/85750.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '稳态导热 从串联热阻到界面温度',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-31 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261030-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">140</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">243</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">稳态导热 从串联热阻到界面温度</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-31T02:00:00.000Z" title="发表于 2026-10-31 10:00:00">2026-10-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-31T02:00:00.000Z" title="更新于 2026-10-31 10:00:00">2026-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/">化学与材料</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="稳态导热 从串联热阻到界面温度" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="materials"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>MATERIALS NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>6</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>3</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>2</strong><small>组对照与手算表</small></span></div></div><p>把概念、模型计算与实测证据分开，阅读时留意条件、单位和比较口径。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>6 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#从热流率到热阻"><span>01</span><strong>从热流率到热阻</strong></a></li><li><a href="#两层材料手算"><span>02</span><strong>两层材料手算</strong></a></li><li><a href="#面积改变时，哪些量改变"><span>03</span><strong>面积改变时，哪些量改变</strong></a></li><li><a href="#接触热阻为何允许温度跳变"><span>04</span><strong>接触热阻为何允许温度跳变</strong></a></li><li><a href="#边界条件不一样，网络也要改变"><span>05</span><strong>边界条件不一样，网络也要改变</strong></a></li><li><a href="#计算后的三项检查"><span>06</span><strong>计算后的三项检查</strong></a></li></ol></nav></details></section><p><a href="/esblog/85639.html">热膨胀</a>讨论均匀温升后的形变；如果两端温度不同，首先要知道温度怎样沿材料分布。<a href="/esblog/85526.html">扩散</a>中的“梯度驱动输运”也可帮助理解导热，但热量与物质的变量、单位不同，不能直接混用系数。</p>
+<p>本文只处理一维平壁、稳态、无内部热源、各层导热系数恒定、截面积相同的模型。侧面绝热，冷热端表面温度已知，层间先假定理想接触。数值全部为教学合成参数，不对应真实材料牌号或工程设计。</p>
+<span id="more"></span>
+
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="合成两层平壁：各层热流率相同，温降按热阻分配。可横向滚动"><img class="no-lazy" src="/images/posts/thermal-series-drops.svg" width="900" height="320" alt="合成两层平壁：各层热流率相同，温降按热阻分配。"></div><figcaption>合成两层平壁：各层热流率相同，温降按热阻分配。<a href="/images/posts/thermal-series-drops.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="从热流率到热阻"><a href="#从热流率到热阻" class="headerlink" title="从热流率到热阻"></a>从热流率到热阻</h2><p>取x从热端指向冷端，傅里叶定律写成Q̇&#x3D;−kA·dT&#x2F;dx。k单位W&#x2F;(m·K)，A单位m²，Q̇单位W。无热源的稳态中，各截面流入与流出相等，因此Q̇沿x不变；同一均匀层内温度梯度恒定。</p>
+<p>对厚度L的一层积分，得到Q̇&#x3D;kA(T左−T右)&#x2F;L。定义热阻R&#x3D;L&#x2F;(kA)，单位K&#x2F;W，就有温差ΔT&#x3D;Q̇R。推导和电阻类比可核对<a target="_blank" rel="noopener" href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node118.html">MIT热阻网络讲义</a>。类比服务于方程，不代表材料真的存在电流。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+ A[稳态且无内部热源] --&gt; B[各层热流率相同]
+ B --&gt; C[每层温降等于热流率乘热阻]
+ C --&gt; D[各层温降相加]
+ D --&gt; E[总热阻为串联之和]
+  </pre></div>
+
+<h2 id="两层材料手算"><a href="#两层材料手算" class="headerlink" title="两层材料手算"></a>两层材料手算</h2><p>设A&#x3D;0.01m²，热端表面80°C，冷端表面20°C。第一层L₁&#x3D;0.01m、k₁&#x3D;1W&#x2F;(m·K)；第二层L₂&#x3D;0.02m、k₂&#x3D;0.5W&#x2F;(m·K)。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>第一层</th>
+<th>第二层</th>
+<th>总体</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>热阻K&#x2F;W</td>
+<td>1</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>温降K</td>
+<td>12</td>
+<td>48</td>
+<td>60</td>
+</tr>
+<tr>
+<td>热流率W</td>
+<td>12</td>
+<td>12</td>
+<td>12，不能相加成24</td>
+</tr>
+<tr>
+<td>两侧表面温度°C</td>
+<td>80→68</td>
+<td>68→20</td>
+<td>80→20</td>
+</tr>
+</tbody></table>
+<p>计算为Q̇&#x3D;60&#x2F;(1+4)&#x3D;12W，界面温度80−12×1&#x3D;68°C。从冷端反算20+12×4也得到68°C。温度差以摄氏度或开尔文表示时数值相同，但这不意味着绝对温度可以在任何公式中互换。</p>
+<p>第二层热阻是第一层的四倍，承担的温降也是四倍；不是每层“平均分配30度”。在理想接触界面上温度连续，但两边梯度可以不同，因为k不同。</p>
+<h2 id="面积改变时，哪些量改变"><a href="#面积改变时，哪些量改变" class="headerlink" title="面积改变时，哪些量改变"></a>面积改变时，哪些量改变</h2><p>热流密度q″&#x3D;Q̇&#x2F;A，单位W&#x2F;m²。本例q″&#x3D;1200W&#x2F;m²。单位面积热阻R″&#x3D;L&#x2F;k，单位m²·K&#x2F;W；两层合计R″&#x3D;0.05m²·K&#x2F;W。因此q″&#x3D;60&#x2F;0.05&#x3D;1200W&#x2F;m²，再乘面积得到12W。</p>
+<p>如果保持厚度、材料和端面温度不变，把面积加倍，总热阻减半，热流率加倍，热流密度不变，界面温度仍为68°C。这里不能把K&#x2F;W与m²·K&#x2F;W的热阻直接相加。</p>
+
+<details class="mechanism-check"><summary>自检：只把第二层厚度加倍，界面温度是多少？</summary><div><p>第二层热阻变为8K/W，总热阻9K/W，热流率60/9=20/3W。第一层温降20/3K，界面温度80−20/3=220/3°C，约73.333°C。增加冷侧热阻后，界面更接近热端温度。</p></div></details>
+
+
+<h2 id="接触热阻为何允许温度跳变"><a href="#接触热阻为何允许温度跳变" class="headerlink" title="接触热阻为何允许温度跳变"></a>接触热阻为何允许温度跳变</h2><p>若界面具有集中接触热阻R_c&#x3D;0.5K&#x2F;W，可在两层之间串入它。此时Q̇&#x3D;60&#x2F;5.5&#x3D;120&#x2F;11W，第一层右表面温度为760&#x2F;11°C≈69.091°C，第二层左表面温度为700&#x2F;11°C≈63.636°C。接触处温差为60&#x2F;11K≈5.455K。</p>
+<p>这里的跳变是集中参数模型的表达；没有把界面当作温度既连续又不连续的同一个理想条件。真实接触区可能受粗糙度、压力、填充物与温度影响，R_c需要适用条件下的数据，不能把合成数值当成可直接使用的材料常数。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+ A[热端表面80度] --&gt; B[第一层热阻1]
+ B --&gt; C[接触热阻0.5]
+ C --&gt; D[第二层热阻4]
+ D --&gt; E[冷端表面20度]
+  </pre></div>
+
+<h2 id="边界条件不一样，网络也要改变"><a href="#边界条件不一样，网络也要改变" class="headerlink" title="边界条件不一样，网络也要改变"></a>边界条件不一样，网络也要改变</h2><table>
+<thead>
+<tr>
+<th>给定条件</th>
+<th>应怎样建模</th>
+<th>不能省略什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>两端表面温度已知</td>
+<td>本文串联导热网络</td>
+<td>不再把它们当作流体远场温度</td>
+</tr>
+<tr>
+<td>两侧流体温度和换热系数已知</td>
+<td>在导热层外加入1&#x2F;(hA)的对流热阻</td>
+<td>表面温度须求解，不等于流体温度</td>
+</tr>
+<tr>
+<td>温度随时间变化</td>
+<td>加入储热与初始条件，求瞬态</td>
+<td>不能只凭稳态热阻得出升温时间</td>
+</tr>
+<tr>
+<td>有内部热源</td>
+<td>使用能量方程及热源项</td>
+<td>各截面热流率未必相同</td>
+</tr>
+<tr>
+<td>热桥或显著侧向传热</td>
+<td>考虑并联路径或多维模型</td>
+<td>不能强行让所有路径热流率相同</td>
+</tr>
+</tbody></table>
+<p>辐射通常涉及绝对温度的四次方，也不能直接把固定导热热阻当作完整辐射模型。温度变化很大时，k的温度依赖也可能使本文的线性关系不足。</p>
+
+<details class="mechanism-check"><summary>自检：热阻较大，是否就能证明升温更慢？</summary><div><p>仅凭稳态热阻不能确定升温过程。还需要密度、比热、几何、初始条件与边界随时间的变化。稳态模型回答最终温差怎样分配，不给出到达该状态的时间。</p></div></details>
+
+
+<h2 id="计算后的三项检查"><a href="#计算后的三项检查" class="headerlink" title="计算后的三项检查"></a>计算后的三项检查</h2><p>先检查单位：米、平方米、导热系数与热阻是否一致。再检查能量：无热源串联模型中的热流率应相同。最后检查温降：所有层和接触处的温降之和，应等于给定的端面温差。</p>
+<p>本例依次得到12W、68°C和60K的总温降，三项相互约束。若只得到一个看起来合理的温度，却没检查热流与总温差，仍可能把面积或接触条件放错位置。继续阅读<a href="/esblog/85526.html">扩散的时间尺度</a>，再对比<a href="/esblog/85639.html">热膨胀的约束条件</a>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/85750.html">https://eulersail.com/esblog/85750.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9D%90%E6%96%99%E6%A8%A1%E5%9E%8B/">材料模型</a><a class="post-meta__tags" href="/tags/%E5%AF%BC%E7%83%AD/">导热</a><a class="post-meta__tags" href="/tags/%E7%83%AD%E9%98%BB/">热阻</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/71068.html" title="自我解释 从复述到推理缺口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">自我解释 从复述到推理缺口</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/85526.html" title="Fick 扩散 从浓度梯度到长度与时间尺度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-22</div><div class="title">Fick 扩散 从浓度梯度到长度与时间尺度</div></div></a></div><div><a href="/esblog/85639.html" title="热膨胀 从自由伸长到约束热应力"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-28</div><div class="title">热膨胀 从自由伸长到约束热应力</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">140</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">243</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E7%83%AD%E6%B5%81%E7%8E%87%E5%88%B0%E7%83%AD%E9%98%BB"><span class="toc-text">从热流率到热阻</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E5%B1%82%E6%9D%90%E6%96%99%E6%89%8B%E7%AE%97"><span class="toc-text">两层材料手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E7%A7%AF%E6%94%B9%E5%8F%98%E6%97%B6%EF%BC%8C%E5%93%AA%E4%BA%9B%E9%87%8F%E6%94%B9%E5%8F%98"><span class="toc-text">面积改变时，哪些量改变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E8%A7%A6%E7%83%AD%E9%98%BB%E4%B8%BA%E4%BD%95%E5%85%81%E8%AE%B8%E6%B8%A9%E5%BA%A6%E8%B7%B3%E5%8F%98"><span class="toc-text">接触热阻为何允许温度跳变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6%E4%B8%8D%E4%B8%80%E6%A0%B7%EF%BC%8C%E7%BD%91%E7%BB%9C%E4%B9%9F%E8%A6%81%E6%94%B9%E5%8F%98"><span class="toc-text">边界条件不一样，网络也要改变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%90%8E%E7%9A%84%E4%B8%89%E9%A1%B9%E6%A3%80%E6%9F%A5"><span class="toc-text">计算后的三项检查</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85750.html" title="稳态导热 从串联热阻到界面温度">稳态导热 从串联热阻到界面温度</a><time datetime="2026-10-31T02:00:00.000Z" title="发表于 2026-10-31 10:00:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/71068.html" title="自我解释 从复述到推理缺口">自我解释 从复述到推理缺口</a><time datetime="2026-10-31T02:00:00.000Z" title="发表于 2026-10-31 10:00:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46539.html" title="TCP 字节流 从消息分帧到增量解析">TCP 字节流 从消息分帧到增量解析</a><time datetime="2026-10-30T04:00:00.000Z" title="发表于 2026-10-30 12:00:00">2026-10-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65694.html" title="分类阈值 从精确率召回率到决策成本">分类阈值 从精确率召回率到决策成本</a><time datetime="2026-10-30T04:00:00.000Z" title="发表于 2026-10-30 12:00:00">2026-10-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98981.html" title="德彪西大海 从音色流动到跨乐章回忆">德彪西大海 从音色流动到跨乐章回忆</a><time datetime="2026-10-27T18:10:00.000Z" title="发表于 2026-10-28 02:10:00">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
