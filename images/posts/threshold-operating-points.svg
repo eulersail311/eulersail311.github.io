@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480" role="img" aria-labelledby="title desc">
+<title id="title">降低阈值时精确率可以先降后升</title><desc id="desc">三个阈值的累计计数与精确率召回率，均来自八条合成记录。</desc>
+<rect width="900" height="480" rx="20" fill="#f4faf7"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#153e38"><text x="40" y="55" font-size="28" font-weight="700">降低阈值：集合扩大，精确率却不单调</text><text x="40" y="91" font-size="18">八条合成记录 · 正负各四条 · 同分样本同时纳入</text></g>
+<g fill="#fff" stroke="#bddbd0" stroke-width="2"><rect x="40" y="126" width="245" height="244" rx="14"/><rect x="327" y="126" width="245" height="244" rx="14"/><rect x="614" y="126" width="245" height="244" rx="14"/></g>
+<g font-family="Microsoft YaHei, sans-serif" fill="#153e38" text-anchor="middle" font-size="22"><text x="162" y="169" font-weight="700">t = 0.9</text><text x="449" y="169" font-weight="700">t = 0.8</text><text x="736" y="169" font-weight="700">t = 0.6</text><text x="162" y="220">TP 1 · FP 0</text><text x="449" y="220">TP 2 · FP 1</text><text x="736" y="220">TP 3 · FP 1</text><text x="162" y="277">P = 1</text><text x="449" y="277">P = 2/3</text><text x="736" y="277">P = 3/4</text><text x="162" y="326">R = 1/4</text><text x="449" y="326">R = 1/2</text><text x="736" y="326">R = 3/4</text></g>
+<g stroke="#146e65" stroke-width="3" fill="none"><path d="M293 245h26m-8-7 8 7-8 7"/><path d="M580 245h26m-8-7 8 7-8 7"/></g>
+<g font-family="Microsoft YaHei, sans-serif" fill="#153e38" font-size="19"><text x="40" y="417">0.9 → 0.8：新增一正一负，P 下降。</text><text x="40" y="452">0.8 → 0.6：仅新增正例，P 回升；两步的 R 都上升。</text></g>
+</svg>

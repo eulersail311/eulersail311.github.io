@@ -3177,6 +3177,12 @@
 /* Explanatory text participates in the reader's font choice. Small labels,
    diagram artwork and code blocks keep their existing independent sizing. */
 @media screen {
+  /* Lab instructions and generated explanations are reading text too. */
+  #post #article-container.reading-article :is(.article-lab-header p, .article-lab-note, .article-lab-status, .tcp-status, .broadcast-result, .chart-choice-result, .motif-explanation) {
+    font-size: 0.95em;
+    line-height: 1.9;
+    opacity: 1;
+  }
   #post #article-container.reading-article :is(.mechanism-map, .invariant-steps) p {
     font-size: 0.95em;
     line-height: 1.9;

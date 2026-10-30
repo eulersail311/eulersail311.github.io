@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480" role="img" aria-labelledby="title desc">
+<title id="title">读取边界不等于应用消息边界</title><desc id="desc">九字节流00 03 41 42 43 00 02 44 45按不同切分读取，长度前缀仍恢复ABC和DE。</desc>
+<rect width="900" height="480" rx="20" fill="#f1f7fb"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#193e50"><text x="40" y="55" font-size="28" font-weight="700">同一条字节流，可以有不同读取切分</text><text x="40" y="92" font-size="18">两字节大端长度 · 长度不含头部 · 图中不是 TCP 报文段</text></g>
+<g font-family="Microsoft YaHei, sans-serif" font-size="21" fill="#193e50"><text x="40" y="153">应用帧</text><text x="40" y="247">读取 A</text><text x="40" y="341">读取 B</text></g>
+<g stroke="#bdd7e2" stroke-width="2"><rect x="155" y="119" width="375" height="55" rx="8" fill="#dcecf7"/><rect x="540" y="119" width="300" height="55" rx="8" fill="#e1f1e9"/><rect x="155" y="213" width="65" height="55" rx="8" fill="#fff"/><rect x="230" y="213" width="220" height="55" rx="8" fill="#fff"/><rect x="460" y="213" width="145" height="55" rx="8" fill="#fff"/><rect x="615" y="213" width="225" height="55" rx="8" fill="#fff"/><rect x="155" y="307" width="530" height="55" rx="8" fill="#fff"/><rect x="695" y="307" width="145" height="55" rx="8" fill="#fff"/></g>
+<g font-family="Consolas, monospace" text-anchor="middle" fill="#193e50" font-size="23"><text x="342" y="154">00 03 41 42 43</text><text x="690" y="154">00 02 44 45</text><text x="187" y="248">00</text><text x="340" y="248">03 41 42</text><text x="532" y="248">43 00</text><text x="727" y="248">02 44 45</text><text x="420" y="342">00 03 41 42 43 00 02</text><text x="767" y="342">44 45</text></g>
+<g font-family="Microsoft YaHei, sans-serif" fill="#193e50" font-size="20"><text x="40" y="416">串接结果相同：00 03 41 42 43 00 02 44 45</text><text x="40" y="451">按协议解析后：ABC、DE。不能直接把读取块当成一帧。</text></g>
+</svg>

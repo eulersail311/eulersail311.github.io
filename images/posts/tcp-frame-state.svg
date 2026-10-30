@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480" role="img" aria-labelledby="title desc">
+<title id="title">长度前缀的解析状态</title><desc id="desc">头部不足保留，完整头部解析长度并拒绝超限，正文完整后输出，继续解析剩余字节。EOF时检查是否停在帧边界。</desc>
+<rect width="900" height="480" rx="20" fill="#f1f7fb"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#193e50"><text x="40" y="55" font-size="28" font-weight="700">解析状态跨越多次读取</text><text x="40" y="92" font-size="18">L≤1024 · 允许零长度 · 超限不先分配正文缓冲区</text></g>
+<g stroke="#bdd7e2" stroke-width="2" fill="#fff"><rect x="40" y="145" width="350" height="142" rx="14"/><rect x="510" y="145" width="350" height="142" rx="14"/><rect x="40" y="341" width="820" height="98" rx="14"/></g>
+<g font-family="Microsoft YaHei, sans-serif" fill="#193e50" font-size="22" text-anchor="middle"><text x="215" y="185" font-weight="700">等待两字节头部</text><text x="215" y="227">不足：保留头部前缀</text><text x="215" y="265">完整：解析并检查 L</text><text x="685" y="185" font-weight="700">等待 L 字节正文</text><text x="685" y="227">不足：保留正文前缀</text><text x="685" y="265">完整：输出并继续解析</text></g>
+<g stroke="#28687e" stroke-width="3" fill="none"><path d="M400 204h100m-10-8 10 8-10 8"/><path d="M685 295v25H215v-25m-8 9 8-9 8 9"/></g>
+<g font-family="Microsoft YaHei, sans-serif" fill="#193e50" font-size="18" text-anchor="middle"><text x="450" y="184">长度合法</text><text x="450" y="309">完整帧后，继续处理余量</text></g>
+<g font-family="Microsoft YaHei, sans-serif" fill="#193e50" font-size="20"><text x="65" y="380">EOF：等头部且余量为空 → 帧边界上的正常结束</text><text x="65" y="417">EOF：头部或正文未凑齐 → 截断；不得补零或提前输出</text></g>
+</svg>

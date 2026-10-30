@@ -1,0 +1,378 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>分类阈值 从精确率召回率到决策成本 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用八条合成记录手算阈值、混淆矩阵与平均精确率，解释召回率的单调性、精确率的波动、基率变化与误报漏报成本，并区分校准、排序和决策。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分类阈值 从精确率召回率到决策成本">
+<meta property="og:url" content="https://eulersail.com/esblog/65694.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用八条合成记录手算阈值、混淆矩阵与平均精确率，解释召回率的单调性、精确率的波动、基率变化与误报漏报成本，并区分校准、排序和决策。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-30T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-30T04:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="分类评测">
+<meta property="article:tag" content="精确率">
+<meta property="article:tag" content="召回率">
+<meta property="article:tag" content="决策阈值">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/65694.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '分类阈值 从精确率召回率到决策成本',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-30 12:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261030-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">138</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">240</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">分类阈值 从精确率召回率到决策成本</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-30T04:00:00.000Z" title="发表于 2026-10-30 12:00:00">2026-10-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-30T04:00:00.000Z" title="更新于 2026-10-30 12:00:00">2026-10-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="分类阈值 从精确率召回率到决策成本" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="data"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DATA NOTEBOOK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>7</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>4</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>先确认变量、单位与假设，再核对手算、图表和解释范围。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>7 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先把分数、真实标签和决策分开"><span>01</span><strong>先把分数、真实标签和决策分开</strong></a></li><li><a href="#八条记录逐组降低阈值"><span>02</span><strong>八条记录逐组降低阈值</strong></a></li><li><a href="#为什么召回率单调，而精确率可以回升"><span>03</span><strong>为什么召回率单调，而精确率可以回升</strong></a></li><li><a href="#平均精确率不是连接各点后的梯形面积"><span>04</span><strong>平均精确率不是连接各点后的梯形面积</strong></a></li><li><a href="#正类基率改变，精确率也会改变"><span>05</span><strong>正类基率改变，精确率也会改变</strong></a></li><li><a href="#用成本选择行动，再到独立测试集核验"><span>06</span><strong>用成本选择行动，再到独立测试集核验</strong></a></li><li><a href="#报告时保留什么"><span>07</span><strong>报告时保留什么</strong></a></li></ol></nav></details></section><p><a href="/esblog/65583.html">概率校准</a>问“报出的概率是否可信”，部署分类器还要回答“多少分才采取行动”。同一组分数可以对应不同的误报、漏报和人工复核量。默认阈值并不自动适合当前任务。</p>
+<p>本文只讨论已获得分数的二分类：正类标签为 1，分数越大越倾向正类，<strong>分数 s≥阈值 t 时判为正类</strong>。八条记录全部是教学合成数据，不代表真实模型的效果。</p>
+<span id="more"></span>
+
+<h2 id="先把分数、真实标签和决策分开"><a href="#先把分数、真实标签和决策分开" class="headerlink" title="先把分数、真实标签和决策分开"></a>先把分数、真实标签和决策分开</h2><p>分数可以是概率，也可以是任意有序的实数；下面手算使用 [0,1] 内的分数，但不假定它们已经校准。<a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/modules/classification_threshold.html">scikit-learn 阈值指南</a>将概率估计与行动决策分开，提醒读者根据目标选择阈值，并用独立数据评估。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+ A[固定样本与正类定义] --&gt; B[模型给出分数]
+ B --&gt; C[验证集选择阈值]
+ C --&gt; D[冻结模型与阈值]
+ D --&gt; E[独立测试集报告混淆矩阵]
+ E --&gt; F[监测实际构成与成本]
+  </pre></div>
+
+<p>对照真实标签，判正且确为正是 TP，判正但实际为负是 FP；判负但实际为正是 FN，判负且确为负是 TN。于是：</p>
+<blockquote>
+<p>**精确率 P&#x3D;TP&#x2F;(TP+FP)**：判正的样本里有多少是真的？</p>
+<p>**召回率 R&#x3D;TP&#x2F;(TP+FN)**：全部真实正例里找回了多少？</p>
+</blockquote>
+<p>两者分母不同。精确率不是“全部样本中正确的比例”，也不能用来推断没有被判正的样本是否可靠。准确率为 (TP+TN)&#x2F;N，类别很不平衡时单报准确率容易遮住正类漏检。</p>
+<h2 id="八条记录逐组降低阈值"><a href="#八条记录逐组降低阈值" class="headerlink" title="八条记录逐组降低阈值"></a>八条记录逐组降低阈值</h2><p>按分数从高到低排列：A&#x3D;(0.9,1)、B&#x3D;(0.8,0)、C&#x3D;(0.8,1)、D&#x3D;(0.6,1)、E&#x3D;(0.4,0)、F&#x3D;(0.3,1)、G&#x3D;(0.2,0)、H&#x3D;(0.1,0)。括号内依次为分数与标签。正负各四条；B 和 C 同分，<strong>阈值必须同时纳入它们</strong>，不能用任意排序在同分组内部虚构一个操作点。</p>
+<table>
+<thead>
+<tr>
+<th>阈值 t</th>
+<th>TP</th>
+<th>FP</th>
+<th>FN</th>
+<th>TN</th>
+<th>精确率</th>
+<th>召回率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.9</td>
+<td>1</td>
+<td>0</td>
+<td>3</td>
+<td>4</td>
+<td>1</td>
+<td>1&#x2F;4</td>
+</tr>
+<tr>
+<td>0.8</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2&#x2F;3</td>
+<td>1&#x2F;2</td>
+</tr>
+<tr>
+<td>0.6</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>3&#x2F;4</td>
+<td>3&#x2F;4</td>
+</tr>
+<tr>
+<td>0.4</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>3&#x2F;5</td>
+<td>3&#x2F;4</td>
+</tr>
+<tr>
+<td>0.3</td>
+<td>4</td>
+<td>2</td>
+<td>0</td>
+<td>2</td>
+<td>2&#x2F;3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0.1</td>
+<td>4</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>1&#x2F;2</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>t&#x3D;0.2 还有一个操作点，TP&#x3D;4、FP&#x3D;3、FN&#x3D;0、TN&#x3D;1，P&#x3D;4&#x2F;7、R&#x3D;1；表中省略它只是为了比较主要变化，计算曲线时仍保留它。t&gt;0.9 时无人判正，精确率分母为零，数学上未定义，不能把工具约定的端点当作实测完美精确率。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="阈值变化示意图，可横向滚动"><img class="no-lazy" src="/images/posts/threshold-operating-points.svg" width="900" height="480" alt="阈值从0.9降到0.8再到0.6，召回率从四分之一到二分之一再到四分之三，精确率先降后升"></div><figcaption>原创合成操作点；横向按阈值降低排列，不是等距离的概率轴。精确率并非只能下降。<a href="/images/posts/threshold-operating-points.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="为什么召回率单调，而精确率可以回升"><a href="#为什么召回率单调，而精确率可以回升" class="headerlink" title="为什么召回率单调，而精确率可以回升"></a>为什么召回率单调，而精确率可以回升</h2><p>在同一批样本上降低阈值，只会扩大判正集合，因此 TP 不会减少。真实正例总数 TP+FN 固定且大于零，所以召回率不会下降。</p>
+<p>精确率则比较新增样本的正例比例与旧集合比例。若原有 a 个真阳性、b 个假阳性，新增 u 个正例和 v 个负例，则比较 (a+u)&#x2F;(a+b+u+v) 与 a&#x2F;(a+b)，交叉相乘可得上升条件 <strong>ub&gt;av</strong>。新增样本全是正例时，精确率就可能上升：本例 0.8→0.6，P 从 2&#x2F;3 升到 3&#x2F;4。</p>
+<p><a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html">官方 Precision-Recall 示例</a>也明确说明这种波动，不能把经验上的常见趋势写成定理。</p>
+
+<details class="mechanism-check"><summary>自检：从 0.6 降到 0.4，为什么召回率没变？</summary><div><p>新增的 E 是负例，只增加 FP。TP 仍是 3，真实正例总数仍是 4；召回率保持 3/4，精确率从 3/4 降到 3/5。</p></div></details>
+
+
+<h2 id="平均精确率不是连接各点后的梯形面积"><a href="#平均精确率不是连接各点后的梯形面积" class="headerlink" title="平均精确率不是连接各点后的梯形面积"></a>平均精确率不是连接各点后的梯形面积</h2><p>沿阈值从高到低，使用每次召回增量所对应的精确率，非插值平均精确率为 AP&#x3D;Σ ΔR·P。对本例，新增正例的四次增量均为 1&#x2F;4：</p>
+<blockquote>
+<p><strong>AP&#x3D;(1&#x2F;4)×1+(1&#x2F;4)×(2&#x2F;3)+(1&#x2F;4)×(3&#x2F;4)+(1&#x2F;4)×(2&#x2F;3)&#x3D;37&#x2F;48≈0.770833。</strong></p>
+</blockquote>
+<p>只增加 FP 的步骤 ΔR&#x3D;0，不直接增加 AP。这里采用 <a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html">scikit-learn average_precision_score</a>的非插值定义，不使用梯形积分，也不采用某些检索指标的插值包络。<a target="_blank" rel="noopener" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html">precision_recall_curve</a>会附加 P&#x3D;1、R&#x3D;0 的绘图端点且不配阈值；不要把它误计为额外一组模型预测。</p>
+<p>AP 汇总排序表现，没有替读者选出某个行动阈值。严格递增变换保留排序和同分关系，可以保持这些操作点与 AP，却改变分数数值；概率校准与决策阈值仍须单独检查。</p>
+<h2 id="正类基率改变，精确率也会改变"><a href="#正类基率改变，精确率也会改变" class="headerlink" title="正类基率改变，精确率也会改变"></a>正类基率改变，精确率也会改变</h2><p>设目标总体正类比例为 π，固定阈值下真阳性率为 r，假阳性率为 f。在这两个条件率保持不变的假设下，由总概率可得：</p>
+<blockquote>
+<p>**P&#x3D;πr&#x2F;[πr+(1−π)f]**，分母须大于零。</p>
+</blockquote>
+<p>这只是条件概率推导，不保证换场景后 r、f 真会保持不变。假设 r&#x3D;0.8、f&#x3D;0.1，π&#x3D;0.5 时 P&#x3D;8&#x2F;9；π&#x3D;0.1 时 P&#x3D;8&#x2F;17。可见同样的条件识别率，面对更少的正例时也可能产生较低精确率。与<a href="/esblog/64973.html">分层和标准化</a>一样，需要同时报告构成与组内表现。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="基率改变后的合成混淆计数图，可横向滚动"><img class="no-lazy" src="/images/posts/threshold-base-rate.svg" width="900" height="480" alt="一千条记录中，正类比例一半时真阳性400假阳性50；正类比例一成时真阳性80假阳性90"></div><figcaption>两个一千条记录的合成总体，均假定 TPR=0.8、FPR=0.1；不是迁移效果实测。<a href="/images/posts/threshold-base-rate.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="用成本选择行动，再到独立测试集核验"><a href="#用成本选择行动，再到独立测试集核验" class="headerlink" title="用成本选择行动，再到独立测试集核验"></a>用成本选择行动，再到独立测试集核验</h2><p>若只计误报成本 C_FP 和漏报成本 C_FN，总经验损失为 C_FP·FP+C_FN·FN。本例取 C_FP&#x3D;1、C_FN&#x3D;4，t&#x3D;0.9&#x2F;0.8&#x2F;0.6&#x2F;0.4&#x2F;0.3&#x2F;0.2&#x2F;0.1 的损失分别为 12&#x2F;9&#x2F;5&#x2F;6&#x2F;2&#x2F;3&#x2F;4；在这些操作点和无人判正点中，0.3 的损失最小。它只是这批合成样本的最小值，不是通用最佳阈值。</p>
+<p>若输入 p 是<strong>当前目标总体下的真实条件概率</strong>，只有上述两类非负错误成本且两者之和大于零、正确决策成本为零，预测正类的条件期望损失为 C_FP(1−p)，预测负类为 C_FN·p。比较两者可得 p≥C_FP&#x2F;(C_FP+C_FN) 时选择正类。此例理论成本阈值为 0.2，与小样本经验最优 0.3 不同并不矛盾：例中分数未被假定为真实概率，有限样本还存在波动。人工复核容量、延迟和弃权成本加入后也要重新定义目标。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+ A[先固定任务成本与容量] --&gt; B[验证集扫描同分组阈值]
+ B --&gt; C{约束是否满足}
+ C --&gt;|是| D[选择目标损失较小的候选]
+ C --&gt;|否| E[报告无可行候选]
+ D --&gt; F[冻结阈值后只评估测试集]
+  </pre></div>
+
+<p>不得在同一个测试集上反复调阈值后，再把该集称为未参与选择的最终证据。可参考<a href="/esblog/64893.html">配对 Bootstrap</a>保留同题关系描述不确定性，但重采样不能消除已经发生的数据泄漏。</p>
+
+<details class="mechanism-check"><summary>自检：AP 更高，是否保证任意成本下都更好？</summary><div><p>不保证。AP 汇总多个阈值的排序表现，实际成本取决于选中的操作点、目标总体及行动约束。要在相同测试记录上核对冻结阈值后的 FP、FN 与成本，不能只比较一个汇总分数。</p></div></details>
+
+
+<h2 id="报告时保留什么"><a href="#报告时保留什么" class="headerlink" title="报告时保留什么"></a>报告时保留什么</h2><ul>
+<li>写明正类定义、评估单位、样本量、正类数量和时间范围。</li>
+<li>保留阈值、同分规则及完整 TP&#x2F;FP&#x2F;FN&#x2F;TN；无预测正例或无真实正例时，明确未定义量与软件约定。</li>
+<li>分开排序指标、概率校准和行动损失；不能用其中一项替代其余两项。</li>
+<li>选择在验证数据完成；最终测试固定模型、阈值和成本口径。新场景检查基率与条件率，不把旧精确率当作常量。</li>
+</ul>
+<p>继续阅读：<a href="/esblog/65583.html">概率校准</a>检查概率可信度，<a href="/esblog/66382.html">标注一致性</a>核对标签生成过程，<a href="/resources/#rp-data">资源路线</a>串起统计与评测。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/65694.html">https://eulersail.com/esblog/65694.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%86%E7%B1%BB%E8%AF%84%E6%B5%8B/">分类评测</a><a class="post-meta__tags" href="/tags/%E7%B2%BE%E7%A1%AE%E7%8E%87/">精确率</a><a class="post-meta__tags" href="/tags/%E5%8F%AC%E5%9B%9E%E7%8E%87/">召回率</a><a class="post-meta__tags" href="/tags/%E5%86%B3%E7%AD%96%E9%98%88%E5%80%BC/">决策阈值</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/46539.html" title="TCP 字节流 从消息分帧到增量解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">TCP 字节流 从消息分帧到增量解析</div></div></a></div><div class="next-post pull-right"><a href="/esblog/98981.html" title="德彪西大海 从音色流动到跨乐章回忆"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">德彪西大海 从音色流动到跨乐章回忆</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">138</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">240</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E5%88%86%E6%95%B0%E3%80%81%E7%9C%9F%E5%AE%9E%E6%A0%87%E7%AD%BE%E5%92%8C%E5%86%B3%E7%AD%96%E5%88%86%E5%BC%80"><span class="toc-text">先把分数、真实标签和决策分开</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E6%9D%A1%E8%AE%B0%E5%BD%95%E9%80%90%E7%BB%84%E9%99%8D%E4%BD%8E%E9%98%88%E5%80%BC"><span class="toc-text">八条记录逐组降低阈值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AC%E5%9B%9E%E7%8E%87%E5%8D%95%E8%B0%83%EF%BC%8C%E8%80%8C%E7%B2%BE%E7%A1%AE%E7%8E%87%E5%8F%AF%E4%BB%A5%E5%9B%9E%E5%8D%87"><span class="toc-text">为什么召回率单调，而精确率可以回升</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E5%9D%87%E7%B2%BE%E7%A1%AE%E7%8E%87%E4%B8%8D%E6%98%AF%E8%BF%9E%E6%8E%A5%E5%90%84%E7%82%B9%E5%90%8E%E7%9A%84%E6%A2%AF%E5%BD%A2%E9%9D%A2%E7%A7%AF"><span class="toc-text">平均精确率不是连接各点后的梯形面积</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%B1%BB%E5%9F%BA%E7%8E%87%E6%94%B9%E5%8F%98%EF%BC%8C%E7%B2%BE%E7%A1%AE%E7%8E%87%E4%B9%9F%E4%BC%9A%E6%94%B9%E5%8F%98"><span class="toc-text">正类基率改变，精确率也会改变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%90%E6%9C%AC%E9%80%89%E6%8B%A9%E8%A1%8C%E5%8A%A8%EF%BC%8C%E5%86%8D%E5%88%B0%E7%8B%AC%E7%AB%8B%E6%B5%8B%E8%AF%95%E9%9B%86%E6%A0%B8%E9%AA%8C"><span class="toc-text">用成本选择行动，再到独立测试集核验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%A5%E5%91%8A%E6%97%B6%E4%BF%9D%E7%95%99%E4%BB%80%E4%B9%88"><span class="toc-text">报告时保留什么</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46539.html" title="TCP 字节流 从消息分帧到增量解析">TCP 字节流 从消息分帧到增量解析</a><time datetime="2026-10-30T04:00:00.000Z" title="发表于 2026-10-30 12:00:00">2026-10-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65694.html" title="分类阈值 从精确率召回率到决策成本">分类阈值 从精确率召回率到决策成本</a><time datetime="2026-10-30T04:00:00.000Z" title="发表于 2026-10-30 12:00:00">2026-10-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/98981.html" title="德彪西大海 从音色流动到跨乐章回忆">德彪西大海 从音色流动到跨乐章回忆</a><time datetime="2026-10-27T18:10:00.000Z" title="发表于 2026-10-28 02:10:00">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/79861.html" title="Codeforces 191C 从树上差分到路径边计数">Codeforces 191C 从树上差分到路径边计数</a><time datetime="2026-10-27T17:20:00.000Z" title="发表于 2026-10-28 01:20:00">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/70957.html" title="交错练习 从题型辨别到方法选择">交错练习 从题型辨别到方法选择</a><time datetime="2026-10-27T16:50:00.000Z" title="发表于 2026-10-28 00:50:00">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

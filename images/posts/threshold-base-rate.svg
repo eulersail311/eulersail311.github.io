@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480" role="img" aria-labelledby="title desc">
+<title id="title">相同条件率不保证相同精确率</title><desc id="desc">两个一千条记录的合成总体，真阳性率零点八、假阳性率零点一，正类比例分别为零点五和零点一。</desc>
+<rect width="900" height="480" rx="20" fill="#f4faf7"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#153e38"><text x="40" y="55" font-size="28" font-weight="700">基率改变，判正集合的构成也改变</text><text x="40" y="91" font-size="18">每组 N=1000 · 假定 TPR=0.8、FPR=0.1 保持不变</text></g>
+<g fill="#fff" stroke="#bddbd0" stroke-width="2"><rect x="40" y="126" width="390" height="270" rx="14"/><rect x="470" y="126" width="390" height="270" rx="14"/></g>
+<g font-family="Microsoft YaHei, sans-serif" fill="#153e38" font-size="21"><text x="65" y="169" font-weight="700">正类比例 π=0.5</text><text x="495" y="169" font-weight="700">正类比例 π=0.1</text><text x="65" y="213">正例 500 → TP 400 · FN 100</text><text x="495" y="213">正例 100 → TP 80 · FN 20</text><text x="65" y="257">负例 500 → FP 50 · TN 450</text><text x="495" y="257">负例 900 → FP 90 · TN 810</text><text x="65" y="315">判正：400 + 50 = 450</text><text x="495" y="315">判正：80 + 90 = 170</text><text x="65" y="365" font-weight="700">P = 400/450 = 8/9</text><text x="495" y="365" font-weight="700">P = 80/170 = 8/17</text><text x="40" y="445" font-size="19">条件概率的合成算例；换场景后还要重新检查 TPR 与 FPR。</text></g>
+</svg>
