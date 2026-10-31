@@ -1,0 +1,363 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Welford 在线方差 从中心矩到分块合并 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从平方和相减的抵消问题推导Welford中心矩更新与分块合并，手算四条记录，区分样本和总体方差，提供标准库实现并说明浮点精度、重复合并及滑动窗口边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Welford 在线方差 从中心矩到分块合并">
+<meta property="og:url" content="https://eulersail.com/esblog/65705.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从平方和相减的抵消问题推导Welford中心矩更新与分块合并，手算四条记录，区分样本和总体方差，提供标准库实现并说明浮点精度、重复合并及滑动窗口边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-10-31T02:12:00.000Z">
+<meta property="article:modified_time" content="2026-10-31T02:12:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="在线统计">
+<meta property="article:tag" content="方差">
+<meta property="article:tag" content="数值计算">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/65705.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Welford 在线方差 从中心矩到分块合并',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-31 10:12:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261031-2"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">142</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">248</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Welford 在线方差 从中心矩到分块合并</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-31T02:12:00.000Z" title="更新于 2026-10-31 10:12:00">2026-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="Welford 在线方差 从中心矩到分块合并" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="data"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DATA NOTEBOOK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>9</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>5</strong><small>组图片与图表</small></span></div></div><p>先确认变量、单位与假设，再核对手算、图表和解释范围。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>9 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先定义统计量，不急着换算法"><span>01</span><strong>先定义统计量，不急着换算法</strong></a></li><li><a href="#为什么总平方和相减可能不可靠"><span>02</span><strong>为什么总平方和相减可能不可靠</strong></a></li><li><a href="#从均值变化推导中心矩更新"><span>03</span><strong>从均值变化推导中心矩更新</strong></a></li><li><a href="#四条记录的逐步手算"><span>04</span><strong>四条记录的逐步手算</strong></a></li><li><a href="#两个分块怎样合并"><span>05</span><strong>两个分块怎样合并</strong></a></li><li><a href="#代码1：可直接运行的标准库实现"><span>06</span><strong>代码1：可直接运行的标准库实现</strong></a></li><li><a href="#稳定不等于精确，也不等于完整统计分析"><span>07</span><strong>稳定不等于精确，也不等于完整统计分析</strong></a></li><li><a href="#验证时应该比较什么"><span>08</span><strong>验证时应该比较什么</strong></a></li><li><a href="#参考文献与适用位置"><span>09</span><strong>参考文献与适用位置</strong></a></li></ol></nav></details></section><p>文件可以分块读取，传感器记录也会持续到达。如果每来一条数据就重新扫描历史记录，统计量的更新时间会随数据量增长；如果只保留总和与平方和，又可能在“大基数、小波动”的数据中丢失有效数字。</p>
+<p>本篇接续<a href="/esblog/64712.html">NumPy常用统计</a>，研究一个具体任务：<strong>不保存全部历史值，持续维护数量、均值和方差，并允许合并互不重复的数据分块。</strong> 例子全部是合成记录。本文是普通等权、实数标量的累计统计，不处理权重、缺失值填补、删点或滑动窗口。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="在线方差阅读任务"><div><span class="workshop-kicker">推导目标</span><strong class="workshop-title">三个状态替代历史数组</strong><p>明确n、均值μ、离均差平方和M₂的含义，再证明新观测到来后怎样更新。</p></div><div><span class="workshop-kicker">实现目标</span><strong class="workshop-title">能更新，也能核对合并</strong><p>完整Python标准库代码保留分母口径、空状态和错误处理；测试使用独立高精度两遍参考。</p></div></section>
+
+
+<h2 id="先定义统计量，不急着换算法"><a href="#先定义统计量，不急着换算法" class="headerlink" title="先定义统计量，不急着换算法"></a>先定义统计量，不急着换算法</h2><p>对n条记录x₁,…,xₙ，均值μₙ&#x3D;(Σxᵢ)&#x2F;n。中心量M₂,ₙ&#x3D;Σ(xᵢ−μₙ)²不是方差，而是离均差平方和。总体描述方差为M₂&#x2F;n；在独立同分布、有限方差的抽样条件下，常用的无偏样本方差使用M₂&#x2F;(n−1)。分母修正不能替代抽样条件，时间相关或选择偏差不会被“减一”自动消除。</p>
+
+<figure class="article-equation" id="w-eq1"><figcaption><strong>公式1｜从中心平方和取得方差</strong></figcaption><div class="equation-body">总体描述：v = M₂ / n，n ≥ 1<br>样本估计：s² = M₂ / (n − 1)，n ≥ 2</div><p class="equation-note">M₂、v和s²的单位是观测单位的平方。空数据的均值/方差未定义，单个观测的样本方差也未定义。口径对照<a href="#w-ref2">文献2</a>。</p></figure>
+
+
+<p>若记录是延迟毫秒，均值单位为ms，方差单位为ms²，标准差才回到ms。本文代码以None表达样本数不足，不把“尚未观察”伪装成“没有波动”。完整数据集的描述量与总体参数的估计是不同使用目的，报告时要写明采用哪个分母。</p>
+<h2 id="为什么总平方和相减可能不可靠"><a href="#为什么总平方和相减可能不可靠" class="headerlink" title="为什么总平方和相减可能不可靠"></a>为什么总平方和相减可能不可靠</h2><p>代数恒等式M₂&#x3D;Σxᵢ²−(Σxᵢ)²&#x2F;n在精确算术下成立。但当记录围绕很大的基数轻微波动，右边两项都很大、差却很小。浮点数先舍入再相减，可能损失小波动的信息。问题不在减法符号本身，而在使用近似的大量抵消来取得小结果。</p>
+<p>例如x&#x3D;10¹²+[1,2,3,4]。真正均值是10¹²+2.5，M₂&#x3D;5。直接处理约10²⁴量级的平方项，比维护相对当前均值的增量更容易出现抵消。这个例子不是说所有输入都一定失败，也不保证每种语言、求和次序和浮点环境给出相同的错误值。</p>
+<p>Welford的1962年论文是这一在线更新方法的原始出处之一，出版信息见<a href="#w-ref1">文献1</a>；下面给出独立的代数推导，而不是只把公式当作一个名称来记忆。</p>
+<h2 id="从均值变化推导中心矩更新"><a href="#从均值变化推导中心矩更新" class="headerlink" title="从均值变化推导中心矩更新"></a>从均值变化推导中心矩更新</h2><p>假设已有n≥1个观测，状态为(n,μ,M₂)，新值为x。令δ&#x3D;x−μ，新的均值μ′&#x3D;μ+δ&#x2F;(n+1)。对旧观测，把相对旧均值的偏差重新写成相对新均值的偏差：xᵢ−μ′&#x3D;(xᵢ−μ)−δ&#x2F;(n+1)。</p>
+<p>展开旧记录平方项之和时，交叉项包含Σ(xᵢ−μ)&#x3D;0，因此只增加n·δ²&#x2F;(n+1)²。新记录自身相对新均值的偏差是nδ&#x2F;(n+1)，平方后再相加，新增总量为nδ²&#x2F;(n+1)。于是得到同一更新的两种写法：</p>
+
+<figure class="article-equation" id="w-eq2"><figcaption><strong>公式2｜单条观测的中心矩更新</strong></figcaption><div class="equation-body">n′ = n + 1，δ = x − μ<br>μ′ = μ + δ / n′<br>M₂′ = M₂ + δ(x − μ′) = M₂ + δ²·n / n′</div><p class="equation-note">精确算术下成立。实现使用δ(x−μ′)，明确第二项必须用新均值。n=0时直接得到(1,x,0)，不需要先定义空集合的真实均值。</p></figure>
+<aside class="article-takeaway" role="note"><strong>重点｜M₂的中心始终是当前均值</strong><p>不能把所有新值都相对最初的均值求平方，也不能在更新式的两处都使用旧均值。旧数据也随均值移动，这正是推导必须处理的部分。</p></aside>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+ A[旧状态 n μ M2] --&gt; B[新值减旧均值得到δ]
+ B --&gt; C[更新数量与均值]
+ C --&gt; D[用新均值计算增量]
+ D --&gt; E[全部检查通过后提交状态]
+  </pre></div>
+
+<h2 id="四条记录的逐步手算"><a href="#四条记录的逐步手算" class="headerlink" title="四条记录的逐步手算"></a>四条记录的逐步手算</h2>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="四次更新的数量、均值和中心平方和，可横向滚动"><img class="no-lazy" src="/images/posts/welford-update-states.svg" width="900" height="400" alt="依次纳入2、4、4、6后，数量为1、2、3、4，均值为2、3、10/3、4，中心平方和为0、2、8/3、8"></div><figcaption>图1｜原创状态卡片；M₂不是已经除过分母的方差。<a href="/images/posts/welford-update-states.svg">查看原图</a></figcaption></figure>
+
+
+<p>取[2,4,4,6]，从空状态开始。第三行使用分数更方便核对，代码只打印最终数值。</p>
+<table>
+<thead>
+<tr>
+<th>已纳入的值</th>
+<th>n</th>
+<th>μ</th>
+<th>M₂</th>
+<th>总体方差M₂&#x2F;n</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2,4</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2,4,4</td>
+<td>3</td>
+<td>10&#x2F;3</td>
+<td>8&#x2F;3</td>
+<td>8&#x2F;9</td>
+</tr>
+<tr>
+<td>2,4,4,6</td>
+<td>4</td>
+<td>4</td>
+<td>8</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>最后一次，δ&#x3D;6−10&#x2F;3&#x3D;8&#x2F;3，新均值为4，增量δ(6−4)&#x3D;16&#x2F;3；8&#x2F;3+16&#x2F;3&#x3D;8。直接围绕最终均值4计算，也得到(2−4)²+0+0+(6−4)²&#x3D;8。样本方差是8&#x2F;3，不能把表中总体方差2换个名称就报告成样本方差。</p>
+
+<details class="mechanism-check"><summary>自检1：为什么常量数据的M₂保持零？</summary><div><p>第一条数据建立均值后，每个新值与当前均值相同，δ=0，因此中心矩不再增加。样本数达到2以前，代码仍不报告样本方差；“恰好没有波动”和“样本数不足”需要区分。</p></div></details>
+
+
+<h2 id="两个分块怎样合并"><a href="#两个分块怎样合并" class="headerlink" title="两个分块怎样合并"></a>两个分块怎样合并</h2><p>设A、B是互不重复的观测分块，分别保存(n_A,μ_A,M₂,A)和(n_B,μ_B,M₂,B)。新均值是数量加权均值；两个块内中心矩之外，还要补上各块均值偏离总均值的贡献。展开平方项，块内偏差和为零，得到：</p>
+
+<figure class="article-equation" id="w-eq3"><figcaption><strong>公式3｜两个非空分块的合并</strong></figcaption><div class="equation-body">n = n_A + n_B，Δ = μ_B − μ_A<br>μ = μ_A + Δ·n_B/n<br>M₂ = M₂,A + M₂,B + Δ²·n_A·n_B/n</div><p class="equation-note">任一块为空时直接采用另一块。分块不能重复计入。推广到并行统计的背景见<a href="#w-ref3">文献3</a>，本式也可由块内中心化展开直接证明。</p></figure>
+
+
+<p>将A&#x3D;[2,4]、B&#x3D;[4,6]分别统计，得到(2,3,2)与(2,5,2)。Δ&#x3D;2，跨块项为4，合并后(4,4,8)。只把两个M₂相加会得到4，漏掉块均值之间的差异；平均两块方差也不能一般地得到总体方差。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="两个分块中心矩与跨块修正示意，可横向滚动"><img class="no-lazy" src="/images/posts/welford-block-merge.svg" width="900" height="400" alt="A块数量2均值3中心平方和2，B块数量2均值5中心平方和2，跨块修正4，合并得到数量4均值4中心平方和8"></div><figcaption>图2｜原创合成分块例子；跨块修正不可省略。<a href="/images/posts/welford-block-merge.svg">查看原图</a></figcaption></figure>
+<details class="mechanism-check"><summary>自检2：同一块被合并两次，为什么不是无害的重试？</summary><div><p>合并操作没有去重语义。重复合并会重复计数，通常也改变均值与方差。分布式任务需要额外的分块标识和提交记录；不能靠三个统计量判断一批记录是否已经处理过。</p></div></details>
+
+
+<h2 id="代码1：可直接运行的标准库实现"><a href="#代码1：可直接运行的标准库实现" class="headerlink" title="代码1：可直接运行的标准库实现"></a>代码1：可直接运行的标准库实现</h2>
+<p class="article-code-note" id="w-code"><strong>代码1｜Python 3 标准库</strong>：保存为welford_demo.py运行。只接受有限int/float标量，排除bool；不把字符串、缺失值或无穷大偷偷转换成有效记录。输入先转换为float，因此大整数精度可能在算法开始前就损失。代码中的None表示未定义量。</p>
+
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OnlineStats</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        self.n = <span class="number">0</span></span><br><span class="line">        self.mean = <span class="number">0.0</span>       <span class="comment"># 空状态占位值，不代表已观测均值</span></span><br><span class="line">        self.m2 = <span class="number">0.0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_commit</span>(<span class="params">self, n, mean, m2</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> (math.isfinite(mean) <span class="keyword">and</span> math.isfinite(m2)) <span class="keyword">or</span> m2 &lt; <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ArithmeticError(<span class="string">&quot;state exceeds supported float range&quot;</span>)</span><br><span class="line">        self.n, self.mean, self.m2 = n, mean, m2</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(x) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>):</span><br><span class="line">            <span class="keyword">raise</span> TypeError(<span class="string">&quot;expected int or float, excluding bool&quot;</span>)</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            x = <span class="built_in">float</span>(x)</span><br><span class="line">        <span class="keyword">except</span> OverflowError <span class="keyword">as</span> exc:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;input is outside float range&quot;</span>) <span class="keyword">from</span> exc</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> math.isfinite(x):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;input must be finite&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> self.n == <span class="number">0</span>:</span><br><span class="line">            self._commit(<span class="number">1</span>, x, <span class="number">0.0</span>)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        n = self.n + <span class="number">1</span></span><br><span class="line">        delta = x - self.mean</span><br><span class="line">        mean = self.mean + delta / n</span><br><span class="line">        m2 = self.m2 + delta * (x - mean)</span><br><span class="line">        self._commit(n, mean, m2)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">merge</span>(<span class="params">self, other</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(other, OnlineStats):</span><br><span class="line">            <span class="keyword">raise</span> TypeError(<span class="string">&quot;expected OnlineStats&quot;</span>)</span><br><span class="line">        <span class="comment"># 支持读取自身快照，但这代表重复数据，不是去重。</span></span><br><span class="line">        na, ma, sa = self.n, self.mean, self.m2</span><br><span class="line">        nb, mb, sb = other.n, other.mean, other.m2</span><br><span class="line">        <span class="keyword">if</span> nb == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">if</span> na == <span class="number">0</span>:</span><br><span class="line">            self._commit(nb, mb, sb)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        n = na + nb</span><br><span class="line">        delta = mb - ma</span><br><span class="line">        mean = ma + delta * (nb / n)</span><br><span class="line">        m2 = sa + sb + delta * delta * (na * (nb / n))</span><br><span class="line">        self._commit(n, mean, m2)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">variance</span>(<span class="params">self, sample=<span class="literal">False</span></span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">type</span>(sample) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">bool</span>:</span><br><span class="line">            <span class="keyword">raise</span> TypeError(<span class="string">&quot;sample must be bool&quot;</span>)</span><br><span class="line">        denominator = self.n - <span class="number">1</span> <span class="keyword">if</span> sample <span class="keyword">else</span> self.n</span><br><span class="line">        <span class="keyword">return</span> self.m2 / denominator <span class="keyword">if</span> denominator &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    left, right = OnlineStats(), OnlineStats()</span><br><span class="line">    <span class="keyword">for</span> value <span class="keyword">in</span> [<span class="number">2</span>, <span class="number">4</span>]:</span><br><span class="line">        left.add(value)</span><br><span class="line">    <span class="keyword">for</span> value <span class="keyword">in</span> [<span class="number">4</span>, <span class="number">6</span>]:</span><br><span class="line">        right.add(value)</span><br><span class="line">    left.merge(right)</span><br><span class="line">    <span class="built_in">print</span>(left.n, left.mean, left.m2)</span><br><span class="line">    <span class="built_in">print</span>(left.variance(), left.variance(sample=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
+
+<p>预期输出第一行为<code>4 4.0 8.0</code>，第二行为<code>2.0 2.6666666666666665</code>。每次更新或合并是常数次浮点运算，累计n条记录为O(n)时间，额外状态O(1)；这里不把任意大整数运算的位复杂度算作真正常数。类属性用于查看，不支持手动改写状态后再继续合并。</p>
+<p>状态先在局部变量中计算，检查失败时不会提交半个更新。代码检测非有限状态并拒绝，而不是宣称对任意有限输入都不会溢出。生产代码还应定义错误的记录策略与诊断信息，避免上层捕获异常后无声遗漏数据。</p>
+<p>并行计算时，各工作单元可以各自维护独立分块，随后由调用方串行合并。这个类没有锁，不保证多个线程同时写入同一实例的原子性；公式可并行组合，不等于这段可变状态代码已经实现了并发保护。</p>
+<h2 id="稳定不等于精确，也不等于完整统计分析"><a href="#稳定不等于精确，也不等于完整统计分析" class="headerlink" title="稳定不等于精确，也不等于完整统计分析"></a>稳定不等于精确，也不等于完整统计分析</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+ A[输入数据] --&gt; B{转换后有限吗}
+ B --&gt;|否| X[拒绝并记录原因]
+ B --&gt;|是| C[更新或合并局部候选]
+ C --&gt; D{候选状态有效吗}
+ D --&gt;|否| X
+ D --&gt;|是| E[提交并报告数量与分母口径]
+  </pre></div>
+
+<p>浮点加法不满足一般的结合律，分块方式、合并树和记录顺序都可能改变末尾位。因此不能要求并行合并与逐条更新逐位相同。Welford减少一种常见的抵消问题，却没有消除舍入、输入量化和动态范围限制；也不应通过无条件把负方差改成零来隐藏实现错误。</p>
+<p>尤其是<code>float(10**16 + 1)</code>可能与<code>float(10**16)</code>相同。两个不同整数已经映射成同一个浮点输入，再好的增量算法也无法恢复丢失的信息。要保留十进制计量值或极大整数的精确关系，应先决定数值表示，再决定更新方法。</p>
+
+<details class="mechanism-check"><summary>自检3：合并结果最后几位不同，能否立即判定代码错误？</summary><div><p>不能仅凭末尾位不同判断。先用相同的浮点输入、高精度参考及合理绝对/相对容差核对，再检查分母和分块是否重复。相反，明显漏掉跨块项或数量错误，也不能用“浮点误差”掩盖。</p></div></details>
+<details class="mechanism-check"><summary>自检4：累计统计能直接表示最近一小时吗？</summary><div><p>不能。本文状态累计所有纳入的记录，没有时间窗口或删点操作。最近一小时需要明确过期规则并保存足以撤销旧数据的信息，或使用分桶与重新合并；不能把累计均值改个标签当作窗口均值。</p></div></details>
+
+
+<h2 id="验证时应该比较什么"><a href="#验证时应该比较什么" class="headerlink" title="验证时应该比较什么"></a>验证时应该比较什么</h2><p>先核对[2,4,4,6]、空数据、单值和常量；再用高精度两遍计算，独立求均值与离均差平方和，比较随机数据和大基数小波动。合并验证要覆盖空块、不同分块、不同合并次序和重复输入语义，不能只比较两份复用了同一更新式的程序。</p>
+<p>需要报告的不只是方差数值，还应包括样本数、单位、分母、输入转换规则和数据范围。缺失与异常值的处理应在统计之前定义；标准差也不是均值置信区间，若要研究抽样不确定性，可衔接<a href="/esblog/64893.html">配对Bootstrap</a>的采样单位讨论。</p>
+<h2 id="参考文献与适用位置"><a href="#参考文献与适用位置" class="headerlink" title="参考文献与适用位置"></a>参考文献与适用位置</h2>
+<ol class="article-references"><li id="w-ref1"><cite>B. P. Welford. Note on a Method for Calculating Corrected Sums of Squares and Products. Technometrics, 4(3), 419–420, 1962.</cite> <a target="_blank" rel="noopener" href="https://www.tandfonline.com/doi/abs/10.1080/00401706.1962.10490022">出版社原始条目与DOI</a>。用于方法来源和出版信息；本篇推导自行展开，不声称取得受限全文。<a href="#w-eq2">返回公式2</a>。</li><li id="w-ref2"><cite>Python官方文档：statistics。</cite> <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/statistics.html#statistics.pvariance">pvariance</a>与<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/statistics.html#statistics.variance">variance</a>说明总体/样本分母与数据数量条件；本文返回None的接口约定与标准库抛异常的约定不同。<a href="#w-eq1">返回公式1</a>。</li><li id="w-ref3"><cite>Philippe Pébay. Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments. SAND2008-6212, 2008.</cite> <a target="_blank" rel="noopener" href="https://www.sandia.gov/research/publications/details/formulas-for-robust-one-pass-parallel-computation-of-covariances-and-arbitr-2008-09-01/">Sandia官方报告条目</a>。用于分块与并行统计背景；本篇仅实现标量二阶中心矩，不实现全部高阶公式。<a href="#w-eq3">返回公式3</a>。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/65705.html">https://eulersail.com/esblog/65705.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%9C%A8%E7%BA%BF%E7%BB%9F%E8%AE%A1/">在线统计</a><a class="post-meta__tags" href="/tags/%E6%96%B9%E5%B7%AE/">方差</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">数值计算</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/46650.html" title="令牌桶限流 从补充速率到突发预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">令牌桶限流 从补充速率到突发预算</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div><div><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">142</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">248</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%AE%9A%E4%B9%89%E7%BB%9F%E8%AE%A1%E9%87%8F%EF%BC%8C%E4%B8%8D%E6%80%A5%E7%9D%80%E6%8D%A2%E7%AE%97%E6%B3%95"><span class="toc-text">先定义统计量，不急着换算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%80%BB%E5%B9%B3%E6%96%B9%E5%92%8C%E7%9B%B8%E5%87%8F%E5%8F%AF%E8%83%BD%E4%B8%8D%E5%8F%AF%E9%9D%A0"><span class="toc-text">为什么总平方和相减可能不可靠</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E5%9D%87%E5%80%BC%E5%8F%98%E5%8C%96%E6%8E%A8%E5%AF%BC%E4%B8%AD%E5%BF%83%E7%9F%A9%E6%9B%B4%E6%96%B0"><span class="toc-text">从均值变化推导中心矩更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E6%9D%A1%E8%AE%B0%E5%BD%95%E7%9A%84%E9%80%90%E6%AD%A5%E6%89%8B%E7%AE%97"><span class="toc-text">四条记录的逐步手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%88%86%E5%9D%97%E6%80%8E%E6%A0%B7%E5%90%88%E5%B9%B6"><span class="toc-text">两个分块怎样合并</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%811%EF%BC%9A%E5%8F%AF%E7%9B%B4%E6%8E%A5%E8%BF%90%E8%A1%8C%E7%9A%84%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E7%8E%B0"><span class="toc-text">代码1：可直接运行的标准库实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A8%B3%E5%AE%9A%E4%B8%8D%E7%AD%89%E4%BA%8E%E7%B2%BE%E7%A1%AE%EF%BC%8C%E4%B9%9F%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%AE%8C%E6%95%B4%E7%BB%9F%E8%AE%A1%E5%88%86%E6%9E%90"><span class="toc-text">稳定不等于精确，也不等于完整统计分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E6%97%B6%E5%BA%94%E8%AF%A5%E6%AF%94%E8%BE%83%E4%BB%80%E4%B9%88"><span class="toc-text">验证时应该比较什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E9%80%82%E7%94%A8%E4%BD%8D%E7%BD%AE"><span class="toc-text">参考文献与适用位置</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并">Welford 在线方差 从中心矩到分块合并</a><time datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46650.html" title="令牌桶限流 从补充速率到突发预算">令牌桶限流 从补充速率到突发预算</a><time datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85750.html" title="稳态导热 从串联热阻到界面温度">稳态导热 从串联热阻到界面温度</a><time datetime="2026-10-31T02:00:00.000Z" title="发表于 2026-10-31 10:00:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/71068.html" title="自我解释 从复述到推理缺口">自我解释 从复述到推理缺口</a><time datetime="2026-10-31T02:00:00.000Z" title="发表于 2026-10-31 10:00:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46539.html" title="TCP 字节流 从消息分帧到增量解析">TCP 字节流 从消息分帧到增量解析</a><time datetime="2026-10-30T04:00:00.000Z" title="发表于 2026-10-30 12:00:00">2026-10-30</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

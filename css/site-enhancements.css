@@ -2819,6 +2819,23 @@
   }
 }
 
+/* Explicit labels for equations, executable examples, takeaways and sources. */
+#post .reading-article .article-equation { margin:1.6em 0; border:1px solid var(--article-rule); border-radius:12px; overflow-wrap:anywhere; background:var(--article-soft); scroll-margin-top:88px; }
+#post .reading-article .article-equation figcaption { padding:0.8em 1em; border-bottom:1px solid var(--article-rule); color:var(--article-accent); font-size:0.95em; line-height:1.8; }
+#post .reading-article .equation-body { padding:1em; font-size:1.02em; line-height:2; font-variant-numeric:tabular-nums; }
+#post .reading-article .equation-note { padding:0 1em 1em; margin:0; font-size:0.95em; line-height:1.9; }
+#post .reading-article :is(.article-takeaway,.article-code-note) { margin:1.5em 0; padding:1em 1.2em; border-left:4px solid var(--article-accent); border-radius:0 10px 10px 0; background:var(--article-soft); overflow-wrap:anywhere; }
+#post .reading-article .article-takeaway > strong { color:var(--article-accent); }
+#post .reading-article .article-takeaway p { margin:0.6em 0 0; line-height:1.9; }
+#post .reading-article .article-references { padding-left:2em; line-height:1.9; overflow-wrap:anywhere; }
+#post .reading-article .article-references li { padding-left:0.3em; margin:1em 0; scroll-margin-top:88px; }
+#post .reading-article .article-references li::marker { color:var(--article-accent); font-weight:700; }
+#post .reading-article .article-references cite { font-style:normal; font-weight:600; }
+#post .reading-article .article-code-note { scroll-margin-top:88px; }
+@media screen { #post .reading-article :is(.article-equation,.article-code-note,.article-references li):target { outline:2px solid var(--article-accent); outline-offset:3px; } }
+#post .reading-article :is(.article-equation,.article-takeaway,.article-code-note,.article-references) a { color:var(--article-accent); text-decoration:underline; text-underline-offset:0.2em; }
+@media print { #post .reading-article :is(.article-equation,.article-takeaway,.article-code-note) { background:white; color:#111; border-color:#777; break-inside:avoid; } }
+
 /* Native task cards for the expanded tutorials. */
 #post .reading-article .article-workshop { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1em; margin: 1.6em 0 2em; }
 #post .reading-article .article-workshop > div { min-width: 0; padding: 1.15em; border: 1px solid var(--article-rule); border-top: 4px solid var(--article-accent); border-radius: 12px; background: var(--article-soft); overflow-wrap: anywhere; }
