@@ -1,0 +1,345 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>集总热容 从冷却时间常数到 Biot 数 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从能量守恒推导集总热容模型与指数冷却，手算时间常数、目标温度和累计散热，辨别Biot数与Fourier数，用分段环境和误用反例说明单温度近似的边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="集总热容 从冷却时间常数到 Biot 数">
+<meta property="og:url" content="https://eulersail.com/esblog/85861.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从能量守恒推导集总热容模型与指数冷却，手算时间常数、目标温度和累计散热，辨别Biot数与Fourier数，用分段环境和误用反例说明单温度近似的边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-01T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-01T01:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="材料模型">
+<meta property="article:tag" content="瞬态传热">
+<meta property="article:tag" content="热容">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/85861.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '集总热容 从冷却时间常数到 Biot 数',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-01 09:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261101-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">144</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">252</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">集总热容 从冷却时间常数到 Biot 数</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-01T01:00:00.000Z" title="更新于 2026-11-01 09:00:00">2026-11-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/">化学与材料</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="集总热容 从冷却时间常数到 Biot 数" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="materials"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>MATERIALS NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>4</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>把概念、模型计算与实测证据分开，阅读时留意条件、单位和比较口径。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#一套假设对应一个温度变量"><span>01</span><strong>一套假设对应一个温度变量</strong></a></li><li><a href="#从能量守恒推导指数变化"><span>02</span><strong>从能量守恒推导指数变化</strong></a></li><li><a href="#先算Biot数，再信任这一条曲线"><span>03</span><strong>先算Biot数，再信任这一条曲线</strong></a></li><li><a href="#一组完整手算：多久到30°C"><span>04</span><strong>一组完整手算：多久到30°C</strong></a></li><li><a href="#环境分两段时，温度不会跳变"><span>05</span><strong>环境分两段时，温度不会跳变</strong></a></li><li><a href="#改参数时，也要重新检查模型"><span>06</span><strong>改参数时，也要重新检查模型</strong></a></li><li><a href="#怎样审阅一份冷却计算"><span>07</span><strong>怎样审阅一份冷却计算</strong></a></li><li><a href="#参考文献与延伸阅读"><span>08</span><strong>参考文献与延伸阅读</strong></a></li></ol></nav></details></section><p><a href="/esblog/85750.html">稳态导热</a>里，流入与流出相等，材料内部不再积蓄能量。如果把温热的小物体放进较冷的流体，它的温度仍在变化，此时流出的热量来自物体储存的内能，不能继续套用“各处热流率都一样”的稳态结论。</p>
+<p>本文用一个随时间变化的温度T(t)近似整个物体，推导集总热容模型。所有数字都是教学合成参数，不对应真实材料牌号、人体降温、食品安全或设备认证。这个模型最重要的工作，不是按计算器上的指数键，而是判断“一个温度代表整体”是否有依据。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="瞬态传热阅读任务"><div><span class="workshop-kicker">先检查近似</span><strong class="workshop-title">内部扩散快，表面对流慢</strong><p>用Biot数比较内部导热与边界换热，而不是仅凭“物体很小”决定能否使用集总模型。</p></div><div><span class="workshop-kicker">再计算过程</span><strong class="workshop-title">热阻 × 热容 = 时间常数</strong><p>从能量守恒得到温度轨迹，核对初始值、长期极限、单位和累计散热。</p></div></section>
+
+
+<h2 id="一套假设对应一个温度变量"><a href="#一套假设对应一个温度变量" class="headerlink" title="一套假设对应一个温度变量"></a>一套假设对应一个温度变量</h2><p>设物体起始温度均匀为T₀，体积V、密度ρ、比热c、导热系数k均为正常数。整个暴露面积Aₛ以相同且恒定的换热系数h与温度恒定为T∞的充分大流体环境换热；忽略辐射、内部热源、相变和物性随温度的变化，几何尺寸固定。</p>
+<p>这些条件分工不同。大环境使T∞近似不随吸热改变；常h让边界传热规律保持线性；内部近似等温才允许用单个T(t)描述物体。若只有一部分表面暴露，Aₛ只计算该部分的有效换热面积，不能把绝热底面也一并加上。若不同表面的h或环境温度不同，需要分区求和，而不是悄悄复用同一个hAₛ。</p>
+
+<dl class="article-symbols" aria-label="集总热容符号与单位"><div><dt>C = ρVc｜热容</dt><dd>单位J/K；温度降低1K对应内能减少C焦耳。这里是总热容，不是比热c。</dd></div><div><dt>Rₕ = 1/(hAₛ)｜对流热阻</dt><dd>单位K/W；只描述物体与流体边界的换热，不代表物体内部没有任何温差。</dd></div><div><dt>Lc = V/Aₛ｜特征长度</dt><dd>单位m；本文Biot数与Fourier数统一采用这一定义，不能随意换成直径而不改数值。</dd></div></dl>
+
+
+<h2 id="从能量守恒推导指数变化"><a href="#从能量守恒推导指数变化" class="headerlink" title="从能量守恒推导指数变化"></a>从能量守恒推导指数变化</h2><p>取离开物体的热流率为正，Q̇出&#x3D;hAₛ(T−T∞)。物体内能变化率为C·dT&#x2F;dt，守恒要求C·dT&#x2F;dt&#x3D;−Q̇出。冷却时温差为正，导数为负；若环境反而更热，两个符号同时反转，模型也能描述加热。</p>
+
+<figure class="article-equation" id="cool-eq1"><figcaption><strong>公式C1｜集总能量方程与解</strong></figcaption><div class="equation-body">C dT/dt = −hAₛ(T − T∞)<br>τ = C/(hAₛ) = RₕC<br>T(t) = T∞ + (T₀ − T∞) exp(−t/τ)</div><p class="equation-note">恒定物性、h及T∞，内部近似等温，无内部热源、辐射与相变；t≥0。τ单位s，指数无量纲，温差用K或°C时数值相同。来源与推导对照<a href="#cool-ref1">文献1</a>。</p></figure>
+
+
+<p>令θ&#x3D;T−T∞，就有dθ&#x2F;dt&#x3D;−θ&#x2F;τ。分离变量积分得到ln|θ(t)|−ln|θ(0)|&#x3D;−t&#x2F;τ，结合初始条件得到公式C1。T₀&#x3D;T∞时直接得到常温解，不需要对零取对数。τ增大，温差衰减更慢；“密度更大散热更慢”只是在其余量固定时由热容增加得到的结论，不能跨不同几何和表面条件直接比较。</p>
+<p>当t&#x3D;τ，剩余温差是初始温差的1&#x2F;e，约36.8%，并不是“降到初温的36.8%”。例如环境20°C、初温80°C，一个时间常数后的温度是20+60&#x2F;e≈42.073°C。直接算80&#x2F;e≈29.43°C，错在把摄氏温标原点当作物理零温差。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+ A[物体内能变化] --&gt; B[等于负的对流散热]
+ B --&gt; C[用单温度和恒定参数建模]
+ C --&gt; D[温差的一阶微分方程]
+ D --&gt; E[时间常数为热阻乘热容]
+ E --&gt; F[初始温差指数衰减]
+  </pre></div>
+
+<h2 id="先算Biot数，再信任这一条曲线"><a href="#先算Biot数，再信任这一条曲线" class="headerlink" title="先算Biot数，再信任这一条曲线"></a>先算Biot数，再信任这一条曲线</h2><p>内部导热并不是瞬间发生的。用k衡量内部传热能力，h衡量边界换热能力，构造Bi&#x3D;hLc&#x2F;k。把同一量级的热流估算式hAₛΔT外与(kAₛ&#x2F;Lc)ΔT内比较，可以理解为ΔT内&#x2F;ΔT外约随Bi变化。Bi很小，内部温差相对于物体与环境的温差较小，才有理由忽略内部不均匀。</p>
+<p>这是量级判断，不是对任何形状和任何时间都严格成立的误差上界。本文不把一个通用阈值宣称为“所有温度误差一定小于某百分比”的认证。若Bi不小、初始温度不均或局部热源显著，应转向空间分布的传热模型；表面测温也不必然等于内部平均温度。</p>
+
+<figure class="article-equation" id="cool-eq2"><figcaption><strong>公式C2｜两个无量纲数承担不同工作</strong></figcaption><div class="equation-body">Bi = hLc/k；α = k/(ρc)；Fo = αt/Lc²<br>采用同一个Lc = V/Aₛ时：t/τ = Bi · Fo</div><p class="equation-note">Bi比较内外传热阻力的量级；Fo衡量扩散经历的无量纲时间。α单位m²/s。恒定正参数与相同特征长度是乘积关系的前提；Fo大本身不证明整个过程可用集总近似。参考<a href="#cool-ref1">文献1</a>。</p></figure>
+<aside class="article-takeaway"><strong>重点C｜k不在温度解里，不等于k不重要</strong><p>一旦接受近似，时间常数由C和hAₛ决定；但能不能接受这个近似，要用包含k的Biot数检查。把换热系数h提高很多，既会缩短预测时间，也可能破坏原本的单温度假设。</p></aside>
+
+
+<h2 id="一组完整手算：多久到30°C"><a href="#一组完整手算：多久到30°C" class="headerlink" title="一组完整手算：多久到30°C"></a>一组完整手算：多久到30°C</h2><p>设V&#x3D;10⁻⁶m³，Aₛ&#x3D;6×10⁻⁴m²，ρ&#x3D;2500kg&#x2F;m³，c&#x3D;800J&#x2F;(kg·K)，k&#x3D;100W&#x2F;(m·K)，h&#x3D;120W&#x2F;(m²·K)，T₀&#x3D;80°C，T∞&#x3D;20°C。可把几何想象为边长1cm、六面均暴露的立方体，但参数仍是合成值。</p>
+<p>由此m&#x3D;ρV&#x3D;0.0025kg，C&#x3D;2J&#x2F;K，hAₛ&#x3D;0.072W&#x2F;K，Rₕ&#x3D;125&#x2F;9K&#x2F;W，τ&#x3D;250&#x2F;9s≈27.778s。Lc&#x3D;1&#x2F;600m，Bi&#x3D;0.002，很小；α&#x3D;5×10⁻⁵m²&#x2F;s。这里几何与面积已明确，不能把1cm边长直接替代Lc，得到的Bi会相差六倍。</p>
+<table>
+<thead>
+<tr>
+<th>时刻</th>
+<th>剩余温差比例</th>
+<th>预测温度°C</th>
+<th>累计散热J</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>1</td>
+<td>80</td>
+<td>0</td>
+</tr>
+<tr>
+<td>τ≈27.778s</td>
+<td>e⁻¹≈0.367879</td>
+<td>42.073</td>
+<td>75.854</td>
+</tr>
+<tr>
+<td>2τ≈55.556s</td>
+<td>e⁻²≈0.135335</td>
+<td>28.120</td>
+<td>103.760</td>
+</tr>
+<tr>
+<td>3τ≈83.333s</td>
+<td>e⁻³≈0.049787</td>
+<td>22.987</td>
+<td>114.026</td>
+</tr>
+</tbody></table>
+<p>目标30°C位于初温与环境温度之间，温差比例是(30−20)&#x2F;(80−20)&#x3D;1&#x2F;6，因此t*&#x3D;τln6≈49.771s。比2τ稍短，与上表2τ时已经降到28.120°C一致。到达环境20°C则只在t趋于无穷时发生；若问“20°C附近”，必须给容许温差，不能把“附近”当成精确等号。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="集总冷却归一化温差图，可横向滚动"><img class="no-lazy" src="/images/posts/lumped-cooling-curve.svg" width="900" height="400" alt="归一化温差在零、一、二、三个时间常数处为1、0.367879、0.135335、0.049787，目标30摄氏度位于约1.792个时间常数。"></div><figcaption>原创合成模型曲线；横轴t/τ、纵轴温差比，标注点由公式C1计算，不是材料实测。<a href="/images/posts/lumped-cooling-curve.svg">查看原图</a></figcaption></figure>
+<figure class="article-equation" id="cool-eq3"><figcaption><strong>公式C3｜目标时刻与累计散热</strong></figcaption><div class="equation-body">t* = τ ln[(T₀ − T∞)/(T* − T∞)]<br>Q出(0→t) = C[T₀ − T(t)]</div><p class="equation-note">第一式要求目标严格位于T₀与T∞之间，且T₀≠T∞；目标等于初温时t*=0。第二式取散热为正，加热时结果为负。t单位s，Q单位J；公式来自C1积分与能量守恒。</p></figure>
+
+
+<p>到30°C时，累计散热为2×(80−30)&#x3D;100J；初始散热率为0.072×60&#x3D;4.32W，目标时只有0.72W。用初始4.32W一直乘时间会高估散热，因为温差不断减小。全过程散热上限是C(T₀−T∞)&#x3D;120J，也能用于发现单位或符号错误。</p>
+<h2 id="环境分两段时，温度不会跳变"><a href="#环境分两段时，温度不会跳变" class="headerlink" title="环境分两段时，温度不会跳变"></a>环境分两段时，温度不会跳变</h2><p>前20s维持20°C环境，此后流体突然改为50°C，同时h仍为120。第一段末温T₁&#x3D;20+60exp(−20&#x2F;τ)≈49.205°C。环境发生阶跃，物体热容有限，物体温度仍连续；第二段应以49.205°C作为初值、以50°C作为新环境温度重新套用C1。</p>
+<p>再经历20s，温度约为49.613°C。物体在第一段冷却，第二段反而缓慢升温，因为49.205低于新环境50。若第二段继续用80°C作初值，就等于凭空恢复了一份内能；若把T直接设成50°C，又把有限热容变成了零。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+ A[第一段初温与环境] --&gt; B[计算切换时刻的物体温度]
+ B --&gt; C[保持该温度作为第二段初值]
+ C --&gt; D[换用第二段的h与环境温度]
+ D --&gt; E[继续演化并核对能量变化]
+  </pre></div>
+
+<h2 id="改参数时，也要重新检查模型"><a href="#改参数时，也要重新检查模型" class="headerlink" title="改参数时，也要重新检查模型"></a>改参数时，也要重新检查模型</h2><p>把h提高100倍，其他参数不变，公式给出的τ缩短到约0.278s，但Bi同时变成0.2。不能只取“100倍更快”的好处，继续忽略内部温差。公式作为一个微分方程仍能计算，并不代表它仍能描述原物体。</p>
+<p>若几何相似地将所有长度扩大两倍，体积增八倍、面积增四倍，恒定h及物性下τ增两倍，Bi也增两倍。这个结论是在“h保持不变”的假设下成立；真实流动中的h可能随尺寸、速度和温度变化，不能自动沿用。更不能仅靠质量翻倍就推断τ翻倍而忽略面积。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="冷却参数与模型边界，可横向滚动"><img class="no-lazy" src="/images/posts/lumped-cooling-limits.svg" width="900" height="400" alt="基准时间常数27.778秒、Bi0.002；提高换热系数百倍后时间常数0.278秒、Bi0.2，几何相似放大两倍后时间常数55.556秒、Bi0.004。"></div><figcaption>原创合成参数对照卡；卡片面积不代表比例，数字是在其他参数按文中规定保持或缩放时的计算结果。<a href="/images/posts/lumped-cooling-limits.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="怎样审阅一份冷却计算"><a href="#怎样审阅一份冷却计算" class="headerlink" title="怎样审阅一份冷却计算"></a>怎样审阅一份冷却计算</h2><p>先在纸上画出物体、真正暴露的表面和环境，再写出参数单位。计算C与hAₛ后先核对τ是否为秒，随后计算Bi，才进入温度预测。对输出至少检查四件事：t&#x3D;0回到初温；正时间温度保持在初温和恒定环境之间；冷却时温度单调下降；累计散热不超过有限内能差。</p>
+<p>实验数据若明显偏离指数曲线，不应只调h把图“拟合得好看”。温度依赖物性、辐射、接触热阻、环境升温、内部温度分层和传感器滞后都可能贡献偏差。只凭一条曲线拟合出的τ，在C未知时也不能唯一识别h；只能得到hAₛ&#x2F;C这一组合。</p>
+<details class="mechanism-check"><summary>自检1：一个时间常数后温度是不是80/e？</summary><p>不是。衰减的是相对环境的温差。该例应为20+60/e≈42.073°C，不能把摄氏温标的零点当作环境温度。</p></details>
+<details class="mechanism-check"><summary>自检2：为什么k不出现在τ里，却仍要知道k？</summary><p>τ是在内部近似等温的前提下推导的。k通过Bi=hLc/k决定这个前提是否有依据；舍去空间温差后，k才从单温度方程里消失。</p></details>
+<details class="mechanism-check"><summary>自检3：两倍尺寸是否一定需要八倍冷却时间？</summary><p>不是。几何相似且h不变时，热容增八倍，但换热面积也增四倍，τ只增两倍。Bi也翻倍，仍应重新核对近似。</p></details>
+<details class="mechanism-check"><summary>自检4：环境从20突然变到50°C，物体温度会立即变50吗？</summary><p>不会。有限热容要求温度连续，第二段继承第一段末温；变化的是新的驱动温差和温度导数。</p></details>
+
+<h2 id="参考文献与延伸阅读"><a href="#参考文献与延伸阅读" class="headerlink" title="参考文献与延伸阅读"></a>参考文献与延伸阅读</h2>
+<ol class="article-references"><li id="cool-ref1"><cite>MIT Unified Engineering：18.3 Transient Heat Transfer (Convective Cooling or Heating)</cite>。<a target="_blank" rel="noopener" href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node129.html">官方讲义</a>给出Biot数量级、集总能量方程与时间常数。本文另给合成参数、分段环境与独立算术核验，不把教材模型说成真实材料测试。<a href="#cool-eq1">返回公式C1</a>／<a href="#cool-eq2">返回C2</a>。</li><li id="cool-ref2"><cite>MIT Unified Engineering：17.2 Combined Conduction and Convection</cite>。<a target="_blank" rel="noopener" href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node123.html">官方热阻讲义</a>用于对流热阻与温差驱动的衔接；稳态热阻本身不提供储能随时间的解。</li><li id="cool-ref3"><cite>本站材料路线</cite>：<a href="/esblog/85750.html">稳态导热</a>先区分表面与流体温度；<a href="/esblog/85639.html">热膨胀</a>再把温度变化接到形变边界。温度不均时不能把单一温升直接代入均温杆模型。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/85861.html">https://eulersail.com/esblog/85861.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9D%90%E6%96%99%E6%A8%A1%E5%9E%8B/">材料模型</a><a class="post-meta__tags" href="/tags/%E7%9E%AC%E6%80%81%E4%BC%A0%E7%83%AD/">瞬态传热</a><a class="post-meta__tags" href="/tags/%E7%83%AD%E5%AE%B9/">热容</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/46761.html" title="HTTP 断点续传 从字节范围到版本验证"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">HTTP 断点续传 从字节范围到版本验证</div></div></a></div><div class="next-post pull-right"><a href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Welford 在线方差 从中心矩到分块合并</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/85526.html" title="Fick 扩散 从浓度梯度到长度与时间尺度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-22</div><div class="title">Fick 扩散 从浓度梯度到长度与时间尺度</div></div></a></div><div><a href="/esblog/85639.html" title="热膨胀 从自由伸长到约束热应力"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-28</div><div class="title">热膨胀 从自由伸长到约束热应力</div></div></a></div><div><a href="/esblog/85750.html" title="稳态导热 从串联热阻到界面温度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-31</div><div class="title">稳态导热 从串联热阻到界面温度</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">144</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">252</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%A5%97%E5%81%87%E8%AE%BE%E5%AF%B9%E5%BA%94%E4%B8%80%E4%B8%AA%E6%B8%A9%E5%BA%A6%E5%8F%98%E9%87%8F"><span class="toc-text">一套假设对应一个温度变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E8%83%BD%E9%87%8F%E5%AE%88%E6%81%92%E6%8E%A8%E5%AF%BC%E6%8C%87%E6%95%B0%E5%8F%98%E5%8C%96"><span class="toc-text">从能量守恒推导指数变化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%AE%97Biot%E6%95%B0%EF%BC%8C%E5%86%8D%E4%BF%A1%E4%BB%BB%E8%BF%99%E4%B8%80%E6%9D%A1%E6%9B%B2%E7%BA%BF"><span class="toc-text">先算Biot数，再信任这一条曲线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BB%84%E5%AE%8C%E6%95%B4%E6%89%8B%E7%AE%97%EF%BC%9A%E5%A4%9A%E4%B9%85%E5%88%B030%C2%B0C"><span class="toc-text">一组完整手算：多久到30°C</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%88%86%E4%B8%A4%E6%AE%B5%E6%97%B6%EF%BC%8C%E6%B8%A9%E5%BA%A6%E4%B8%8D%E4%BC%9A%E8%B7%B3%E5%8F%98"><span class="toc-text">环境分两段时，温度不会跳变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B9%E5%8F%82%E6%95%B0%E6%97%B6%EF%BC%8C%E4%B9%9F%E8%A6%81%E9%87%8D%E6%96%B0%E6%A3%80%E6%9F%A5%E6%A8%A1%E5%9E%8B"><span class="toc-text">改参数时，也要重新检查模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%8E%E6%A0%B7%E5%AE%A1%E9%98%85%E4%B8%80%E4%BB%BD%E5%86%B7%E5%8D%B4%E8%AE%A1%E7%AE%97"><span class="toc-text">怎样审阅一份冷却计算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="toc-text">参考文献与延伸阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46761.html" title="HTTP 断点续传 从字节范围到版本验证">HTTP 断点续传 从字节范围到版本验证</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85861.html" title="集总热容 从冷却时间常数到 Biot 数">集总热容 从冷却时间常数到 Biot 数</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并">Welford 在线方差 从中心矩到分块合并</a><time datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46650.html" title="令牌桶限流 从补充速率到突发预算">令牌桶限流 从补充速率到突发预算</a><time datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85750.html" title="稳态导热 从串联热阻到界面温度">稳态导热 从串联热阻到界面温度</a><time datetime="2026-10-31T02:00:00.000Z" title="发表于 2026-10-31 10:00:00">2026-10-31</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

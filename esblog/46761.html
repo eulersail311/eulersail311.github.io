@@ -1,0 +1,372 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTTP 断点续传 从字节范围到版本验证 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从十字节表示手算闭区间、开放区间与后缀范围，辨别200、206、304与416，说明If-Range强验证、内容编码和分片拼接条件，附编号协议示例与下载核对单。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP 断点续传 从字节范围到版本验证">
+<meta property="og:url" content="https://eulersail.com/esblog/46761.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从十字节表示手算闭区间、开放区间与后缀范围，辨别200、206、304与416，说明If-Range强验证、内容编码和分片拼接条件，附编号协议示例与下载核对单。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-01T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-01T01:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="HTTP">
+<meta property="article:tag" content="断点续传">
+<meta property="article:tag" content="协议边界">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/46761.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'HTTP 断点续传 从字节范围到版本验证',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-01 09:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261101-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">144</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">252</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">HTTP 断点续传 从字节范围到版本验证</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-01T01:00:00.000Z" title="更新于 2026-11-01 09:00:00">2026-11-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="HTTP 断点续传 从字节范围到版本验证" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="systems"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>SYSTEMS NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>5</strong><small>组图片与图表</small></span></div></div><p>从一个具体请求或状态变化出发，追踪数据流与方法成立的条件。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#一个闭区间为何要加一"><span>01</span><strong>一个闭区间为何要加一</strong></a></li><li><a href="#开放区间和后缀不是同一种省略"><span>02</span><strong>开放区间和后缀不是同一种省略</strong></a></li><li><a href="#206里的两个长度各指什么"><span>03</span><strong>206里的两个长度各指什么</strong></a></li><li><a href="#为什么单凭文件大小无法安全续传"><span>04</span><strong>为什么单凭文件大小无法安全续传</strong></a></li><li><a href="#416提供长度，但不替你确认完整"><span>05</span><strong>416提供长度，但不替你确认完整</strong></a></li><li><a href="#内容编码、多范围与并发会增加什么条件"><span>06</span><strong>内容编码、多范围与并发会增加什么条件</strong></a></li><li><a href="#一张可执行的人工核对单"><span>07</span><strong>一张可执行的人工核对单</strong></a></li><li><a href="#参考文献与延伸阅读"><span>08</span><strong>参考文献与延伸阅读</strong></a></li></ol></nav></details></section><p><a href="/esblog/46293.html">HTTP缓存</a>回答“已有副本还能不能用”，断点续传则多问一步：“已有的前半段，能不能和这次收到的后半段组成同一个表示？”网络连接重新建立，并不会替应用确认这两段来自同一版本。</p>
+<p>本文只讨论GET、已知长度的非空字节表示、单个范围与强ETag的主线。示例资源是十个ASCII字节<code>ABCDEFGHIJ</code>，没有内容编码，偏移从0开始。所有请求和响应都是人工构造的教学报文，不是本站或某个CDN的实测；多范围、日期验证器和空表示另列边界，不把简化规则当成完整HTTP实现。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="断点续传阅读任务"><div><span class="workshop-kicker">先算位置</span><strong class="workshop-title">请求区间 → 实际区间 → 正文长度</strong><p>端点是字节偏移，HTTP字节范围两端都包含。把长度、最后偏移与已保存字节数分开。</p></div><div><span class="workshop-kicker">再核对版本</span><strong class="workshop-title">同一表示才能拼接</strong><p>状态码、Content-Range、编码与强验证器一起决定保存策略；收到200时不能直接追加。</p></div></section>
+
+
+<h2 id="一个闭区间为何要加一"><a href="#一个闭区间为何要加一" class="headerlink" title="一个闭区间为何要加一"></a>一个闭区间为何要加一</h2><p>十字节表示的有效偏移是0到9。<code>Range: bytes=2-5</code>请求C、D、E、F，一共四字节；它没有要求“跳过两个字符再取五个”。字符和字节本来就不同，中文UTF-8字符可能占多个字节，任意字节切片也未必能单独解码成完整文本。</p>
+
+<figure class="article-equation" id="range-eq1"><figcaption><strong>公式R1｜单个有界范围的归一化</strong></figcaption><div class="equation-body">e = min(b, N − 1)<br>实际区间 [a, e]；正文长度 ℓ = e − a + 1</div><p class="equation-note">限定N&gt;0、整数0≤a≤b且a&lt;N。若a≥N则这一有界范围不可满足；b&lt;a是无效语法语义，不能混为同一类。所有量均以字节或字节偏移计。依据<a href="#range-ref1">文献1 §14.1.2</a>。</p></figure>
+<dl class="article-symbols" aria-label="字节范围符号"><div><dt>N｜完整长度</dt><dd>十字节示例中N=10，最后有效偏移是N−1=9。</dd></div><div><dt>a、e｜闭区间端点</dt><dd>请求2—5得到四字节；端点差3不是正文长度。</dd></div><div><dt>p｜已保存前缀长度</dt><dd>已有[0,p−1]时，下一字节偏移才是p；本例p=4应从4开始。</dd></div></dl>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="十字节表示与闭区间，可横向滚动"><img class="no-lazy" src="/images/posts/http-range-offsets.svg" width="900" height="400" alt="字节A到J对应偏移0到9，请求2到5选出CDEF，已有前四字节后从偏移4续传。"></div><figcaption>原创字节位置图；格子代表一个字节，不代表字符长度或传输耗时。<a href="/images/posts/http-range-offsets.svg">查看原图</a></figcaption></figure>
+
+
+<p>这条公式先检查条件，再裁剪右端。不能把不满足条件的a硬夹到9，否则<code>bytes=10-20</code>会被错误地变成最后一个字节。请求右端超过资源末尾则不同：<code>bytes=7-99</code>仍能满足，实际得到HIJ。</p>
+<h2 id="开放区间和后缀不是同一种省略"><a href="#开放区间和后缀不是同一种省略" class="headerlink" title="开放区间和后缀不是同一种省略"></a>开放区间和后缀不是同一种省略</h2><p><code>bytes=4-</code>省略右端，要求从偏移4一直到末尾，即EFGHIJ。<code>bytes=-4</code>省略左端，要求最后四字节，即GHIJ。二者恰好都含数字4，却没有相同含义。</p>
+<table>
+<thead>
+<tr>
+<th>Range值</th>
+<th>实际偏移</th>
+<th>本例正文</th>
+<th>需要辨别</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bytes&#x3D;0-0</td>
+<td>0—0</td>
+<td>A</td>
+<td>一个字节，而不是空区间</td>
+</tr>
+<tr>
+<td>bytes&#x3D;2-5</td>
+<td>2—5</td>
+<td>CDEF</td>
+<td>两端均包含</td>
+</tr>
+<tr>
+<td>bytes&#x3D;7-99</td>
+<td>7—9</td>
+<td>HIJ</td>
+<td>右端裁到末尾</td>
+</tr>
+<tr>
+<td>bytes&#x3D;4-</td>
+<td>4—9</td>
+<td>EFGHIJ</td>
+<td>从指定偏移开始</td>
+</tr>
+<tr>
+<td>bytes&#x3D;-4</td>
+<td>6—9</td>
+<td>GHIJ</td>
+<td>取指定后缀长度</td>
+</tr>
+<tr>
+<td>bytes&#x3D;-99</td>
+<td>0—9</td>
+<td>ABCDEFGHIJ</td>
+<td>后缀比非空表示长时取全部</td>
+</tr>
+<tr>
+<td>bytes&#x3D;10-</td>
+<td>无</td>
+<td>无该范围正文</td>
+<td>左端已经越界</td>
+</tr>
+<tr>
+<td>bytes&#x3D;-0</td>
+<td>无</td>
+<td>无该范围正文</td>
+<td>零长度后缀不可满足</td>
+</tr>
+</tbody></table>
+<p>这里没有把“请求可满足”直接写成“服务器必定返回206”。Range是可选能力，服务器可以忽略它而返回完整表示；客户端必须以实际响应为准。<code>Accept-Ranges: bytes</code>可以声明支持，但未出现这个字段不等于客户端绝对不能尝试范围请求，且声明也不保证未来每次请求都成功。</p>
+<h2 id="206里的两个长度各指什么"><a href="#206里的两个长度各指什么" class="headerlink" title="206里的两个长度各指什么"></a>206里的两个长度各指什么</h2>
+<aside class="article-code-note" id="range-example1"><strong>报文示例1｜单范围请求与部分响应</strong><p>以下是省略无关字段的HTTP/1.1教学报文，不是可执行程序或抓包。正文为ASCII、无内容编码，响应按Content-Length定界。规范来源：<a href="#range-ref1">文献1 §14.4、§15.3.7</a>。</p></aside>
+
+
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/sample.bin</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>example.com</span><br><span class="line"><span class="attribute">Range</span><span class="punctuation">: </span>bytes=2-5</span><br><span class="line"></span><br><span class="line"><span class="language-http"><span class="meta">HTTP/1.1</span> <span class="number">206</span> Partial Content</span></span><br><span class="line"><span class="language-http"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/octet-stream</span></span><br><span class="line"><span class="language-http"><span class="attribute">ETag</span><span class="punctuation">: </span>&quot;sample-v1&quot;</span></span><br><span class="line"><span class="language-http"><span class="attribute">Content-Range</span><span class="punctuation">: </span>bytes 2-5/10</span></span><br><span class="line"><span class="language-http"><span class="attribute">Content-Length</span><span class="punctuation">: </span>4</span></span><br><span class="line"><span class="language-http"></span></span><br><span class="line"><span class="language-http"><span class="language-ebnf"><span class="attribute">CDEF</span></span></span></span><br></pre></td></tr></table></figure>
+
+<p><code>Content-Range</code>里的10是整个所选表示的长度；<code>Content-Length</code>里的4是本次部分响应正文长度。不能把4当作完整文件大小，也不能因为下载器只显示4&#x2F;4就宣布整个十字节文件完成。对这个单范围例子，可以用公式R1交叉核对5−2+1&#x3D;4。</p>
+<p>如果GET携带的普通条件先导致304，就不会再按Range生成206；304没有这段待追加正文。缓存验证的“没变化”与续传的“还缺哪一段”需要放在正确的评估顺序上，详见<a href="#range-ref1">§13.2与§14.2</a>。</p>
+<h2 id="为什么单凭文件大小无法安全续传"><a href="#为什么单凭文件大小无法安全续传" class="headerlink" title="为什么单凭文件大小无法安全续传"></a>为什么单凭文件大小无法安全续传</h2><p>假设本地已有v1的ABCD，但服务器把十字节资源改成了<code>abcdefghij</code>，大小仍为10。如果只请求4—9再拼接，最终得到<code>ABCDefghij</code>，既不是旧表示也不是新表示。长度正确不证明整体属于同一个版本；即使部分内容碰巧相同，也不能跳过验证。</p>
+<p>强ETag用于表示的强比较，不是文件名，也不要求长得像散列值。客户端不应自行发明ETag或假定其编码算法。如果已保存强ETag<code>&quot;sample-v1&quot;</code>，可以发送<code>If-Range: &quot;sample-v1&quot;</code>：验证器仍匹配时才应用Range；不匹配时忽略Range，按普通GET处理，通常返回新完整表示200，而不是因为If-Range不匹配就返回412。</p>
+<p>弱ETag如<code>W/&quot;sample-v1&quot;</code>不能作为客户端生成If-Range的实体标签值；“语义相近”不足以保证逐字节拼接。日期形式也存在，但有严格的强验证条件，本文的实现核对单只采用服务端提供的强ETag，不用文件系统时间或本地时钟冒充替代品。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart TD
+ A[已有前缀与原强ETag] --&gt; B[发送带版本条件的范围GET]
+ B --&gt; C{验证器仍匹配吗}
+ C --&gt;|是并应用范围| D[206并核对Content-Range]
+ C --&gt;|否| E[忽略Range，按普通GET处理]
+ E --&gt; F[200使用新完整表示]
+ D --&gt; G[核对编码与位置后接续]
+ F --&gt; H[不追加到旧前缀]
+  </pre></div>
+
+
+<aside class="article-takeaway"><strong>重点R｜收到200，先切换保存策略</strong><p>请求过Range不代表响应就是片段。200正文应作为新的完整候选保存；把它直接追加到旧前缀，会产生重复或混合版本。实际下载器还需临时文件、完整性检查与明确的完成状态。</p></aside>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="续传验证的两条分支，可横向滚动"><img class="no-lazy" src="/images/posts/http-range-versions.svg" width="900" height="400" alt="原强ETag匹配时按206检查并接续，不匹配时忽略Range并获取新完整表示；200不可追加旧前缀。"></div><figcaption>原创状态对照图；表示版本与保存策略的关系，不是CDN支持率或真实网络轨迹。<a href="/images/posts/http-range-versions.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="416提供长度，但不替你确认完整"><a href="#416提供长度，但不替你确认完整" class="headerlink" title="416提供长度，但不替你确认完整"></a>416提供长度，但不替你确认完整</h2><p>在支持范围处理、其余条件允许的示例服务器上，<code>bytes=10-</code>没有可传的字节，可以收到416和<code>Content-Range: bytes */10</code>。星号表示这里没有一个已满足的响应范围，10仍指当前表示长度。416也可能用于拒绝过多小范围或重叠范围，因此不能把所有416简单解释为“文件没变且已下载完”。</p>
+<p>即便本地正好也有10字节，仍要验证本地保存的是当前版本。资源可能缩短、替换或在中断期间改变；长度相同不能代替强验证器和内容完整性检查。对无效范围<code>bytes=5-2</code>，服务器可能忽略或拒绝，不要把它当作规范要求唯一416的例子。</p>
+<h2 id="内容编码、多范围与并发会增加什么条件"><a href="#内容编码、多范围与并发会增加什么条件" class="headerlink" title="内容编码、多范围与并发会增加什么条件"></a>内容编码、多范围与并发会增加什么条件</h2><p>若响应采用gzip等内容编码，字节偏移针对的是编码后的表示序列，不是解压后的文本。下载中途切换<code>Accept-Encoding</code>，就可能使前缀与后缀根本不在同一坐标系。即使请求<code>identity</code>，也要核对实际响应字段与保存方式，不能假定请求头自动消除了所有中间层差异。</p>
+<p>多范围206通常使用<code>multipart/byteranges</code>，每个部分有自己的Content-Range，边界和部分头也占响应正文空间。此时整个响应Content-Length不等于所有“文件字节片段长度”之外什么都没有。单范围解析器不得把multipart边界写进目标文件，服务端也可能合并范围或只处理其中部分，不能按请求顺序盲目拼接。</p>
+<p>并发分片还需处理覆盖、空洞和版本一致性。例如收到[0,4]和[4,9]，长度相加是11，但偏移4重复一次；收到[0,3]与[5,9]，所有片段看似正常却漏了偏移4。按偏移覆盖核对完整区间[0,N−1]，比只加下载字节数可靠。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+  flowchart LR
+ A[收到响应] --&gt; B[核对状态码和表示身份]
+ B --&gt; C[核对编码与范围端点]
+ C --&gt; D[按偏移记录覆盖区间]
+ D --&gt; E[检查空洞与冲突]
+ E --&gt; F[覆盖完整且内容校验通过]
+ F --&gt; G[标记完成]
+  </pre></div>
+
+<h2 id="一张可执行的人工核对单"><a href="#一张可执行的人工核对单" class="headerlink" title="一张可执行的人工核对单"></a>一张可执行的人工核对单</h2><ol>
+<li><strong>开始前</strong>：记录已选表示的强ETag、内容编码、完整长度与实际保存的前缀区间。没有可靠版本信息时，重新完整获取比猜测拼接条件清楚。</li>
+<li><strong>发请求时</strong>：从实际已保存长度p请求<code>bytes=p-</code>，配合原强ETag的If-Range；不要把最后偏移p−1误写成下一偏移。</li>
+<li><strong>收响应时</strong>：200走完整候选流程；206核对Content-Range起点等于p，片段长度与声明一致，验证表示身份与编码；416重新核对版本和本地状态。</li>
+<li><strong>中断时</strong>：只把确认写入的字节计入保存状态，未写完的网络缓冲区不算持久前缀。<a href="/esblog/46539.html">TCP分帧</a>所说的“收到一些字节”也不等于整个应用对象完成。</li>
+<li><strong>结束时</strong>：核对覆盖与完整性。ETag是HTTP验证器，不默认具备恶意篡改检测能力；可信发布方给出的摘要与传输安全属于另一层保证。</li>
+</ol>
+<details class="mechanism-check"><summary>自检1：已有ABCD四字节，应该请求bytes=3-还是bytes=4-？</summary><p>应从4开始。已有偏移0、1、2、3，下一位置是4。请求3会重复D；如果没有按偏移去重，拼接后长度会错误。</p></details>
+<details class="mechanism-check"><summary>自检2：bytes=7-99是否一定得到416？</summary><p>不是。对十字节非空表示，它可满足且实际区间为7—9。服务器若应用范围处理，可以返回206及HIJ；也可能忽略Range而返回完整200。</p></details>
+<details class="mechanism-check"><summary>自检3：If-Range不匹配，收到200后能追加吗？</summary><p>不能。200表示这次是完整响应，应该进入新完整候选的保存流程。If-Range不匹配的语义是忽略Range，而不是把新版本后缀接在旧版本前缀后。</p></details>
+<details class="mechanism-check"><summary>自检4：两个范围长度之和等于N，是否证明完整？</summary><p>不能，范围可能重叠并留下空洞。必须核对端点覆盖整个[0,N−1]，还要确认各片段属于同一表示，不能只加字节数。</p></details>
+
+<h2 id="参考文献与延伸阅读"><a href="#参考文献与延伸阅读" class="headerlink" title="参考文献与延伸阅读"></a>参考文献与延伸阅读</h2>
+<ol class="article-references"><li id="range-ref1"><cite>RFC 9110：HTTP Semantics（2022）</cite>。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-14">§14范围请求</a>、<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110.html#section-13.1.5">§13.1.5 If-Range</a>及§15.3.7/§15.5.17是本文的协议依据。本文只抽取GET与单范围主线，未实现完整协议栈。<a href="#range-eq1">返回公式R1</a>／<a href="#range-example1">返回报文1</a>。</li><li id="range-ref2"><cite>RFC 9111：HTTP Caching（2022）</cite>。<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9111.html#section-3.4">§3.4组合部分内容</a>要求可组合片段共享强验证器，并保留缓存实现的其他条件；本文的文件覆盖核对单不是完整缓存算法。</li><li id="range-ref3"><cite>本站衔接阅读</cite>：<a href="/esblog/46293.html">缓存年龄与条件请求</a>区分304与完整传输，<a href="/esblog/46539.html">TCP分帧</a>区分字节到达和消息完成。两层边界共同解释“连接成功却未得到可用文件”。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/46761.html">https://eulersail.com/esblog/46761.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HTTP/">HTTP</a><a class="post-meta__tags" href="/tags/%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0/">断点续传</a><a class="post-meta__tags" href="/tags/%E5%8D%8F%E8%AE%AE%E8%BE%B9%E7%95%8C/">协议边界</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/85861.html" title="集总热容 从冷却时间常数到 Biot 数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">集总热容 从冷却时间常数到 Biot 数</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/46293.html" title="HTTP 缓存 从新鲜度到条件请求"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-21</div><div class="title">HTTP 缓存 从新鲜度到条件请求</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">144</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">252</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E9%97%AD%E5%8C%BA%E9%97%B4%E4%B8%BA%E4%BD%95%E8%A6%81%E5%8A%A0%E4%B8%80"><span class="toc-text">一个闭区间为何要加一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E6%94%BE%E5%8C%BA%E9%97%B4%E5%92%8C%E5%90%8E%E7%BC%80%E4%B8%8D%E6%98%AF%E5%90%8C%E4%B8%80%E7%A7%8D%E7%9C%81%E7%95%A5"><span class="toc-text">开放区间和后缀不是同一种省略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#206%E9%87%8C%E7%9A%84%E4%B8%A4%E4%B8%AA%E9%95%BF%E5%BA%A6%E5%90%84%E6%8C%87%E4%BB%80%E4%B9%88"><span class="toc-text">206里的两个长度各指什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%95%E5%87%AD%E6%96%87%E4%BB%B6%E5%A4%A7%E5%B0%8F%E6%97%A0%E6%B3%95%E5%AE%89%E5%85%A8%E7%BB%AD%E4%BC%A0"><span class="toc-text">为什么单凭文件大小无法安全续传</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#416%E6%8F%90%E4%BE%9B%E9%95%BF%E5%BA%A6%EF%BC%8C%E4%BD%86%E4%B8%8D%E6%9B%BF%E4%BD%A0%E7%A1%AE%E8%AE%A4%E5%AE%8C%E6%95%B4"><span class="toc-text">416提供长度，但不替你确认完整</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E7%BC%96%E7%A0%81%E3%80%81%E5%A4%9A%E8%8C%83%E5%9B%B4%E4%B8%8E%E5%B9%B6%E5%8F%91%E4%BC%9A%E5%A2%9E%E5%8A%A0%E4%BB%80%E4%B9%88%E6%9D%A1%E4%BB%B6"><span class="toc-text">内容编码、多范围与并发会增加什么条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%BC%A0%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%9A%84%E4%BA%BA%E5%B7%A5%E6%A0%B8%E5%AF%B9%E5%8D%95"><span class="toc-text">一张可执行的人工核对单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="toc-text">参考文献与延伸阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46761.html" title="HTTP 断点续传 从字节范围到版本验证">HTTP 断点续传 从字节范围到版本验证</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85861.html" title="集总热容 从冷却时间常数到 Biot 数">集总热容 从冷却时间常数到 Biot 数</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并">Welford 在线方差 从中心矩到分块合并</a><time datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46650.html" title="令牌桶限流 从补充速率到突发预算">令牌桶限流 从补充速率到突发预算</a><time datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85750.html" title="稳态导热 从串联热阻到界面温度">稳态导热 从串联热阻到界面温度</a><time datetime="2026-10-31T02:00:00.000Z" title="发表于 2026-10-31 10:00:00">2026-10-31</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261021-1"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

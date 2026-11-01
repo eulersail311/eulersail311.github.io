@@ -2819,6 +2819,15 @@
   }
 }
 
+/* Readable native definitions beside numbered formulas, without JS. */
+#post .reading-article .article-symbols { margin:1.4em 0; padding:0; border:1px solid var(--article-rule); border-radius:10px; overflow:hidden; }
+#post .reading-article .article-symbols > div { display:grid; grid-template-columns:minmax(9em, 0.9fr) minmax(0, 2fr); border-bottom:1px solid var(--article-rule); }
+#post .reading-article .article-symbols > div:last-child { border-bottom:0; }
+#post .reading-article .article-symbols dt { padding:0.85em 1em; margin:0; background:var(--article-soft); color:var(--article-accent); font-weight:700; overflow-wrap:anywhere; }
+#post .reading-article .article-symbols dd { padding:0.85em 1em; margin:0; line-height:1.9; overflow-wrap:anywhere; }
+@media screen and (max-width:600px) { #post .reading-article .article-symbols > div { grid-template-columns:minmax(0, 1fr); } }
+@media print { #post .reading-article .article-symbols > div { display:block; break-inside:avoid; } #post .reading-article .article-symbols :is(dt,dd) { color:#111; background:white; } }
+
 /* Explicit labels for equations, executable examples, takeaways and sources. */
 #post .reading-article .article-equation { margin:1.6em 0; border:1px solid var(--article-rule); border-radius:12px; overflow-wrap:anywhere; background:var(--article-soft); scroll-margin-top:88px; }
 #post .reading-article .article-equation figcaption { padding:0.8em 1em; border-bottom:1px solid var(--article-rule); color:var(--article-accent); font-size:0.95em; line-height:1.8; }
