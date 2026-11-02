@@ -305,6 +305,10 @@
     function scan() {
       scheduled = false;
       container.querySelectorAll('.table-wrap, figure.highlight, .mermaid-wrap').forEach(element => {
+        if (element.classList.contains('reading-math-block')) {
+          const language = element.querySelector('.highlight-tools .code-lang');
+          if (language && language.textContent !== '数学表达') language.textContent = '数学表达';
+        }
         if (initialized.has(element)) return;
         if (element.classList.contains('table-wrap') && element.closest('figure.highlight')) return;
         if (element.classList.contains('mermaid-wrap') && !element.querySelector('svg')) return;
@@ -313,7 +317,7 @@
         const diagram = element.classList.contains('mermaid-wrap');
         const code = element.matches('figure.highlight');
         const update = registerScroll(element,
-          diagram ? '可横向滚动的图示' : code ? '可横向滚动的代码示例' : '可横向滚动的表格',
+          diagram ? '可横向滚动的图示' : element.classList.contains('reading-math-block') ? '可横向滚动的数学表达' : code ? '可横向滚动的代码示例' : '可横向滚动的表格',
           '内容较宽，可左右滑动；键盘聚焦后可用左右方向键滚动。');
         if (diagram) {
           const tools = document.createElement('div');

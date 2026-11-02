@@ -2819,6 +2819,28 @@
   }
 }
 
+/* Mathematical expressions and measured values use a quiet, consistent hierarchy. */
+#post #article-container.reading-article { --reading-math-font: "Cambria Math", "STIX Two Math", "Noto Sans Math", "Microsoft YaHei", "PingFang SC", serif; font-variant-numeric: lining-nums tabular-nums; }
+#post #article-container.reading-article :is(.equation-body,.reading-math-inline,.reading-math-quote p) { font-family:var(--reading-math-font) !important; font-variant-numeric:lining-nums tabular-nums; }
+#post #article-container.reading-article .equation-body { font-size:1.12em; line-height:2.1; }
+#post #article-container.reading-article code.reading-math-inline { font-size:1em !important; padding:0.08em 0.28em; color:var(--article-accent); background:var(--article-soft); border-color:var(--article-rule); white-space:normal; overflow-wrap:anywhere; }
+#post #article-container.reading-article :is(.reading-number,.reading-numeric-cell) { font-family:ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-variant-numeric:lining-nums tabular-nums; font-weight:600; color:inherit; }
+#post #article-container.reading-article .reading-number { font-size:0.96em; overflow-wrap:anywhere; }
+#post #article-container.reading-article .reading-quantity { color:inherit; }
+#post #article-container.reading-article figure.reading-math-block { margin:1.6em 0; border:1px solid var(--article-rule); border-top:3px solid var(--article-accent); background:var(--article-soft); color:var(--font-color); box-shadow:none; }
+#post #article-container.reading-article figure.reading-math-block :is(table,td,pre,.line) { color:inherit; background:transparent; border:0; }
+#post #article-container.reading-article figure.reading-math-block td.code { padding:0.65em 1.1em 1em; }
+#post #article-container.reading-article figure.reading-math-block pre { font-family:var(--reading-math-font) !important; font-size:1.05em; line-height:1.95; }
+#post #article-container.reading-article figure.reading-math-aligned pre { font-family:Consolas, "Liberation Mono", monospace !important; }
+#post #article-container.reading-article figure.reading-math-block .gutter { display:none; }
+#post #article-container.reading-article .reading-math-label { padding:0.8em 1.1em 0.3em; margin:0; color:var(--article-accent); font-family:inherit; font-size:0.86em; line-height:1.7; font-weight:700; }
+#post #article-container.reading-article .reading-math-quote { border-color:var(--article-accent); background:var(--article-soft); }
+#post #article-container.reading-article .reading-math-quote .reading-math-label { padding:0 0 0.45em; }
+#post #article-container.reading-article .reading-math-quote p { font-size:1.05em; line-height:2; }
+#post #article-container.reading-article figure.reading-math-block .highlight-tools { color:var(--article-accent); background:transparent; }
+@media screen { #post #article-container.reading-article figure.reading-math-block:has(> .highlight-tools .code-lang) > .reading-math-label { display:none; } }
+@media print { #post #article-container.reading-article :is(figure.reading-math-block,blockquote.reading-math-quote,code.reading-math-inline,.equation-body) { color:#111; background:white; border-color:#777; } #post #article-container.reading-article .reading-math-label { color:#111; } #post #article-container.reading-article figure.reading-math-block pre { white-space:pre-wrap; overflow-wrap:anywhere; } }
+
 /* Readable native definitions beside numbered formulas, without JS. */
 #post .reading-article .article-symbols { margin:1.4em 0; padding:0; border:1px solid var(--article-rule); border-radius:10px; overflow:hidden; }
 #post .reading-article .article-symbols > div { display:grid; grid-template-columns:minmax(9em, 0.9fr) minmax(0, 2fr); border-bottom:1px solid var(--article-rule); }
