@@ -2939,6 +2939,10 @@
 #post #article-container.reading-article figure.highlight { border-top: 3px solid var(--article-rule); box-shadow: none; }
 #post #article-container.reading-article .concept-figure-canvas img[width='900'] { min-width: 900px; }
 #post #article-container.reading-article figure figcaption { font-size: 14px; line-height: 1.85; }
+/* Explanatory captions scale with the reader's selected prose size. */
+@media screen {
+  #post #article-container.reading-article :is(.concept-figure,.evidence-figure,.editorial-figure,.article-hero,.cadence-map) figcaption { font-size:0.95em; line-height:1.9; }
+}
 #post #article-container.reading-article > figure:not(.highlight) { margin-top: 2em; margin-bottom: 2em; }
 #post #article-container.reading-article > hr { height: 1px; margin: 2.5em 0; border: 0; background: var(--article-rule); }
 #post #article-container.reading-article > hr::before { display: none; }

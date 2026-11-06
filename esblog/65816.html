@@ -1,0 +1,364 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>在线协方差 从成对记录到相关系数与分块合并 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从成对观测推导在线中心积更新和分块合并，手算协方差与Pearson相关系数，解释块内负相关却合并为正的原因，提供完整标准库实现与独立两遍参考验证。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在线协方差 从成对记录到相关系数与分块合并">
+<meta property="og:url" content="https://eulersail.com/esblog/65816.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从成对观测推导在线中心积更新和分块合并，手算协方差与Pearson相关系数，解释块内负相关却合并为正的原因，提供完整标准库实现与独立两遍参考验证。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-06T02:10:00.000Z">
+<meta property="article:modified_time" content="2026-11-06T02:10:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="协方差">
+<meta property="article:tag" content="在线统计">
+<meta property="article:tag" content="数值计算">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/65816.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '在线协方差 从成对记录到相关系数与分块合并',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-06 10:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261106-1"><link rel="stylesheet" href="/css/home-editorial.css"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261021-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">146</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">253</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">在线协方差 从成对记录到相关系数与分块合并</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-06T02:10:00.000Z" title="发表于 2026-11-06 10:10:00">2026-11-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-06T02:10:00.000Z" title="更新于 2026-11-06 10:10:00">2026-11-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="在线协方差 从成对记录到相关系数与分块合并" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="data"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DATA NOTEBOOK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>9</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>5</strong><small>组图片与图表</small></span></div></div><p>先确认变量、单位与假设，再核对手算、图表和解释范围。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>9 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先定义配对单位与统计口径"><span>01</span><strong>先定义配对单位与统计口径</strong></a></li><li><a href="#为什么不直接累计xy后相减"><span>02</span><strong>为什么不直接累计xy后相减</strong></a></li><li><a href="#从均值移动推导一次更新"><span>03</span><strong>从均值移动推导一次更新</strong></a></li><li><a href="#四对记录的手算与图解"><span>04</span><strong>四对记录的手算与图解</strong></a></li><li><a href="#分块合并时，为什么不能平均相关系数"><span>05</span><strong>分块合并时，为什么不能平均相关系数</strong></a></li><li><a href="#代码1：标准库不可变累计状态"><span>06</span><strong>代码1：标准库不可变累计状态</strong></a></li><li><a href="#缺失、常量与非线性关系的边界"><span>07</span><strong>缺失、常量与非线性关系的边界</strong></a></li><li><a href="#如何复核实现与继续阅读"><span>08</span><strong>如何复核实现与继续阅读</strong></a></li><li><a href="#参考文献与对应位置"><span>09</span><strong>参考文献与对应位置</strong></a></li></ol></nav></details></section><p>一列数据的波动可以用方差描述；两列数据是否一起偏高、一起偏低，则需要保留它们的配对关系。把延迟与请求大小分别统计后再拼接均值，并不能恢复它们共同变化的信息。</p>
+<p>这篇接续<a href="/esblog/65705.html">Welford在线方差</a>，把状态扩展到两个变量。目标是：<strong>每次接收一对记录，用固定数量的状态维护两个均值、两个中心平方和及一个中心积，并能合并互不重复的分块。</strong> 本文只讨论等权、有限实数、成对完整观测的累计统计；所有算例均为合成数据。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="在线协方差阅读任务"><div><span class="workshop-kicker">先算清楚</span><strong class="workshop-title">相同中心，才能讨论共同波动</strong><p>先核对每对记录的身份、单位和两个均值，再区分中心积、协方差与相关系数。</p></div><div><span class="workshop-kicker">再合并</span><strong class="workshop-title">块内关系之外，还有块间差异</strong><p data-reading-numbers="true">用四对记录看见：两个块的相关系数都为−1，合起来却可以是<span class="reading-number">0.6</span>。</p></div></section>
+
+
+<h2 id="先定义配对单位与统计口径"><a href="#先定义配对单位与统计口径" class="headerlink" title="先定义配对单位与统计口径"></a>先定义配对单位与统计口径</h2><p data-reading-numbers="true">设记录为(xᵢ,yᵢ)，i=<span class="reading-number">1</span>,…,n。两个均值分别记作μₓ、μᵧ。维护Sₓₓ=Σ(xᵢ−μₓ)²、Sᵧᵧ=Σ(yᵢ−μᵧ)²，以及中心积C=Σ(xᵢ−μₓ)(yᵢ−μᵧ)。C会带符号，不能像平方和那样要求非负。</p>
+<p>如果x是请求大小KB，y是延迟ms，C与协方差的单位都是KB·ms；Sₓₓ与Sᵧᵧ的单位分别为KB²和ms²。相关系数把这两种尺度除掉，因此没有单位。</p>
+
+<figure class="article-equation" id="cov-eq1"><figcaption><strong>公式1｜中心积、协方差与Pearson相关系数</strong></figcaption><div class="equation-body">描述协方差：covₙ = C / n，n ≥ 1<br>样本协方差：sₓᵧ = C / (n − 1)，n ≥ 2<br>r = C / (√Sₓₓ · √Sᵧᵧ)，n ≥ 2 且 Sₓₓ、Sᵧᵧ &gt; 0</div><p class="equation-note">共同使用n或n−1作方差/协方差分母时，相关系数中的分母会约去。样本协方差的无偏性质还需要独立同分布、有限二阶矩等抽样条件；除以n−1不会修复选择偏差。接口口径参见<a href="#cov-ref1">文献1</a>。</p></figure>
+<dl class="article-symbols" aria-label="成对统计符号"><div><dt>n、μₓ、μᵧ</dt><dd>有效配对数量和两列均值。两列必须来自同一批配对，不能分别丢弃缺失后按剩余位置拼接。</dd></div><div><dt>Sₓₓ、Sᵧᵧ</dt><dd>各列围绕当前均值的平方和。任一列恒定时，相应平方和为0，相关系数未定义。</dd></div><div><dt>C</dt><dd>围绕同一批记录各自均值的中心积之和。正负偏差的乘积决定贡献方向，单独的x·y大小不等于贡献。</dd></div></dl>
+
+
+<p data-reading-numbers="true">在精确算术下，柯西—施瓦茨不等式给出C²≤SₓₓSᵧᵧ，所以r落在[−1,1]。单条记录的描述协方差为<span class="reading-number">0</span>，但相关系数仍未定义：没有波动可以用来归一化。报告“r=<span class="reading-number">0</span>”会把未定义误写成没有线性关系。</p>
+<p>配对身份比公式先行。例如先按大小排序x，再按延迟排序y，会制造原本不存在的一一对应。异步传感器必须先定义时间对齐与容忍范围；这个统计器不会替你判断两条读数是否应该配成一对。</p>
+<h2 id="为什么不直接累计xy后相减"><a href="#为什么不直接累计xy后相减" class="headerlink" title="为什么不直接累计xy后相减"></a>为什么不直接累计xy后相减</h2><p>恒等式C=Σxᵢyᵢ−nμₓμᵧ在精确算术下成立。但两个变量都有很大的基数、共同波动很小时，右侧是两个大数相减。输入转换和累计乘法的误差可能已经大于最终差值。</p>
+<p data-reading-numbers="true">例如把正文四对小整数同时平移到<span class="reading-number">10¹²</span>附近，真正的C仍为3。中心化更新把计算放在相对均值的增量上，避免显式累加约<span class="reading-number">10²⁴</span>量级的乘积再抵消；它仍使用有限精度浮点数，不能保证任意范围或顺序下逐位相同。若整数转换成float时已丢掉低位，后续算法也无法恢复。</p>
+<h2 id="从均值移动推导一次更新"><a href="#从均值移动推导一次更新" class="headerlink" title="从均值移动推导一次更新"></a>从均值移动推导一次更新</h2><p data-reading-numbers="true">已有n≥<span class="reading-number">1</span>对记录，新来(x,y)。令δₓ=x−μₓ、δᵧ=y−μᵧ，新的数量n′=n+1，均值分别增加δₓ/n′和δᵧ/n′。</p>
+<p>对旧记录，新的中心积展开为[(xᵢ−μₓ)−δₓ/n′][(yᵢ−μᵧ)−δᵧ/n′]。两组旧偏差之和都为0，因此交叉项消失，只留下nδₓδᵧ/n′²。新记录相对新均值的偏差分别是nδₓ/n′和nδᵧ/n′，再加入它的贡献，共增加nδₓδᵧ/n′。</p>
+
+<figure class="article-equation" id="cov-eq2"><figcaption><strong>公式2｜用旧偏差与新均值更新中心量</strong></figcaption><div class="equation-body">n′ = n + 1；μₓ′ = μₓ + δₓ/n′；μᵧ′ = μᵧ + δᵧ/n′<br>Sₓₓ′ = Sₓₓ + δₓ(x − μₓ′)<br>Sᵧᵧ′ = Sᵧᵧ + δᵧ(y − μᵧ′)<br>C′ = C + δₓ(y − μᵧ′) = C + δₓδᵧ·n/n′</div><p class="equation-note" data-reading-numbers="true">精确算术下成立；C也可对称地写成C+δᵧ(x−μₓ′)。这里的第二个偏差必须使用新均值。空状态直接建立n=<span class="reading-number">1</span>、两个均值为新观测、三个中心量为0。</p></figure>
+<aside class="article-takeaway" role="note"><strong>重点｜先算候选状态，再整体提交</strong><p>若更新到一半发现溢出，不应留下“新均值配旧中心积”的混合状态。下面的实现返回一个新的不可变状态；输入拒绝或计算失败时，原状态保持完整。</p></aside>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart LR
+ A[同一条记录的 x 与 y] --&gt; B[验证两值均有限]
+ B --&gt; C[相对旧均值求偏差]
+ C --&gt; D[计算新均值和三个中心量]
+ D --&gt; E[检查后返回新状态]
+  </pre></div>
+
+<h2 id="四对记录的手算与图解"><a href="#四对记录的手算与图解" class="headerlink" title="四对记录的手算与图解"></a>四对记录的手算与图解</h2><p data-reading-numbers="true">取(<span class="reading-number">1</span>,<span class="reading-number">2</span>)、(2,1)、(3,4)、(4,3)，逐次纳入得到：</p>
+<table>
+<thead>
+<tr>
+<th>纳入到第几对</th>
+<th>μₓ</th>
+<th>μᵧ</th>
+<th>Sₓₓ</th>
+<th>Sᵧᵧ</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="reading-numeric-cell">1</td>
+<td class="reading-numeric-cell">1</td>
+<td class="reading-numeric-cell">2</td>
+<td class="reading-numeric-cell">0</td>
+<td class="reading-numeric-cell">0</td>
+<td class="reading-numeric-cell">0</td>
+</tr>
+<tr>
+<td class="reading-numeric-cell">2</td>
+<td class="reading-numeric-cell">3/2</td>
+<td class="reading-numeric-cell">3/2</td>
+<td class="reading-numeric-cell">1/2</td>
+<td class="reading-numeric-cell">1/2</td>
+<td class="reading-numeric-cell">−1/2</td>
+</tr>
+<tr>
+<td class="reading-numeric-cell">3</td>
+<td class="reading-numeric-cell">2</td>
+<td class="reading-numeric-cell">7/3</td>
+<td class="reading-numeric-cell">2</td>
+<td class="reading-numeric-cell">14/3</td>
+<td class="reading-numeric-cell">2</td>
+</tr>
+<tr>
+<td class="reading-numeric-cell">4</td>
+<td class="reading-numeric-cell">5/2</td>
+<td class="reading-numeric-cell">5/2</td>
+<td class="reading-numeric-cell">5</td>
+<td class="reading-numeric-cell">5</td>
+<td class="reading-numeric-cell">3</td>
+</tr>
+</tbody></table>
+<p data-reading-numbers="true">第二步δₓ=<span class="reading-number">1</span>、δᵧ=<span class="reading-number">−1</span>，C增加<span class="reading-number">−1/2</span>。第三步δₓ=<span class="reading-number">3/2</span>、δᵧ=<span class="reading-number">5/2</span>，增加(<span class="reading-number">3/2</span>)(<span class="reading-number">5/2</span>)×<span class="reading-number">2/3</span>=<span class="reading-number">5/2</span>，得到C=<span class="reading-number">2</span>。最后一步增加1，最终描述协方差为<span class="reading-number">3/4</span>，样本协方差为<span class="reading-number">1</span>，r=<span class="reading-number">3/5</span>=<span class="reading-number">0.6</span>。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="四对观测的中心积贡献，可横向滚动"><img class="no-lazy" src="/images/posts/covariance-centered-products.svg" width="900" height="460" alt="四对观测围绕均值2.5与2.5，中心积贡献分别为0.75、0.75、0.75、0.75，总和C为3，两个中心平方和均为5"></div><figcaption>图1｜原创合成散点与中心积核算。四个贡献均相对最终均值计算；不是四次在线增量，也不是因果效应。<a href="/images/posts/covariance-centered-products.svg">查看原图</a></figcaption></figure>
+<details class="mechanism-check"><summary>自检1：把y的顺序倒过来，协方差还必须保持吗？</summary><div><p data-reading-numbers="true">不必须。倒序破坏了原始配对。两列各自的均值与方差都不变，但这组数据的C从3变为−3，相关系数从<span class="reading-number">0.6</span>变为<span class="reading-number">−0.6</span>；说明单列摘要不足以决定成对关系。</p></div></details>
+
+
+<h2 id="分块合并时，为什么不能平均相关系数"><a href="#分块合并时，为什么不能平均相关系数" class="headerlink" title="分块合并时，为什么不能平均相关系数"></a>分块合并时，为什么不能平均相关系数</h2><p>设两个非空块A、B，数量分别n_A、n_B，均值差Δₓ=μₓ,B−μₓ,A、Δᵧ=μᵧ,B−μᵧ,A。总均值为数量加权均值。将每块的观测偏差拆成“相对块均值”和“块均值相对总均值”，块内偏差和为0，留下块内中心积与块间修正：</p>
+
+<figure class="article-equation" id="cov-eq3"><figcaption><strong>公式3｜互不重复分块的中心量合并</strong></figcaption><div class="equation-body">n = n_A + n_B；w = n_A·n_B/n<br>μₓ = μₓ,A + Δₓ·n_B/n；μᵧ = μᵧ,A + Δᵧ·n_B/n<br>Sₓₓ = Sₓₓ,A + Sₓₓ,B + Δₓ²w<br>Sᵧᵧ = Sᵧᵧ,A + Sᵧᵧ,B + Δᵧ²w<br>C = C_A + C_B + ΔₓΔᵧw</div><p class="equation-note">任一块为空时采用另一块。ΔₓΔᵧw的单位与C一致；其符号由两个块均值移动的方向决定。分块背景参见<a href="#cov-ref2">文献2</a>；这里从中心化展开独立推导。</p></figure>
+
+
+<p data-reading-numbers="true">A取前两对，B取后两对。两个块的Sₓₓ、Sᵧᵧ都为<span class="reading-number">1/2</span>，C都为<span class="reading-number">−1/2</span>，所以各自r=<span class="reading-number">−1</span>。块均值却从(<span class="reading-number">1.5</span>,<span class="reading-number">1.5</span>)共同移动到(<span class="reading-number">3.5</span>,<span class="reading-number">3.5</span>)，Δₓ=Δᵧ=<span class="reading-number">2</span>、w=<span class="reading-number">1</span>，跨块贡献为4。合并C=<span class="reading-number">−1/2</span>−<span class="reading-number">1/2</span>+4=<span class="reading-number">3</span>，相关系数变成<span class="reading-number">0.6</span>。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="块内负相关与块间中心积合并，可横向滚动"><img class="no-lazy" src="/images/posts/covariance-block-correction.svg" width="900" height="420" alt="A块与B块的中心积均为负0.5，均值差两个分量均为2，跨块修正为4，合并中心积为3，相关系数0.6"></div><figcaption>图2｜原创分块账本。块内相关与总体相关回答不同范围的问题；不要把相关系数的平均值当作总体相关。<a href="/images/posts/covariance-block-correction.svg">查看原图</a></figcaption></figure>
+
+
+<p>这不是公式相互矛盾，而是总体同时包含块内和块间变化。若分块对应不同人群或时间段，要同时保留分组结果并解释组合目的；可接着读<a href="/esblog/64973.html">辛普森悖论与标准化</a>。相关符号反转并不自动说明哪一种分组代表因果机制。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[分块标识与记录范围] --&gt; B{是否重复或重叠}
+ B --&gt;|是| C[先去重或重建统计]
+ B --&gt;|否| D[检查计数和单位一致]
+ D --&gt; E[合并块内量与均值差修正]
+ E --&gt; F[按目的报告总体或分组关系]
+  </pre></div>
+
+<h2 id="代码1：标准库不可变累计状态"><a href="#代码1：标准库不可变累计状态" class="headerlink" title="代码1：标准库不可变累计状态"></a>代码1：标准库不可变累计状态</h2>
+<p class="article-code-note" id="cov-code"><strong data-reading-numbers="true">代码1｜Python <span class="reading-number">3.11</span>及以上标准库</strong>：保存为online_cov.py运行。仅使用默认空状态，再通过add和merge生成状态；不支持手工伪造内部字段、权重、缺失补值或删点。每次add返回新对象，调用时必须接回返回值。转换为float后计算，None表示样本不足或常量列导致未定义。</p>
+
+
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">finite_number</span>(<span class="params">value</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(value) <span class="keyword">not</span> <span class="keyword">in</span> (<span class="built_in">int</span>, <span class="built_in">float</span>):</span><br><span class="line">        <span class="keyword">raise</span> TypeError(<span class="string">"expected int or float, excluding bool"</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        value = <span class="built_in">float</span>(value)</span><br><span class="line">    <span class="keyword">except</span> OverflowError <span class="keyword">as</span> exc:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">"input outside float range"</span>) <span class="keyword">from</span> exc</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> math.isfinite(value):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">"expected finite input"</span>)</span><br><span class="line">    <span class="keyword">return</span> value</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OnlineCov</span>:</span><br><span class="line">    n: <span class="built_in">int</span> = <span class="number">0</span></span><br><span class="line">    mx: <span class="built_in">float</span> = <span class="number">0.0</span></span><br><span class="line">    my: <span class="built_in">float</span> = <span class="number">0.0</span></span><br><span class="line">    xx: <span class="built_in">float</span> = <span class="number">0.0</span></span><br><span class="line">    yy: <span class="built_in">float</span> = <span class="number">0.0</span></span><br><span class="line">    c: <span class="built_in">float</span> = <span class="number">0.0</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_new</span>(<span class="params">n, mx, my, xx, yy, c</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">all</span>(math.isfinite(v) <span class="keyword">for</span> v <span class="keyword">in</span> (mx, my, xx, yy, c)):</span><br><span class="line">            <span class="keyword">raise</span> ArithmeticError(<span class="string">"state outside float range"</span>)</span><br><span class="line">        <span class="keyword">if</span> xx &lt; <span class="number">0</span> <span class="keyword">or</span> yy &lt; <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ArithmeticError(<span class="string">"negative centered square sum"</span>)</span><br><span class="line">        <span class="keyword">return</span> OnlineCov(n, mx, my, xx, yy, c)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">self, x, y</span>):</span><br><span class="line">        x, y = finite_number(x), finite_number(y)</span><br><span class="line">        <span class="keyword">if</span> self.n == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> self._new(<span class="number">1</span>, x, y, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>)</span><br><span class="line">        n = self.n + <span class="number">1</span></span><br><span class="line">        dx, dy = x - self.mx, y - self.my</span><br><span class="line">        mx, my = self.mx + dx / n, self.my + dy / n</span><br><span class="line">        <span class="keyword">return</span> self._new(n, mx, my,</span><br><span class="line">                         self.xx + dx * (x - mx),</span><br><span class="line">                         self.yy + dy * (y - my),</span><br><span class="line">                         self.c + dx * (y - my))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">merge</span>(<span class="params">self, other</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(other, OnlineCov):</span><br><span class="line">            <span class="keyword">raise</span> TypeError(<span class="string">"expected OnlineCov"</span>)</span><br><span class="line">        <span class="keyword">if</span> self.n == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> other</span><br><span class="line">        <span class="keyword">if</span> other.n == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> self</span><br><span class="line">        n = self.n + other.n</span><br><span class="line">        ratio = other.n / n</span><br><span class="line">        weight = self.n * ratio</span><br><span class="line">        dx, dy = other.mx - self.mx, other.my - self.my</span><br><span class="line">        <span class="keyword">return</span> self._new(n, self.mx + dx * ratio,</span><br><span class="line">                         self.my + dy * ratio,</span><br><span class="line">                         self.xx + other.xx + dx * dx * weight,</span><br><span class="line">                         self.yy + other.yy + dy * dy * weight,</span><br><span class="line">                         self.c + other.c + dx * dy * weight)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">covariance</span>(<span class="params">self, sample=<span class="literal">True</span></span>):</span><br><span class="line">        denominator = self.n - <span class="number">1</span> <span class="keyword">if</span> sample <span class="keyword">else</span> self.n</span><br><span class="line">        <span class="keyword">return</span> self.c / denominator <span class="keyword">if</span> denominator &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">correlation</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">if</span> self.n &lt; <span class="number">2</span> <span class="keyword">or</span> self.xx == <span class="number">0</span> <span class="keyword">or</span> self.yy == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        r = (self.c / math.sqrt(self.xx)) / math.sqrt(self.yy)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> math.isfinite(r) <span class="keyword">or</span> <span class="built_in">abs</span>(r) &gt; <span class="number">1</span> + <span class="number">1e-12</span>:</span><br><span class="line">            <span class="keyword">raise</span> ArithmeticError(<span class="string">"correlation outside roundoff tolerance"</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">max</span>(-<span class="number">1.0</span>, <span class="built_in">min</span>(<span class="number">1.0</span>, r))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    pairs = [(<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">1</span>), (<span class="number">3</span>, <span class="number">4</span>), (<span class="number">4</span>, <span class="number">3</span>)]</span><br><span class="line">    state = OnlineCov()</span><br><span class="line">    <span class="keyword">for</span> x, y <span class="keyword">in</span> pairs:</span><br><span class="line">        state = state.add(x, y)</span><br><span class="line">    <span class="built_in">print</span>(state.n, state.mx, state.my)</span><br><span class="line">    <span class="built_in">print</span>(state.covariance(<span class="literal">False</span>), state.covariance(), <span class="built_in">round</span>(state.correlation(), <span class="number">12</span>))</span><br></pre></td></tr></tbody></table></figure>
+
+<p>预期两行输出为<code>4 2.5 2.5</code>和<code>0.75 1.0 0.6</code>。入口仅对显示的r舍入到12位小数；内部计算与验证仍使用原始浮点结果。单条更新与两块合并都是O(1)时间、O(1)额外状态；读取n条数据总计O(n)，返回新对象的旧状态若被外部一直保存，外部历史列表仍会占O(n)空间。</p>
+<p data-reading-numbers="true">相关系数顺次除以两个平方根，避免先计算xx·yy而发生不必要的乘积溢出。最后的截断只容忍约<span class="reading-number">10⁻¹²</span>的越界，不是修复任意错误协方差的办法。极大跨度、极小变化、输入下溢或长期累计仍可能超出本实现能力；严格精度需求应重新设计缩放、数据表示和误差预算。</p>
+<h2 id="缺失、常量与非线性关系的边界"><a href="#缺失、常量与非线性关系的边界" class="headerlink" title="缺失、常量与非线性关系的边界"></a>缺失、常量与非线性关系的边界</h2>
+<details class="mechanism-check"><summary>自检2：一列恒定时，相关系数是不是0？</summary><div><p>不是。恒定列的中心平方和为0，归一化分母为0，代码返回None。协方差可以为0，但不能据此写出一个已定义的相关系数。</p></div></details>
+<details class="mechanism-check"><summary>自检3：r=0是否证明两个变量互不相关、可以独立处理？</summary><div><p>这里只说明当前样本的线性中心积为0。例如x取−2、−1、0、1、2，y=x²，中心积为0，但y完全由x决定。统计独立比零线性相关强得多，也不能从一个样本值直接推出总体结论。</p></div></details>
+<details class="mechanism-check"><summary>自检4：把同一块合并两次，能靠状态发现吗？</summary><div><p>不能。摘要没有分块身份，也不知道记录范围。重复合并会重复计数；生产管道需要额外的分块标识、幂等提交或去重设计。不可变对象保证一次操作不留下半截状态，不保证恰好处理一次。</p></div></details>
+
+
+<p>如果丢弃缺失，必须按整对记录执行；只丢x中的缺失再与原y压缩配对，会改变问题。扩展到多列时，逐列两两删除缺失还可能让各协方差项来自不同样本集合，不能直接当作同一批完整记录的协方差矩阵。本文的拒绝策略宁可明确报错，也不隐式改变统计人群。</p>
+<p>x改用另一正比例单位，协方差随尺度改变，而r不变；若只把一列乘以负数，r改变符号。对x、y分别平移，精确算术下中心量不变。这些是核对程序的性质，不是对实际测量误差或因果关系的保证。</p>
+<h2 id="如何复核实现与继续阅读"><a href="#如何复核实现与继续阅读" class="headerlink" title="如何复核实现与继续阅读"></a>如何复核实现与继续阅读</h2><p>核对不能只拿两个复用相同递推式的函数比较。本文验证程序从正文提取原代码，实际运行入口，再用高精度两遍中心化计算独立参考，覆盖随机配对、不同分块、置换、平移/缩放、常量、空块、逆序配对以及非法输入；精度按输入范围评估，不把高精度参考的位数说成浮点实现精度。</p>
+<p>本篇解决的是摘要怎样取得。继续阅读<a href="/esblog/65492.html">PCA</a>理解多个特征的投影，或<a href="/esblog/65381.html">位置—速度卡尔曼</a>观察交叉协方差怎样参与状态修正；相关分析的报告还应说明样本来源、时间范围、缺失处理和分组依据。</p>
+<h2 id="参考文献与对应位置"><a href="#参考文献与对应位置" class="headerlink" title="参考文献与对应位置"></a>参考文献与对应位置</h2>
+<ol class="article-references"><li id="cov-ref1"><cite>Python 3.11官方文档：statistics.covariance与statistics.correlation。</cite> <a target="_blank" rel="noopener" href="https://docs.python.org/3.11/library/statistics.html#statistics.covariance">协方差</a>、<a target="_blank" rel="noopener" href="https://docs.python.org/3.11/library/statistics.html#statistics.correlation">相关系数</a>。用于核对样本协方差口径、等长要求与常量列边界；本文None返回约定不同于标准库抛异常。<a href="#cov-eq1">返回公式1</a>。</li><li id="cov-ref2"><cite>Philippe Pébay. Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments. SAND2008-6212, 2008. DOI:10.2172/1028931.</cite> <a target="_blank" rel="noopener" href="https://www.sandia.gov/research/publications/details/formulas-for-robust-one-pass-parallel-computation-of-covariances-and-arbitr-2008-09-01/">Sandia官方摘要与报告元信息</a>。核对增量与并行协方差的研究范围；未声称取得当前访问失败的全文，本篇代数推导独立展开。<a href="#cov-eq3">返回公式3</a>。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/65816.html">https://eulersail.com/esblog/65816.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%8D%8F%E6%96%B9%E5%B7%AE/">协方差</a><a class="post-meta__tags" href="/tags/%E5%9C%A8%E7%BA%BF%E7%BB%9F%E8%AE%A1/">在线统计</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">数值计算</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/53185.html" title="Git worktree 从多工作区到分支占用与审查隔离"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Git worktree 从多工作区到分支占用与审查隔离</div></div></a></div><div class="next-post pull-right"><a href="/esblog/46761.html" title="HTTP 断点续传 从字节范围到版本验证"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">HTTP 断点续传 从字节范围到版本验证</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-31</div><div class="title">Welford 在线方差 从中心矩到分块合并</div></div></a></div><div><a href="/esblog/65381.html" title="多维卡尔曼 从协方差到位置与速度估计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-19</div><div class="title">多维卡尔曼 从协方差到位置与速度估计</div></div></a></div><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">146</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">253</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%AE%9A%E4%B9%89%E9%85%8D%E5%AF%B9%E5%8D%95%E4%BD%8D%E4%B8%8E%E7%BB%9F%E8%AE%A1%E5%8F%A3%E5%BE%84"><span class="toc-text">先定义配对单位与统计口径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E7%B4%AF%E8%AE%A1xy%E5%90%8E%E7%9B%B8%E5%87%8F"><span class="toc-text">为什么不直接累计xy后相减</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E5%9D%87%E5%80%BC%E7%A7%BB%E5%8A%A8%E6%8E%A8%E5%AF%BC%E4%B8%80%E6%AC%A1%E6%9B%B4%E6%96%B0"><span class="toc-text">从均值移动推导一次更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E5%AF%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E6%89%8B%E7%AE%97%E4%B8%8E%E5%9B%BE%E8%A7%A3"><span class="toc-text">四对记录的手算与图解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E5%90%88%E5%B9%B6%E6%97%B6%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%B9%B3%E5%9D%87%E7%9B%B8%E5%85%B3%E7%B3%BB%E6%95%B0"><span class="toc-text">分块合并时，为什么不能平均相关系数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%811%EF%BC%9A%E6%A0%87%E5%87%86%E5%BA%93%E4%B8%8D%E5%8F%AF%E5%8F%98%E7%B4%AF%E8%AE%A1%E7%8A%B6%E6%80%81"><span class="toc-text">代码1：标准库不可变累计状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%BA%E5%A4%B1%E3%80%81%E5%B8%B8%E9%87%8F%E4%B8%8E%E9%9D%9E%E7%BA%BF%E6%80%A7%E5%85%B3%E7%B3%BB%E7%9A%84%E8%BE%B9%E7%95%8C"><span class="toc-text">缺失、常量与非线性关系的边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%A4%8D%E6%A0%B8%E5%AE%9E%E7%8E%B0%E4%B8%8E%E7%BB%A7%E7%BB%AD%E9%98%85%E8%AF%BB"><span class="toc-text">如何复核实现与继续阅读</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E5%AF%B9%E5%BA%94%E4%BD%8D%E7%BD%AE"><span class="toc-text">参考文献与对应位置</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53185.html" title="Git worktree 从多工作区到分支占用与审查隔离">Git worktree 从多工作区到分支占用与审查隔离</a><time datetime="2026-11-06T02:20:00.000Z" title="发表于 2026-11-06 10:20:00">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65816.html" title="在线协方差 从成对记录到相关系数与分块合并">在线协方差 从成对记录到相关系数与分块合并</a><time datetime="2026-11-06T02:10:00.000Z" title="发表于 2026-11-06 10:10:00">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46761.html" title="HTTP 断点续传 从字节范围到版本验证">HTTP 断点续传 从字节范围到版本验证</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85861.html" title="集总热容 从冷却时间常数到 Biot 数">集总热容 从冷却时间常数到 Biot 数</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并">Welford 在线方差 从中心矩到分块合并</a><time datetime="2026-10-31T02:12:00.000Z" title="发表于 2026-10-31 10:12:00">2026-10-31</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
