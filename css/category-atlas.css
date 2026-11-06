@@ -1,14 +1,14 @@
 /* Category atlas and topic libraries. Article styles and legacy pagination stay unchanged. */
 #page-header.subject-header { height: 215px; background-color: #243c52; }
 #page-header.subject-header #page-site-info { top: 88px; }
-.sail-journal [data-tone='data'] { --topic-color: #176963; --topic-wash: #eaf6f2; }
-.sail-journal [data-tone='systems'] { --topic-color: #305e8a; --topic-wash: #edf3fa; }
-.sail-journal [data-tone='tools'] { --topic-color: #8d4931; --topic-wash: #fcf1ec; }
-.sail-journal [data-tone='materials'] { --topic-color: #725383; --topic-wash: #f5eff8; }
-[data-theme='dark'] .sail-journal [data-tone='data'] { --topic-color: #8dd8c6; --topic-wash: #203c38; }
-[data-theme='dark'] .sail-journal [data-tone='systems'] { --topic-color: #a4c9ee; --topic-wash: #23384e; }
-[data-theme='dark'] .sail-journal [data-tone='tools'] { --topic-color: #edb69e; --topic-wash: #432f29; }
-[data-theme='dark'] .sail-journal [data-tone='materials'] { --topic-color: #d6b6e4; --topic-wash: #3b2b45; }
+.sail-journal [data-tone='data'] { --topic-color: #146e65; --topic-wash: #eaf6f1; }
+.sail-journal [data-tone='systems'] { --topic-color: #28687e; --topic-wash: #edf5fa; }
+.sail-journal [data-tone='tools'] { --topic-color: #4b6b35; --topic-wash: #f0f5e9; }
+.sail-journal [data-tone='materials'] { --topic-color: #806129; --topic-wash: #f8f4e6; }
+[data-theme='dark'] .sail-journal [data-tone='data'] { --topic-color: #94d9c6; --topic-wash: #1b302f; }
+[data-theme='dark'] .sail-journal [data-tone='systems'] { --topic-color: #a2d3e6; --topic-wash: #1d303d; }
+[data-theme='dark'] .sail-journal [data-tone='tools'] { --topic-color: #bbd59e; --topic-wash: #293125; }
+[data-theme='dark'] .sail-journal [data-tone='materials'] { --topic-color: #e3c98b; --topic-wash: #332f22; }
 
 #category-atlas, #subject-hub, #algorithm-hub { color: var(--editorial-ink); }
 #category-atlas h2, #category-atlas h3, #subject-hub h2, #subject-hub h3,

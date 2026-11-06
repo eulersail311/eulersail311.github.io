@@ -2825,7 +2825,7 @@
 #post #article-container.reading-article .equation-body { font-size:1.12em; line-height:2.1; }
 #post #article-container.reading-article code.reading-math-inline { font-size:1em !important; padding:0.08em 0.28em; color:var(--article-accent); background:var(--article-soft); border-color:var(--article-rule); white-space:normal; overflow-wrap:anywhere; }
 #post #article-container.reading-article :is(.reading-number,.reading-numeric-cell) { font-family:ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-variant-numeric:lining-nums tabular-nums; font-weight:700; color:var(--article-accent); }
-#post #article-container.reading-article :is(.reading-number,.reading-quantity) { padding:0.04em 0.18em; border-bottom:1px solid var(--article-rule); border-radius:0.22em; background:var(--article-soft); box-decoration-break:clone; -webkit-box-decoration-break:clone; overflow-wrap:anywhere; }
+#post #article-container.reading-article :is(.reading-number,.reading-quantity) { padding:0.03em 0.16em; border:1px solid var(--article-rule); border-radius:0.22em; background:var(--article-soft); box-decoration-break:clone; -webkit-box-decoration-break:clone; overflow-wrap:anywhere; }
 #post #article-container.reading-article .reading-number { font-size:1em; }
 #post #article-container.reading-article .reading-quantity { color:var(--article-accent); }
 #post #article-container.reading-article .reading-quantity > .reading-number { padding:0; border:0; border-radius:0; background:transparent; }
@@ -2915,6 +2915,9 @@
   transition: none;
 }
 #post #article-container.reading-article > h3 { margin: 2em 0 0.9em; padding-left: 0.7em; border-left: 3px solid var(--article-rule); color: var(--article-accent); line-height: 1.65; transition: none; }
+@media screen {
+  #post #article-container.reading-article > h2 { padding:0.55em 0.8em; border-left:3px solid var(--article-accent); border-bottom-width:1px; border-radius:0 9px 9px 0; background:linear-gradient(90deg,var(--article-soft),transparent); }
+}
 #post #article-container.reading-article > :is(ul,ol):not([class]) { margin: 1.2em 0 1.65em; padding-left: 1.65em; }
 #post #article-container.reading-article > :is(ul,ol):not([class]) > li { padding-left: 0.25em; margin: 0.5em 0; }
 #post #article-container.reading-article > :is(ul,ol):not([class]) > li::marker { color: var(--article-accent); }
