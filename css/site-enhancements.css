@@ -2819,6 +2819,31 @@
   }
 }
 
+/* Local script-specific faces keep Chinese, Latin prose and neutral digits
+   distinguishable without splitting words, URLs or versions into DOM spans.
+   No font download is required; normal system fallback remains available. */
+@font-face {
+  font-family:"Sail Prose Latin";
+  src:local("Georgia"),local("Cambria"),local("Times New Roman"),local("Noto Serif"),local("Liberation Serif");
+  font-style:normal; font-weight:100 500; font-display:swap;
+  unicode-range:U+0041-005A,U+0061-007A,U+00C0-00D6,U+00D8-00F6,U+00F8-024F;
+}
+@font-face {
+  font-family:"Sail Prose Latin";
+  src:local("Georgia Bold"),local("Cambria Bold"),local("Times New Roman Bold"),local("Noto Serif Bold"),local("Liberation Serif Bold");
+  font-style:normal; font-weight:600 900; font-display:swap;
+  unicode-range:U+0041-005A,U+0061-007A,U+00C0-00D6,U+00D8-00F6,U+00F8-024F;
+}
+@font-face {
+  font-family:"Sail Prose Numerals";
+  src:local("Consolas"),local("Menlo"),local("Monaco"),local("Liberation Mono"),local("Noto Sans Mono");
+  font-style:normal; font-weight:100 900; font-display:swap;
+  unicode-range:U+002B-003A;
+}
+#post #article-container.reading-article > :is(p,ul,ol,blockquote,table,dl,details,figure,section,aside,div):not(.reading-overview,.reading-static-chapters,.reading-chapters,.reading-tools,.algorithm-topic,.mermaid-wrap,.article-lab) {
+  font-family:"Sail Prose Latin","Sail Prose Numerals","Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif;
+}
+
 /* Mathematical expressions and measured values use a quiet, consistent hierarchy. */
 #post #article-container.reading-article { --reading-math-font: "Cambria Math", "STIX Two Math", "Noto Sans Math", "Microsoft YaHei", "PingFang SC", serif; font-variant-numeric: lining-nums tabular-nums; }
 #post #article-container.reading-article :is(.equation-body,.reading-math-inline,.reading-math-quote p) { font-family:var(--reading-math-font) !important; font-variant-numeric:lining-nums tabular-nums; }
