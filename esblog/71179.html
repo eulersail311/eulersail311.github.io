@@ -1,0 +1,410 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>反例笔记 从绝对断言到可核对的适用条件 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="把一句结论拆成对象范围、前提和量词，用零相关却不独立、提交可读却未合并及有限测试三个案例练习真正的反例，给出完整核算、条件修订和可复用的核对卡。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反例笔记 从绝对断言到可核对的适用条件">
+<meta property="og:url" content="https://eulersail.com/esblog/71179.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="把一句结论拆成对象范围、前提和量词，用零相关却不独立、提交可读却未合并及有限测试三个案例练习真正的反例，给出完整核算、条件修订和可复用的核对卡。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-06T16:30:00.000Z">
+<meta property="article:modified_time" content="2026-11-06T16:30:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="反例">
+<meta property="article:tag" content="逻辑">
+<meta property="article:tag" content="知识笔记">
+<meta property="article:tag" content="证据">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/71179.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '反例笔记 从绝对断言到可核对的适用条件',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-07 00:30:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261107-2"><link rel="stylesheet" href="/css/home-editorial.css?v=20261106-2"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261106-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">148</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">261</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">反例笔记 从绝对断言到可核对的适用条件</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-06T16:30:00.000Z" title="发表于 2026-11-07 00:30:00">2026-11-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-06T16:30:00.000Z" title="更新于 2026-11-07 00:30:00">2026-11-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/">写作与知识管理</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="反例笔记 从绝对断言到可核对的适用条件" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="notes"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>KNOWLEDGE NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>4</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>3</strong><small>组对照与手算表</small></span></div></div><p>先看案例与关系图，再把方法应用到自己的材料和记录。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先把一句话拆成对象、前提与结论"><span>01</span><strong>先把一句话拆成对象、前提与结论</strong></a></li><li><a href="#案例一：零相关并不保证独立"><span>02</span><strong>案例一：零相关并不保证独立</strong></a></li><li><a href="#案例二：提交可读，不等于已经合并"><span>03</span><strong>案例二：提交可读，不等于已经合并</strong></a></li><li><a href="#案例三：有限测试通过，不等于全域等价"><span>04</span><strong>案例三：有限测试通过，不等于全域等价</strong></a></li><li><a href="#一个反例能否证明相反的极端结论"><span>05</span><strong>一个反例能否证明相反的极端结论</strong></a></li><li><a href="#条件怎样补，才不是把句子改成空话"><span>06</span><strong>条件怎样补，才不是把句子改成空话</strong></a></li><li><a href="#把反例变成下一次能回答的问题"><span>07</span><strong>把反例变成下一次能回答的问题</strong></a></li><li><a href="#参考文献与核对范围"><span>08</span><strong>参考文献与核对范围</strong></a></li></ol></nav></details></section><p>“我懂了”的笔记常常只有一句顺口的结论：相关系数为零，说明两个变量互不影响；某个提交能读到，说明它已经合入当前分支；几个测试都通过，说明实现正确。句子很短，却把范围、条件和推理步骤一起省掉了。</p>
+<p>本篇接续<a href="/esblog/71068.html">自我解释与推理缺口</a>。我们把笔记的任务再推进一步：<strong>不只解释结论为什么成立，还构造一个满足前提、却使结论失败的对象，检查自己到底记住了多强的主张。</strong> 这是逻辑与写作方法，不是学习收益实验；本文不声称反例笔记能保证提高分数或记忆率。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="反例笔记阅读任务"><div><span class="workshop-kicker">先检查句子</span><strong class="workshop-title">“都成立”比“这次成立”强得多</strong><p>找出讨论对象、成立条件和量词，再决定需要证明什么、什么样的对象才构成反例。</p></div><div><span class="workshop-kicker">再改写笔记</span><strong class="workshop-title">让边界成为正文的一部分</strong><p>用概率、Git和函数三个小案例，把失败对象、核算过程与修订后的说法放在一起。</p></div></section>
+
+
+<h2 id="先把一句话拆成对象、前提与结论"><a href="#先把一句话拆成对象、前提与结论" class="headerlink" title="先把一句话拆成对象、前提与结论"></a>先把一句话拆成对象、前提与结论</h2><p>“任意两个变量，只要相关系数为零，就相互独立”含有三层信息：对象是某个范围内的随机变量对；前提是相关系数定义良好且为零；结论是统计独立。这里的“任意”“只要”都很强，不能用几个支持例子替代它们。</p>
+<p>把对象范围记作D，前提记作A(x)，结论记作B(x)。例如讨论样本方差的公式时，A至少需要限定样本数和分母；讨论一个Git命令时，A还可能包括当前工作区、目标引用和仓库状态。符号不是为了让笔记像论文，而是防止讨论到一半悄悄更换对象。</p>
+
+<figure class="article-equation" id="ce-eq1"><figcaption><strong>公式1｜全称断言与有效反例</strong></figcaption><div class="equation-body">主张：∀x ∈ D，A(x) ⇒ B(x)<br>反例：∃x ∈ D，A(x) ∧ ¬B(x)</div><p class="equation-note">A、B取真或假，没有物理单位。反例必须同时满足范围与前提，再使结论失败；不是找一个不属于D的对象。逻辑依据见<a href="#ce-ref1">文献1</a>、<a href="#ce-ref2">文献2</a>。</p></figure>
+
+
+<table>
+<thead>
+<tr>
+<th>候选对象的情况</th>
+<th>能否推翻“若A则B”</th>
+<th>笔记应记录什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A真，B真</td>
+<td>不能；只是一个支持例子</td>
+<td>它满足哪些条件，计算为什么成立</td>
+</tr>
+<tr>
+<td>A真，B假</td>
+<td>能；这是有效反例</td>
+<td>前提证据和结论失败的独立核算</td>
+</tr>
+<tr>
+<td>A假，B真</td>
+<td>不能</td>
+<td>它没有进入原主张的保证范围</td>
+</tr>
+<tr>
+<td>A假，B假</td>
+<td>不能</td>
+<td>先说明违反了哪项前提，不能只展示失败</td>
+</tr>
+</tbody></table>
+<p data-reading-numbers="true">例如，拿只有一条记录的数据去反驳“n≥<span class="reading-number">2</span>时采用n−1分母的样本方差公式”，并不是有效反例：你已经离开前提范围。相反，若实现明确承诺处理n≥<span class="reading-number">2</span>的有限输入，找出范围内的错误结果，就能反驳这份实现的正确性主张。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="前提真假与结论真假四格核对，可横向滚动"><img class="no-lazy" src="/images/posts/counterexample-truth-grid.svg" width="900" height="420" alt="四格中仅前提A为真而结论B为假的格子构成反例，其余格子不能推翻若A则B"></div><figcaption>图1｜原创逻辑核对图。先保留前提，再检查失败；四格不是经验发生频率。<a href="/images/posts/counterexample-truth-grid.svg">查看原图</a></figcaption></figure>
+<details class="mechanism-check"><summary>自检1：一个不满足前提的失败样本，为什么不算反例？</summary><div><p>原主张只承诺A成立时保证B。A为假时出现B为假，没有违背这项承诺。它可能提示前提值得扩大或应用范围很窄，但必须把“模型不适用”和“模型范围内结论错误”分开。</p></div></details>
+
+
+<h2 id="案例一：零相关并不保证独立"><a href="#案例一：零相关并不保证独立" class="headerlink" title="案例一：零相关并不保证独立"></a>案例一：零相关并不保证独立</h2><p data-reading-numbers="true">建立一个完整的概率模型：X以各<span class="reading-number">1/3</span>的概率取<span class="reading-number">−1</span>、<span class="reading-number">0</span>、<span class="reading-number">1</span>，Y=X²。这里不是从三条观测猜总体，也不需要估计总体参数；我们直接规定随机变量的联合分布。</p>
+<table>
+<thead>
+<tr>
+<th>X</th>
+<th>Y</th>
+<th>这对取值的概率</th>
+<th>对E[X]的贡献</th>
+<th>对E[XY]的贡献</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="reading-numeric-cell"><span class="reading-number">−1</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">−1/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">−1/3</span></td>
+</tr>
+<tr>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+</tr>
+<tr>
+<td class="reading-numeric-cell"><span class="reading-number">1</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1/3</span></td>
+</tr>
+</tbody></table>
+<p data-reading-numbers="true">因此E[X]=<span class="reading-number">0</span>、E[Y]=<span class="reading-number">2/3</span>、E[XY]=<span class="reading-number">0</span>，协方差为<span class="reading-number">0</span>。两列都不是常量：Var(X)=<span class="reading-number">2/3</span>，Var(Y)=<span class="reading-number">2/9</span>，所以Pearson相关系数确实有定义，并且为<span class="reading-number">0</span>。到这里，原断言的前提已经满足。</p>
+
+<figure class="article-equation" id="ce-eq2"><figcaption><strong>公式2｜用联合事件直接检查独立性</strong></figcaption><div class="equation-body">Cov(X,Y) = E[XY] − E[X]E[Y] = 0<br>P(X=0，Y=0) = 1/3<br>P(X=0)P(Y=0) = (1/3)(1/3) = 1/9</div><p class="equation-note" data-reading-numbers="true">概率无单位，且<span class="reading-number">1/3</span>≠<span class="reading-number">1/9</span>，因此这对随机变量不独立。若X有物理单位，Y=X²应带相应平方单位；本例取无量纲变量。独立事件的乘法条件见<a href="#ce-ref1">文献1</a>。</p></figure>
+
+
+<p data-reading-numbers="true">这就是完整反例：r=<span class="reading-number">0</span>的前提为真，独立的结论为假。它揭示了具体机制：正负中心积抵消，不会消除Y对X的确定关系。把“独立”换成日常语言里的“互不影响”还会混入因果含义，因此笔记中应先保留严格的统计术语。</p>
+<p>修订后的句子可以是：“Pearson相关系数描述线性共同变化；在本例中，零相关不能推出独立。是否独立，需要另行核对联合分布等条件。”这比含糊地补一句“特殊情况除外”有用，因为它说明原推理缺的是哪一步。与样本累计统计的关系可继续读<a href="/esblog/65816.html">在线协方差</a>。</p>
+
+<dl class="article-symbols" aria-label="一张填好的反例笔记"><div><dt>原主张</dt><dd data-reading-numbers="true">对所有相关系数有定义的变量对，r=<span class="reading-number">0</span>便能推出统计独立。</dd></div><div><dt>范围内的对象</dt><dd data-reading-numbers="true">X均匀取<span class="reading-number">−1</span>、<span class="reading-number">0</span>、<span class="reading-number">1</span>，Y=X²；两个方差均正，相关系数有定义。</dd></div><div><dt>失败证据</dt><dd data-reading-numbers="true">r=<span class="reading-number">0</span>，但联合事件概率<span class="reading-number">1/3</span>不等于边缘概率乘积<span class="reading-number">1/9</span>。</dd></div><div><dt>可用的新说法</dt><dd>零相关只排除了这一阶线性中心积；独立结论需要额外依据。</dd></div></dl>
+
+
+<h2 id="案例二：提交可读，不等于已经合并"><a href="#案例二：提交可读，不等于已经合并" class="headerlink" title="案例二：提交可读，不等于已经合并"></a>案例二：提交可读，不等于已经合并</h2><p><a href="/esblog/53185.html">Git worktree</a>提供了另一个很小的核对对象。设提交A产生了main分支，topic从A继续提交D；两个工作区属于同一仓库，普通分支引用与提交对象共享。main仍指向A，topic指向D，D的父提交是A。</p>
+<p>现在从main工作区读取D的对象可以成功，但沿main当前提交的父关系追溯，并不包含D。于是“对象在当前仓库可读”成立，“对象已进入main的祖先历史”失败。这推翻的是两件事之间的无条件推论，不是否认Git能够合并分支。</p>
+<table>
+<thead>
+<tr>
+<th>检查对象</th>
+<th>本例结果</th>
+<th>它回答的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对象D是否能读取</td>
+<td>能</td>
+<td>仓库里是否存在可访问的提交对象</td>
+</tr>
+<tr>
+<td>main当前指向</td>
+<td>A</td>
+<td>当前分支引用停在哪个提交</td>
+</tr>
+<tr>
+<td>D是否为main的祖先</td>
+<td>否</td>
+<td>当前分支是否包含该提交历史</td>
+</tr>
+<tr>
+<td>topic当前指向</td>
+<td>D</td>
+<td>另一条共享分支推进到了哪里</td>
+</tr>
+</tbody></table>
+<p>笔记中应分别保留“对象存在”“引用指向”“祖先关系”，而不要用“仓库里有了”概括三者。官方共享规则见<a href="#ce-ref3">文献3</a>；实际命令、父关系和未提交修改的实验，放在worktree原文中，本篇不重复一套操作程序。</p>
+<p>这个案例还提醒我们：反例要固定观察时刻。若之后main合并了D，历史关系会变化；不能把合并后的状态拿来替换原来反例的状态，也不能据此说原先的反例失效了。版本和时刻本来就是软件主张的条件之一。</p>
+<h2 id="案例三：有限测试通过，不等于全域等价"><a href="#案例三：有限测试通过，不等于全域等价" class="headerlink" title="案例三：有限测试通过，不等于全域等价"></a>案例三：有限测试通过，不等于全域等价</h2><p data-reading-numbers="true">假设目标函数是f(x)=x²，一个候选函数是g(x)=x。只测试x=<span class="reading-number">0</span>和x=<span class="reading-number">1</span>，两者的输出完全一致。若据此写下“两个函数对所有非负整数等价”，就把有限集合上的核对扩大成了整个非负整数域的保证。</p>
+
+<figure class="article-equation" id="ce-eq3"><figcaption><strong>公式3｜同一组测试，可以容纳不同函数</strong></figcaption><div class="equation-body">f(0)=g(0)=0；f(1)=g(1)=1<br>f(2)=4，而g(2)=2<br>所以：在{0,1}上一致，不推出在全部非负整数上一致</div><p class="equation-note" data-reading-numbers="true">这里比较精确整数函数，没有浮点容差问题。若契约本来只允许输入<span class="reading-number">0</span>和<span class="reading-number">1</span>，穷举这两个输入已经覆盖该有限域；不能忽略契约后说“测试永远不能证明任何事”。</p></figure>
+
+
+<p>测试仍然有价值：它能发现反例、核对边界、检查实现是否符合一份明确契约。问题在于报告的范围。记录“在这批输入与参考输出上通过”，与记录“对任意输入正确”，需要不同强度的依据。</p>
+<p>若输入域有限且可以完整枚举，穷举有可能检查全域；若需要从有限运行推到更大范围，就还需要结构性的证明或清楚的限制。随机对拍也应保存种子、生成范围和独立参考，不能把“随机”当作覆盖所有可能性的同义词。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart LR
+ A[写出原主张与讨论范围] --&gt; B[列出必须成立的前提]
+ B --&gt; C[构造范围内候选对象]
+ C --&gt; D[独立核对前提与结果]
+ D --&gt; E[记录失效位置与修订说法]
+  </pre></div>
+
+<h2 id="一个反例能否证明相反的极端结论"><a href="#一个反例能否证明相反的极端结论" class="headerlink" title="一个反例能否证明相反的极端结论"></a>一个反例能否证明相反的极端结论</h2><p>不能。从“并非所有对象都满足B”，不能推出“所有对象都不满足B”。零相关但不独立的例子，既没有证明所有零相关变量都不独立，也没有证明相关系数无用；它只否定了那条过强的推出关系。</p>
+<p>同样，找到一次失败不能直接推翻“多数情况下成功”“平均误差较低”或“失败概率不超过某阈值”。这些是统计主张，必须检查抽样单位、分母、误差口径和不确定性。先辨认量词和概率限定，再选择检验方法，才不会把单个故事当成频率结论。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="从原主张到边界修订的五步笔记，可横向滚动"><img class="no-lazy" src="/images/posts/counterexample-note-chain.svg" width="900" height="420" alt="笔记依次记录主张、前提、候选对象、独立核算与适用边界，修订后保留反例而非删除失败记录"></div><figcaption>图2｜原创核对顺序。反例留在修订记录中，帮助下一次识别相同的推理跳跃；这不是学习效果实测。<a href="/images/posts/counterexample-note-chain.svg">查看原图</a></figcaption></figure>
+<details class="mechanism-check"><summary>自检2：出现一个失败，能否推出“这个方法总是失败”？</summary><div><p>不能。一个有效反例足以否定相应的全称保证，却没有证明所有对象都失败。需要准确保留否定范围；“并非全部”与“全部不”是不同主张。</p></div></details>
+<details class="mechanism-check"><summary>自检3：两个函数在全部允许输入上穷举一致，仍只能算随便试了几次吗？</summary><div><p>不是。若契约的有限输入域明确、枚举确实完整，且参考与判定正确，那么已覆盖这份有限契约。需要防止的是把有限测试集合偷换成一个更大的未覆盖输入域。</p></div></details>
+
+
+<h2 id="条件怎样补，才不是把句子改成空话"><a href="#条件怎样补，才不是把句子改成空话" class="headerlink" title="条件怎样补，才不是把句子改成空话"></a>条件怎样补，才不是把句子改成空话</h2><p>有价值的条件应当能在看到结果之前检查。例如“当前对象属于同一仓库”“两个变量方差非零”“这组公式使用绝对温度”，都能独立确认。若把条件补成“在所有成功的情况下都会成功”，虽然绕开了失败，却不再帮助读者决定何时使用。</p>
+<p>修订时先问三个问题：条件是否对应实际失效机制？它能否在应用前判断？结论是否缩到证据真正支持的强度？如果反例只显示原结论缺少依据，就诚实地保留“尚不能推出”，不要立刻发明一个未经证明的新充分条件。</p>
+<p>还应给条件注明来源：它来自定义、推导、运行实验，还是经验约定。不同来源可以并列在同一张笔记中，但应分别标注。可回看<a href="/esblog/70735.html">引用溯源</a>的方法，分开来源说了什么、自己计算了什么，以及哪些仍只是解释。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[发现一个看似失败的例子] --&gt; B{属于原范围且满足前提吗}
+ B --&gt;|否| C[记录适用范围问题]
+ B --&gt;|是| D{结果经过独立核对吗}
+ D --&gt;|否| E[先排查计算与记录错误]
+ D --&gt;|是| F[否定原全称保证]
+ F --&gt; G[修订条件或降低结论强度]
+  </pre></div>
+
+<h2 id="把反例变成下一次能回答的问题"><a href="#把反例变成下一次能回答的问题" class="headerlink" title="把反例变成下一次能回答的问题"></a>把反例变成下一次能回答的问题</h2><p data-reading-numbers="true">不要只留下“反例：X与X²”。更好的闭卷问题是：“给出一个r=<span class="reading-number">0</span>但不独立的完整有限分布，核对方差、协方差和一个联合事件。”这样能检查是否记住了真正承担推理的部分，而不是只背下一个名词组合。</p>
+<p>软件案例也可以问：“main停在A，topic停在D，D的父提交为A。同仓库可以读取D，为什么main仍不包含D？”作答时必须画出父关系与引用位置，不能只回答“因为worktree”。</p>
+<p>把这些问题放回<a href="/esblog/70846.html">提取练习</a>或<a href="/esblog/70957.html">交错练习</a>时，应另外记录回答、反馈和修订时间。本篇提供的是可核对的练习材料，没有测量人的长期记忆或把逻辑正确当作学习收益证据。</p>
+
+<details class="mechanism-check"><summary>自检4：没找到反例，是否就可以把猜想改标为定理？</summary><div><p>不能。搜索可能不充分，候选构造也可能没有触及失效机制。应记录搜索范围与已有论证；若要给出全称保证，仍需足以覆盖该范围的证明或完整核验。没有观察到失败，是搜索结果，不会自动成为证明。</p></div></details>
+
+
+<h2 id="参考文献与核对范围"><a href="#参考文献与核对范围" class="headerlink" title="参考文献与核对范围"></a>参考文献与核对范围</h2>
+<ol class="article-references"><li id="ce-ref1"><cite>University of Washington，CSE547/STAT548：Proofs Probability。</cite> <a target="_blank" rel="noopener" href="https://courses.cs.washington.edu/courses/cse547/24sp/handouts/CSE547_Proofs_Probability.html">全称/存在主张与事件独立</a>。核对量词、反例的逻辑作用与概率乘法条件；三个具体案例与核算由本文独立展开。<a href="#ce-eq2">返回概率例子</a>。</li><li id="ce-ref2"><cite>Margaret M. Fleck，University of Illinois：Building Blocks for Theoretical Computer Science，第3章。</cite> <a target="_blank" rel="noopener" href="https://mfleck.cs.illinois.edu/building-blocks/version-1.4/proofs.html">Proofs</a>。用于定义、前提和反例方法的核对，不作为学习效果研究。<a href="#ce-eq1">返回公式1</a>。</li><li id="ce-ref3"><cite>Git官方：git-worktree，2.39.0。</cite> <a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-worktree/2.39.0">共享对象、分支与各工作区HEAD</a>。软件案例沿用站内已实际验证的worktree教学历史；本篇只解释逻辑关系，不提供新的仓库操作程序。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/71179.html">https://eulersail.com/esblog/71179.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%8F%8D%E4%BE%8B/">反例</a><a class="post-meta__tags" href="/tags/%E9%80%BB%E8%BE%91/">逻辑</a><a class="post-meta__tags" href="/tags/%E7%9F%A5%E8%AF%86%E7%AC%94%E8%AE%B0/">知识笔记</a><a class="post-meta__tags" href="/tags/%E8%AF%81%E6%8D%AE/">证据</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/85972.html" title="辐射换热 从绝对温度到等效系数与线性化边界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">辐射换热 从绝对温度到等效系数与线性化边界</div></div></a></div><div class="next-post pull-right"><a href="/esblog/53185.html" title="Git worktree 从多工作区到分支占用与审查隔离"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Git worktree 从多工作区到分支占用与审查隔离</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">148</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">261</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%8B%86%E6%88%90%E5%AF%B9%E8%B1%A1%E3%80%81%E5%89%8D%E6%8F%90%E4%B8%8E%E7%BB%93%E8%AE%BA"><span class="toc-text">先把一句话拆成对象、前提与结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%B8%80%EF%BC%9A%E9%9B%B6%E7%9B%B8%E5%85%B3%E5%B9%B6%E4%B8%8D%E4%BF%9D%E8%AF%81%E7%8B%AC%E7%AB%8B"><span class="toc-text">案例一：零相关并不保证独立</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%BA%8C%EF%BC%9A%E6%8F%90%E4%BA%A4%E5%8F%AF%E8%AF%BB%EF%BC%8C%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%B7%B2%E7%BB%8F%E5%90%88%E5%B9%B6"><span class="toc-text">案例二：提交可读，不等于已经合并</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%B8%89%EF%BC%9A%E6%9C%89%E9%99%90%E6%B5%8B%E8%AF%95%E9%80%9A%E8%BF%87%EF%BC%8C%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%85%A8%E5%9F%9F%E7%AD%89%E4%BB%B7"><span class="toc-text">案例三：有限测试通过，不等于全域等价</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E5%8F%8D%E4%BE%8B%E8%83%BD%E5%90%A6%E8%AF%81%E6%98%8E%E7%9B%B8%E5%8F%8D%E7%9A%84%E6%9E%81%E7%AB%AF%E7%BB%93%E8%AE%BA"><span class="toc-text">一个反例能否证明相反的极端结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E6%80%8E%E6%A0%B7%E8%A1%A5%EF%BC%8C%E6%89%8D%E4%B8%8D%E6%98%AF%E6%8A%8A%E5%8F%A5%E5%AD%90%E6%94%B9%E6%88%90%E7%A9%BA%E8%AF%9D"><span class="toc-text">条件怎样补，才不是把句子改成空话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%8A%E5%8F%8D%E4%BE%8B%E5%8F%98%E6%88%90%E4%B8%8B%E4%B8%80%E6%AC%A1%E8%83%BD%E5%9B%9E%E7%AD%94%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">把反例变成下一次能回答的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E6%A0%B8%E5%AF%B9%E8%8C%83%E5%9B%B4"><span class="toc-text">参考文献与核对范围</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85972.html" title="辐射换热 从绝对温度到等效系数与线性化边界">辐射换热 从绝对温度到等效系数与线性化边界</a><time datetime="2026-11-06T16:40:00.000Z" title="发表于 2026-11-07 00:40:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/71179.html" title="反例笔记 从绝对断言到可核对的适用条件">反例笔记 从绝对断言到可核对的适用条件</a><time datetime="2026-11-06T16:30:00.000Z" title="发表于 2026-11-07 00:30:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53185.html" title="Git worktree 从多工作区到分支占用与审查隔离">Git worktree 从多工作区到分支占用与审查隔离</a><time datetime="2026-11-06T02:20:00.000Z" title="发表于 2026-11-06 10:20:00">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65816.html" title="在线协方差 从成对记录到相关系数与分块合并">在线协方差 从成对记录到相关系数与分块合并</a><time datetime="2026-11-06T02:10:00.000Z" title="发表于 2026-11-06 10:10:00">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46761.html" title="HTTP 断点续传 从字节范围到版本验证">HTTP 断点续传 从字节范围到版本验证</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

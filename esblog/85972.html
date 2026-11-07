@@ -1,0 +1,328 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>辐射换热 从绝对温度到等效系数与线性化边界 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从灰表面与等温黑体环境的能量账本推导净辐射、精确等效系数和平均温度近似误差，手算400K表面的换热，并区分空气温度、辐射环境与冷却时间常数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="辐射换热 从绝对温度到等效系数与线性化边界">
+<meta property="og:url" content="https://eulersail.com/esblog/85972.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从灰表面与等温黑体环境的能量账本推导净辐射、精确等效系数和平均温度近似误差，手算400K表面的换热，并区分空气温度、辐射环境与冷却时间常数。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-06T16:40:00.000Z">
+<meta property="article:modified_time" content="2026-11-06T16:40:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="热辐射">
+<meta property="article:tag" content="传热">
+<meta property="article:tag" content="绝对温度">
+<meta property="article:tag" content="线性化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/85972.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '辐射换热 从绝对温度到等效系数与线性化边界',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-07 00:40:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261107-2"><link rel="stylesheet" href="/css/home-editorial.css?v=20261106-2"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261106-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">148</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">261</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">辐射换热 从绝对温度到等效系数与线性化边界</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-06T16:40:00.000Z" title="发表于 2026-11-07 00:40:00">2026-11-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-06T16:40:00.000Z" title="更新于 2026-11-07 00:40:00">2026-11-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/">化学与材料</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="辐射换热 从绝对温度到等效系数与线性化边界" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="materials"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>MATERIALS NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>9</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>4</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>把概念、模型计算与实测证据分开，阅读时留意条件、单位和比较口径。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>9 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先固定温度、面积与表面条件"><span>01</span><strong>先固定温度、面积与表面条件</strong></a></li><li><a href="#为什么摄氏温差可用，摄氏温度的四次方不可用"><span>02</span><strong>为什么摄氏温差可用，摄氏温度的四次方不可用</strong></a></li><li><a href="#一个400K表面的完整手算"><span>03</span><strong>一个400K表面的完整手算</strong></a></li><li><a href="#等效辐射系数：先做精确分解"><span>04</span><strong>等效辐射系数：先做精确分解</strong></a></li><li><a href="#平均温度近似的误差能算出来"><span>05</span><strong>平均温度近似的误差能算出来</strong></a></li><li><a href="#与对流并存：两个通道相加，而非串联"><span>06</span><strong>与对流并存：两个通道相加，而非串联</strong></a></li><li><a href="#空气温度与辐射环境温度不同会怎样"><span>07</span><strong>空气温度与辐射环境温度不同会怎样</strong></a></li><li><a href="#使用前的一张核算清单"><span>08</span><strong>使用前的一张核算清单</strong></a></li><li><a href="#参考文献与适用位置"><span>09</span><strong>参考文献与适用位置</strong></a></li></ol></nav></details></section><p><a href="/esblog/85861.html">集总热容</a>把物体近似成一个温度，用对流换热得到指数冷却。但同一表面还会发出辐射，也会吸收周围的辐射。当辐射与对流处于相近量级时，仅把旧公式中的h换成一个猜测常数，可能同时漏掉温度依赖和环境温度的区别。</p>
+<p>本篇研究一个边界清楚的模型：<strong>温度均匀、不透明的灰表面，完全看到温度均匀的黑体环境；介质不参与辐射，发射率作为给定常数。</strong> 我们先分清发出、吸收和净换热，再推导等效系数及其近似误差。全文数值均为合成算例，不对应某个真实材料牌号、温度传感器或寿命试验。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="辐射换热阅读任务"><div><span class="workshop-kicker">先列能量账</span><strong class="workshop-title">发出了多少，不等于净失去了多少</strong><p>同一表面一边发出、一边吸收；净功率的符号应由两边温度决定。</p></div><div><span class="workshop-kicker">再决定能否近似</span><strong class="workshop-title">写成hΔT，也未必是常系数模型</strong><p>区分精确因式分解、平均温度近似与把系数冻结在环境温度的近似。</p></div></section>
+
+
+<h2 id="先固定温度、面积与表面条件"><a href="#先固定温度、面积与表面条件" class="headerlink" title="先固定温度、面积与表面条件"></a>先固定温度、面积与表面条件</h2><p>表面温度记作Tₛ，辐射环境温度记作Tᵣ，辐射面积为A。本文环境是等温黑体包围面，表面全部辐射视域都落在这个环境上，不存在一部分朝向别的温度的物体。灰表面意味着在所采用的模型中，用一个不随波长变化的发射率ε表征表面，并使用相应的吸收率关系。</p>
+<p>黑体单位面积发射功率为σT⁴；灰表面发射为εσTₛ⁴。在这里，环境给表面的辐照度为σTᵣ⁴，表面吸收其中的ε部分。因此净向外功率是发出减去吸收。基础关系与黑体环境的说明见<a href="#rad-ref1">文献1</a>。</p>
+
+<figure class="article-equation" id="rad-eq1"><figcaption><strong>公式R1｜灰表面对等温黑体环境的净辐射</strong></figcaption><div class="equation-body">Q̇_emit = εσATₛ⁴；Q̇_abs = εσATᵣ⁴<br>Q̇_rad = εσA(Tₛ⁴ − Tᵣ⁴)</div><p class="equation-note" data-reading-numbers="true">以离开物体为正，Q̇单位W，A单位m²，Tₛ与Tᵣ必须用K。ε无单位，取<span class="reading-number">0</span>至<span class="reading-number">1</span>；本文计算用σ≈<span class="reading-number">5.670374419</span>×<span class="reading-quantity"><span class="reading-number">10⁻⁸</span>W</span>/(m²·K⁴)，是常数十进制值的截取，原常数信息见<a href="#rad-ref2">文献2</a>。</p></figure>
+<dl class="article-symbols" aria-label="辐射模型符号与边界"><div><dt>Tₛ、Tᵣ｜绝对温度</dt><dd>分别属于表面与辐射包围环境，均用K。空气温度Tₐ是另一项边界条件，不能自动代替Tᵣ。</dd></div><div><dt>ε、σ｜表面参数与常数</dt><dd data-reading-numbers="true">ε在本例固定为<span class="reading-number">0.8</span>，仅为合成参数。σ带有K⁻⁴单位；改变温度零点后不能沿用四次方数值。</dd></div><div><dt>A、Q̇｜面积与功率</dt><dd>面积用于辐射能量账本。Q̇为W，累计传递能量还需对时间积分，不能把瞬时功率直接当作J。</dd></div></dl>
+
+
+<p>这不是任意两块灰表面都能直接使用的表达式。若面对的是另一块有限、非黑表面，几何视角与多次反射会进入能量账；MIT的两无限灰平板结果就含两个发射率组成的分母，见<a href="#rad-ref3">文献3</a>。把那一分母省去，再把ε随意换成两个发射率的乘积，并不一般成立。</p>
+<h2 id="为什么摄氏温差可用，摄氏温度的四次方不可用"><a href="#为什么摄氏温差可用，摄氏温度的四次方不可用" class="headerlink" title="为什么摄氏温差可用，摄氏温度的四次方不可用"></a>为什么摄氏温差可用，摄氏温度的四次方不可用</h2><p data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">400</span>K</span>与<span class="reading-quantity"><span class="reading-number">300</span>K</span>分别是<span class="reading-quantity"><span class="reading-number">126.85</span>°C</span>与<span class="reading-quantity"><span class="reading-number">26.85</span>°C</span>，温差都是<span class="reading-quantity"><span class="reading-number">100</span>K</span>或<span class="reading-quantity"><span class="reading-number">100</span>°C</span>。温差数值相同，是两种标度的单位间隔相同；绝对温度的零点却相差<span class="reading-quantity"><span class="reading-number">273.15</span>K</span>，换算依据见<a href="#rad-ref4">文献4</a>。</p>
+<p data-reading-numbers="true">所以在线性的hA(Tₛ−Tₐ)中，温差可用摄氏度数值计算；而Tₛ⁴−Tᵣ⁴必须先把两边转换成K。不能把<span class="reading-number">126.85⁴</span><span class="reading-number">−26.85⁴</span>放进R1后仍使用同一个σ，也不能把四次方之差写成(<span class="reading-number">400</span><span class="reading-number">−300</span>)⁴。</p>
+<p>检查量纲也能发现问题：σ的单位是W/(m²·K⁴)，乘上m²和K⁴才能得到W。量纲检查不能识别所有错误，但它能提醒我们，“温度差相同”不是任意非线性表达都不变的理由。</p>
+<h2 id="一个400K表面的完整手算"><a href="#一个400K表面的完整手算" class="headerlink" title="一个400K表面的完整手算"></a>一个400K表面的完整手算</h2><p data-reading-numbers="true">取ε=<span class="reading-number">0.8</span>，A=<span class="reading-quantity"><span class="reading-number">0.1</span>m²</span>，Tₛ=<span class="reading-quantity"><span class="reading-number">400</span>K</span>，Tᵣ=<span class="reading-quantity"><span class="reading-number">300</span>K</span>。先分别计算两笔正的功率，再按约定相减：</p>
+
+<div class="table-wrap"><table id="radiation-hand-table"><thead><tr><th>能量项</th><th>代入关系</th><th>结果，W</th></tr></thead><tbody><tr><td>表面发出</td><td data-reading-numbers="true"><span class="reading-number">0.8</span>×σ×<span class="reading-number">0.1</span>×<span class="reading-number">400⁴</span></td><td class="reading-numeric-cell"><span class="reading-number">116.129268</span></td></tr><tr><td>吸收环境辐射</td><td data-reading-numbers="true"><span class="reading-number">0.8</span>×σ×<span class="reading-number">0.1</span>×<span class="reading-number">300⁴</span></td><td class="reading-numeric-cell"><span class="reading-number">36.744026</span></td></tr><tr><td>净向外</td><td>发出−吸收</td><td class="reading-numeric-cell"><span class="reading-number">79.385242</span></td></tr></tbody></table></div>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="发射吸收与净辐射三项能量账，可横向滚动"><img class="no-lazy" src="/images/posts/radiation-energy-account.svg" width="900" height="420" alt="400K灰表面发出116.129268W，吸收300K黑体环境辐射36.744026W，净向外79.385242W，合成参数发射率0.8面积0.1平方米"></div><figcaption>图1｜原创合成能量账；箭头表示方向，不用长度冒充实测能量。计算使用同一面积与同一发射率。<a href="/images/posts/radiation-energy-account.svg">查看原图</a></figcaption></figure>
+
+
+<p data-reading-numbers="true">若只写<span class="reading-quantity"><span class="reading-number">116.129268</span>W</span>，就把环境吸收这一笔漏掉了。若交换两边温度，净功率变为<span class="reading-quantity"><span class="reading-number">−79.385242</span>W</span>，说明物体净吸热；它仍然在发射辐射，只是吸收得更多。两边同温时净功率为<span class="reading-number">0</span>，同样不代表两笔功率分别为<span class="reading-number">0</span>。</p>
+
+<details class="mechanism-check"><summary>自检1：300K表面对400K环境，是否因为“比较冷”就停止发射？</summary><div><p>没有停止。发出与吸收各自仍可为正；按离开物体为正的约定，净辐射为负，表示吸收大于发出。要报告净换热，应保留两笔能量，而不是只判断表面有没有发射。</p></div></details>
+
+
+<h2 id="等效辐射系数：先做精确分解"><a href="#等效辐射系数：先做精确分解" class="headerlink" title="等效辐射系数：先做精确分解"></a>等效辐射系数：先做精确分解</h2><p>四次方之差可以分解为(Tₛ−Tᵣ)(Tₛ+Tᵣ)(Tₛ²+Tᵣ²)。因此在同一组表面与环境温度下，可以把R1精确地改写成类似对流的形式：</p>
+
+<figure class="article-equation" id="rad-eq2"><figcaption><strong>公式R2｜随两边温度变化的精确等效系数</strong></figcaption><div class="equation-body">h_rad = εσ(Tₛ + Tᵣ)(Tₛ² + Tᵣ²)<br>Q̇_rad = A h_rad (Tₛ − Tᵣ)</div><p class="equation-note" data-reading-numbers="true">h_rad单位W/(m²·K)。这是代数恒等式，不是把四次方近似成一次方；当Tₛ=Tᵣ=T时，上式连续给出h_rad=<span class="reading-number">4</span>εσT³，但净功率仍为<span class="reading-number">0</span>。</p></figure>
+
+
+<p data-reading-numbers="true">本例h_rad=<span class="reading-quantity"><span class="reading-number">7.938524</span>W/(m²·K)</span>，于是<span class="reading-number">0.1</span>×<span class="reading-number">7.938524</span>×<span class="reading-number">100</span>≈<span class="reading-quantity"><span class="reading-number">79.385242</span>W</span>，与四次方直接计算一致。在这个温度点，还可以写辐射热阻R_rad=<span class="reading-number">1</span>/(Ah_rad)，但它随温度改变；不能把指定温度点的等效热阻当作整个冷却过程的常数。</p>
+<p data-reading-numbers="true">当ε=<span class="reading-number">0</span>时，模型中的辐射通道关闭，h_rad=<span class="reading-number">0</span>。此时热阻形式应理解为无穷大，而不是继续做除以<span class="reading-number">0</span>的数值计算。相等温度时，直接从因式表达取得连续系数，也比用Q̇/[A(Tₛ−Tᵣ)]得到<span class="reading-number">0/0</span>更清楚。</p>
+<h2 id="平均温度近似的误差能算出来"><a href="#平均温度近似的误差能算出来" class="headerlink" title="平均温度近似的误差能算出来"></a>平均温度近似的误差能算出来</h2><p data-reading-numbers="true">令Tₘ=(Tₛ+Tᵣ)/<span class="reading-number">2</span>，ΔT=Tₛ−Tᵣ。代入R2，可得h_rad=<span class="reading-number">4</span>εσTₘ³+εσTₘ(ΔT)²。只有在第二项足够小时，才近似采用hₘ=<span class="reading-number">4</span>εσTₘ³。</p>
+
+<figure class="article-equation" id="rad-eq3"><figcaption><strong>公式R3｜平均温度近似的相对误差</strong></figcaption><div class="equation-body">hₘ = 4εσTₘ³<br>|Q̇ₘ − Q̇_rad| / |Q̇_rad| = (ΔT)² / [4Tₘ² + (ΔT)²]</div><p class="equation-note" data-reading-numbers="true">要求A&gt;<span class="reading-number">0</span>、ε&gt;<span class="reading-number">0</span>、两边温度为正且不相等；Q̇ₘ=AhₘΔT。右侧无单位。若净功率为<span class="reading-number">0</span>，相对误差本身未定义，不能把<span class="reading-number">0/0</span>直接填成<span class="reading-number">0</span>；其小温差极限为<span class="reading-number">0</span>。该式只量化这一项近似，不能代表灰体假设的总误差。</p></figure>
+
+
+<p data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">400</span>K</span>与<span class="reading-quantity"><span class="reading-number">300</span>K</span>时，Tₘ=<span class="reading-quantity"><span class="reading-number">350</span>K</span>，hₘ≈<span class="reading-quantity"><span class="reading-number">7.779754</span>W/(m²·K)</span>，净辐射近似值约<span class="reading-quantity"><span class="reading-number">77.797537</span>W</span>，比精确值低<span class="reading-quantity"><span class="reading-number">2</span>%</span>。这<span class="reading-quantity"><span class="reading-number">2</span>%</span>来自<span class="reading-number">100²</span>/[<span class="reading-number">4</span>×<span class="reading-number">350²</span><span class="reading-number">+100²</span>]，不是观察图形后估计的百分比。</p>
+<p data-reading-numbers="true">若改为把系数冻结在环境<span class="reading-quantity"><span class="reading-number">300</span>K</span>，得到h₀=<span class="reading-number">4</span>εσ<span class="reading-number">300³</span>≈<span class="reading-quantity"><span class="reading-number">4.899203</span>W/(m²·K)</span>，对同一<span class="reading-quantity"><span class="reading-number">100</span>K</span>温差只预测<span class="reading-quantity"><span class="reading-number">48.992035</span>W</span>，低约<span class="reading-quantity"><span class="reading-number">38.29</span>%</span>。两种计算都常被叫作“线性化”，参照温度不同，误差也明显不同。应写明参照温度与允许误差，而不是只写“温差不太大”。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="表面温度改变时精确辐射系数与固定环境系数对照，可横向滚动"><img class="no-lazy" src="/images/posts/radiation-coefficient-growth.svg" width="900" height="460" alt="环境固定300K时，表面温度300、400、500、600K对应精确辐射系数约4.899、7.939、12.339、18.372，而冻结在300K的系数一直为4.899"></div><figcaption data-reading-numbers="true">图2｜原创模型曲线，ε固定<span class="reading-number">0.8</span>、Tᵣ固定<span class="reading-quantity"><span class="reading-number">300</span>K</span>；不是任何材料的测量曲线。<span class="reading-quantity"><span class="reading-number">300</span>K</span>点使用连续延拓值，不能据此定义零净热流的相对误差。<a href="/images/posts/radiation-coefficient-growth.svg">查看原图</a></figcaption></figure>
+<aside class="article-takeaway" role="note"><strong>重点｜精确“等效系数”和常数近似要分开</strong><p>R2保留了温度依赖；R3近似后仍需说明Tₘ。把h_rad写成一个符号，不会让实际过程自动变成常系数指数冷却。</p></aside>
+<details class="mechanism-check"><summary>自检2：写成AhΔT以后，是否就可以沿用一个固定时间常数？</summary><div><p>不能直接沿用。精确h_rad同时依赖表面与环境温度，冷却时通常在变化。只有限定温度附近、固定边界并明确采用局部常系数近似后，才有相应的近似时间常数。</p></div></details>
+
+
+<h2 id="与对流并存：两个通道相加，而非串联"><a href="#与对流并存：两个通道相加，而非串联" class="headerlink" title="与对流并存：两个通道相加，而非串联"></a>与对流并存：两个通道相加，而非串联</h2><p>若同一面积还与空气对流换热，空气温度为Tₐ，给定对流系数h，则瞬时对流功率为hA(Tₛ−Tₐ)。两个通道同时从表面交换能量，功率应相加。本文为便于核算，假定对流面积与辐射面积相同；真实几何不同时，要分别保留各自面积。</p>
+
+<figure class="article-equation" id="rad-eq4"><figcaption><strong>公式R4｜单温度物体的对流—辐射能量平衡</strong></figcaption><div class="equation-body">C·dTₛ/dt = −A[h(Tₛ − Tₐ) + εσ(Tₛ⁴ − Tᵣ⁴)]</div><p class="equation-note">C为恒定热容，单位J/K，时间用s；没有内部热源、相变和其他传热通道，且物体内部近等温。h单位W/(m²·K)。空气与辐射环境分别由Tₐ、Tᵣ给出；内部近等温条件仍须核对，不能直接照搬仅含对流的模型适用结论。</p></figure>
+
+
+<p data-reading-numbers="true">继续取<span class="reading-quantity"><span class="reading-number">400</span>K</span>表面，令Tₐ=Tᵣ=<span class="reading-quantity"><span class="reading-number">300</span>K</span>，h=<span class="reading-quantity"><span class="reading-number">10</span>W/(m²·K)</span>。对流向外<span class="reading-quantity"><span class="reading-number">100</span>W</span>，辐射向外<span class="reading-quantity"><span class="reading-number">79.385242</span>W</span>，总向外<span class="reading-quantity"><span class="reading-number">179.385242</span>W</span>。若C=<span class="reading-quantity"><span class="reading-number">1000</span>J/K</span>，初始降温速率约<span class="reading-quantity"><span class="reading-number">−0.179385</span>K/s</span>。这里计算的是这一时刻的斜率，没有假定整个过程保持此速率。</p>
+<p data-reading-numbers="true">在<span class="reading-quantity"><span class="reading-number">300</span>K</span>附近，辐射的局部系数约<span class="reading-quantity"><span class="reading-number">4.899203</span>W/(m²·K)</span>。相同环境温度下的小扰动可用h与该局部系数之和，得到近似时间常数约<span class="reading-quantity"><span class="reading-number">671.176818</span>s</span>；若完全忽略辐射，只考虑对流，时间常数为<span class="reading-quantity"><span class="reading-number">1000</span>s</span>。二者的差异属于这组模型参数，不是实际器件响应的实测结论。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart LR
+ A[同一个表面温度] --&gt; B[向空气对流]
+ A --&gt; C[与包围环境交换辐射]
+ B --&gt; D[按同一正方向相加功率]
+ C --&gt; D
+ D --&gt; E[由热容决定瞬时温度变化]
+  </pre></div>
+
+<h2 id="空气温度与辐射环境温度不同会怎样"><a href="#空气温度与辐射环境温度不同会怎样" class="headerlink" title="空气温度与辐射环境温度不同会怎样"></a>空气温度与辐射环境温度不同会怎样</h2><p data-reading-numbers="true">保持h=<span class="reading-number">10</span>、ε=<span class="reading-number">0.8</span>，但令空气<span class="reading-quantity"><span class="reading-number">300</span>K</span>，辐射环境<span class="reading-quantity"><span class="reading-number">400</span>K</span>。一个温度在两者之间的表面，一边从热环境吸收净辐射，一边向冷空气对流放热。稳态时净功率总和为<span class="reading-number">0</span>，物体不必与空气同温。</p>
+<p data-reading-numbers="true">消去共同面积后，稳态方程为<span class="reading-number">10</span>(Tₛ<span class="reading-number">−300</span>)<span class="reading-number">+0.8</span>σ(Tₛ⁴<span class="reading-number">−400⁴</span>)=<span class="reading-number">0</span>。左端在<span class="reading-quantity"><span class="reading-number">300</span>K</span>为负，在<span class="reading-quantity"><span class="reading-number">400</span>K</span>为正；其对Tₛ的导数为<span class="reading-number">10</span><span class="reading-number">+4</span>×<span class="reading-number">0.8</span>σTₛ³，在正温度下严格为正，因此区间内恰有一个根。数值解约<span class="reading-quantity"><span class="reading-number">348.904614</span>K</span>，即<span class="reading-quantity"><span class="reading-number">75.754614</span>°C</span>，高于空气温度。</p>
+<p>这个例子说明，表面或探头的温度可能同时受空气和周围壁面的影响。它并未实现真实温度计模型：支撑导热、真实表面光谱特性、流动与内部温度分布均未纳入。MIT的热电偶示例也通过两条传热通道平衡解释这种偏离，见<a href="#rad-ref3">文献3</a>，但其参数与本文算例不同。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[准备使用辐射公式] --&gt; B[先转换为绝对温度]
+ B --&gt; C[核对灰表面与包围环境条件]
+ C --&gt; D[先算精确净功率和方向]
+ D --&gt; E{是否需要常系数近似}
+ E --&gt;|需要| F[写参照温度与误差范围]
+ E --&gt;|不需要| G[保留温度依赖关系]
+  </pre></div>
+
+
+<details class="mechanism-check"><summary>自检3：空气与壁面温度不同，能否只保留一个“环境温度”？</summary><div><p>不能一般地合并。对流使用空气温度Tₐ，辐射使用包围环境温度Tᵣ，两者进入不同函数。只有附加条件允许时，才能定义另一个明确的等效环境，不能直接把其中一个代入所有项。</p></div></details>
+<details class="mechanism-check"><summary>自检4：合成参数下近似只差2%，是否说明真实表面测温也只差2%？</summary><div><p data-reading-numbers="true">不说明。<span class="reading-quantity"><span class="reading-number">2</span>%</span>只比较同一灰体模型下的精确四次方差与平均温度近似，未包含发射率不确定、几何、参与介质、传感器导热或内部温差。模型内近似误差与模型对现实的偏差，应分别评估。</p></div></details>
+
+
+<h2 id="使用前的一张核算清单"><a href="#使用前的一张核算清单" class="headerlink" title="使用前的一张核算清单"></a>使用前的一张核算清单</h2><p>先记录每个温度属于哪里、是否已转换成K；再写明辐射面积、包围条件与ε的来源。真实ε可能依赖波段、温度、方向和表面状态，本文固定ε是建模选择，不是从材料名字直接读取的常数。</p>
+<p>随后分别列出发出与吸收，确认净功率符号；与对流并存时，把各通道按同一正方向相加。最后才讨论是否冻结等效系数，并把参照温度、温度区间及误差口径一起保留在笔记里。若转向<a href="/esblog/85750.html">稳态导热</a>或热应力问题，还需补上内部温度场和边界耦合，不应直接复用单温度假设。</p>
+<p>本篇内部验证用独立高精度四次方计算核对因式分解、平均温度误差、温度交换、面积缩放和边界；稳态根另检查区间与残差。它核对的是合成算术与选定方程，不测量真实辐射、材料参数或设备性能。</p>
+<h2 id="参考文献与适用位置"><a href="#参考文献与适用位置" class="headerlink" title="参考文献与适用位置"></a>参考文献与适用位置</h2>
+<ol class="article-references"><li id="rad-ref1"><cite>MIT Unified Engineering：19.1 Ideal Radiators；19.2 Kirchhoff's Law and Real Bodies。</cite> <a target="_blank" rel="noopener" href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node134.html">黑体与腔内辐照</a>、<a target="_blank" rel="noopener" href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node135.html">灰体表面关系</a>。用于本篇能量模型的基础条件；R1据这些条件直接列账。<a href="#rad-eq1">返回公式R1</a>。</li><li id="rad-ref2"><cite>NIST：2022 CODATA Fundamental Physical Constants Complete Listing。</cite> <a target="_blank" rel="noopener" href="https://physics.nist.gov/cuu/Constants/Table/allascii.txt">完整常数表，Stefan-Boltzmann条目</a>。σ的完整值由定义常数关系确定，表列5.670374419…×10⁻⁸W/(m²·K⁴)；本文使用截取数值，不将9位小数当作完整常数。</li><li id="rad-ref3"><cite>MIT Unified Engineering：19.3 Radiation Heat Transfer Between Planar Surfaces。</cite> <a target="_blank" rel="noopener" href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node136.html">灰平板与热电偶能量平衡</a>。用于说明任意两灰表面不能直接套单表面黑体环境表达式，以及空气/壁面温度不同的影响；本文未复制其数值算例。</li><li id="rad-ref4"><cite>NIST SP330，第2节。</cite> <a target="_blank" rel="noopener" href="https://www.nist.gov/pml/special-publication-330/sp-330-section-2">开尔文与摄氏温度关系</a>。核对273.15K偏移及温差单位间隔相同的条件。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/85972.html">https://eulersail.com/esblog/85972.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%83%AD%E8%BE%90%E5%B0%84/">热辐射</a><a class="post-meta__tags" href="/tags/%E4%BC%A0%E7%83%AD/">传热</a><a class="post-meta__tags" href="/tags/%E7%BB%9D%E5%AF%B9%E6%B8%A9%E5%BA%A6/">绝对温度</a><a class="post-meta__tags" href="/tags/%E7%BA%BF%E6%80%A7%E5%8C%96/">线性化</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/71179.html" title="反例笔记 从绝对断言到可核对的适用条件"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">反例笔记 从绝对断言到可核对的适用条件</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">148</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">261</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%9B%BA%E5%AE%9A%E6%B8%A9%E5%BA%A6%E3%80%81%E9%9D%A2%E7%A7%AF%E4%B8%8E%E8%A1%A8%E9%9D%A2%E6%9D%A1%E4%BB%B6"><span class="toc-text">先固定温度、面积与表面条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%91%84%E6%B0%8F%E6%B8%A9%E5%B7%AE%E5%8F%AF%E7%94%A8%EF%BC%8C%E6%91%84%E6%B0%8F%E6%B8%A9%E5%BA%A6%E7%9A%84%E5%9B%9B%E6%AC%A1%E6%96%B9%E4%B8%8D%E5%8F%AF%E7%94%A8"><span class="toc-text">为什么摄氏温差可用，摄氏温度的四次方不可用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA400K%E8%A1%A8%E9%9D%A2%E7%9A%84%E5%AE%8C%E6%95%B4%E6%89%8B%E7%AE%97"><span class="toc-text">一个400K表面的完整手算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AD%89%E6%95%88%E8%BE%90%E5%B0%84%E7%B3%BB%E6%95%B0%EF%BC%9A%E5%85%88%E5%81%9A%E7%B2%BE%E7%A1%AE%E5%88%86%E8%A7%A3"><span class="toc-text">等效辐射系数：先做精确分解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E5%9D%87%E6%B8%A9%E5%BA%A6%E8%BF%91%E4%BC%BC%E7%9A%84%E8%AF%AF%E5%B7%AE%E8%83%BD%E7%AE%97%E5%87%BA%E6%9D%A5"><span class="toc-text">平均温度近似的误差能算出来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8E%E5%AF%B9%E6%B5%81%E5%B9%B6%E5%AD%98%EF%BC%9A%E4%B8%A4%E4%B8%AA%E9%80%9A%E9%81%93%E7%9B%B8%E5%8A%A0%EF%BC%8C%E8%80%8C%E9%9D%9E%E4%B8%B2%E8%81%94"><span class="toc-text">与对流并存：两个通道相加，而非串联</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E6%B0%94%E6%B8%A9%E5%BA%A6%E4%B8%8E%E8%BE%90%E5%B0%84%E7%8E%AF%E5%A2%83%E6%B8%A9%E5%BA%A6%E4%B8%8D%E5%90%8C%E4%BC%9A%E6%80%8E%E6%A0%B7"><span class="toc-text">空气温度与辐射环境温度不同会怎样</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%89%8D%E7%9A%84%E4%B8%80%E5%BC%A0%E6%A0%B8%E7%AE%97%E6%B8%85%E5%8D%95"><span class="toc-text">使用前的一张核算清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E9%80%82%E7%94%A8%E4%BD%8D%E7%BD%AE"><span class="toc-text">参考文献与适用位置</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85972.html" title="辐射换热 从绝对温度到等效系数与线性化边界">辐射换热 从绝对温度到等效系数与线性化边界</a><time datetime="2026-11-06T16:40:00.000Z" title="发表于 2026-11-07 00:40:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/71179.html" title="反例笔记 从绝对断言到可核对的适用条件">反例笔记 从绝对断言到可核对的适用条件</a><time datetime="2026-11-06T16:30:00.000Z" title="发表于 2026-11-07 00:30:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53185.html" title="Git worktree 从多工作区到分支占用与审查隔离">Git worktree 从多工作区到分支占用与审查隔离</a><time datetime="2026-11-06T02:20:00.000Z" title="发表于 2026-11-06 10:20:00">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65816.html" title="在线协方差 从成对记录到相关系数与分块合并">在线协方差 从成对记录到相关系数与分块合并</a><time datetime="2026-11-06T02:10:00.000Z" title="发表于 2026-11-06 10:10:00">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46761.html" title="HTTP 断点续传 从字节范围到版本验证">HTTP 断点续传 从字节范围到版本验证</a><time datetime="2026-11-01T01:00:00.000Z" title="发表于 2026-11-01 09:00:00">2026-11-01</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
