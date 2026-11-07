@@ -1,0 +1,326 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Little定律 从在途面积到吞吐与响应时间的口径 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用四个请求的完整时间线推导在途面积恒等式与Little定律，手算队列和服务拆分，解释有限窗口边界、完成口径、均值与尾延迟，并区分测量关系和容量因果模型。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Little定律 从在途面积到吞吐与响应时间的口径">
+<meta property="og:url" content="https://eulersail.com/esblog/46883.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用四个请求的完整时间线推导在途面积恒等式与Little定律，手算队列和服务拆分，解释有限窗口边界、完成口径、均值与尾延迟，并区分测量关系和容量因果模型。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-07T02:40:00.000Z">
+<meta property="article:modified_time" content="2026-11-07T02:40:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="服务可靠性">
+<meta property="article:tag" content="排队论">
+<meta property="article:tag" content="Little定律">
+<meta property="article:tag" content="性能分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/46883.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Little定律 从在途面积到吞吐与响应时间的口径',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-07 10:40:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261107-3"><link rel="stylesheet" href="/css/home-editorial.css?v=20261106-2"><link rel="stylesheet" href="/css/ai-engineering.css"><link rel="stylesheet" href="/css/category-atlas.css?v=20261106-2"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">150</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">267</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Little定律 从在途面积到吞吐与响应时间的口径</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-07T02:40:00.000Z" title="发表于 2026-11-07 10:40:00">2026-11-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-07T02:40:00.000Z" title="更新于 2026-11-07 10:40:00">2026-11-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="Little定律 从在途面积到吞吐与响应时间的口径" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="systems"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>SYSTEMS NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>9</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>4</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>从一个具体请求或状态变化出发，追踪数据流与方法成立的条件。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>9 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#定义边界，比记住字母更重要"><span>01</span><strong>定义边界，比记住字母更重要</strong></a></li><li><a href="#四个请求，先把完整账本算清"><span>02</span><strong>四个请求，先把完整账本算清</strong></a></li><li><a href="#一个轨迹，沿两个方向累计同一块面积"><span>03</span><strong>一个轨迹，沿两个方向累计同一块面积</strong></a></li><li><a href="#队列与执行可以拆，但不能偷换边界"><span>04</span><strong>队列与执行可以拆，但不能偷换边界</strong></a></li><li><a href="#截取两秒到五秒，完成均值为什么对不上"><span>05</span><strong>截取两秒到五秒，完成均值为什么对不上</strong></a></li><li><a href="#平均数量要按持续时间加权"><span>06</span><strong>平均数量要按持续时间加权</strong></a></li><li><a href="#关系式不等于容量预测或尾延迟保证"><span>07</span><strong>关系式不等于容量预测或尾延迟保证</strong></a></li><li><a href="#把监控字段变成一份计量契约"><span>08</span><strong>把监控字段变成一份计量契约</strong></a></li><li><a href="#参考文献与适用位置"><span>09</span><strong>参考文献与适用位置</strong></a></li></ol></nav></details></section><p><a href="/esblog/46650.html">令牌桶</a>控制一段时间内允许进入多少工作，<a href="/esblog/65831.html">并发与背压</a>控制执行和等待的数量。观察一个运行中的服务，还需要把这些数量与耗时连接起来：平均有多少请求留在系统里，单位时间离开多少，每个请求停留多久？</p>
+<p>Little定律给出三者的均值关系，但它最容易被误用在统计口径上。本篇从四个请求的完整时间线出发，先证明一个有限轨迹的面积恒等式，再说明何时可以使用长期关系。<strong>它是一项流量核算关系，单凭这个等式不能预测改并发上限以后系统会怎样。</strong> 全文参数是合成教学数据，不是站点或模型服务的性能实测。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="Little定律阅读任务"><div><span class="workshop-kicker">先画系统边界</span><strong class="workshop-title">排队和执行是否都算在里面？</strong><p>入场、离场和计数单位必须固定，才能把平均人数、吞吐与停留时间放进同一个式子。</p></div><div><span class="workshop-kicker">再核对观察窗口</span><strong class="workshop-title">窗外进入、窗内未完成的请求不能消失</strong><p>面积按时间累积，完成记录按对象累积；短窗口里两者可能对应不同批请求。</p></div></section>
+
+
+<h2 id="定义边界，比记住字母更重要"><a href="#定义边界，比记住字母更重要" class="headerlink" title="定义边界，比记住字母更重要"></a>定义边界，比记住字母更重要</h2><p>本文把“已接纳，尚未离开”的请求算在系统内，等待与执行均包含。第i个请求进入时刻为aᵢ，开始执行时刻为sᵢ，离开时刻为dᵢ；要求aᵢ≤sᵢ≤dᵢ。停留时间Wᵢ=dᵢ−aᵢ，排队时间Wqᵢ=sᵢ−aᵢ，执行时间Sᵢ=dᵢ−sᵢ。</p>
+<p>N(t)是在时刻t留在边界内的请求数量。它包含等待与执行，与“获得信号量、正在执行的协程数”不同。MIT的性能讲义也明确提醒其系统内计数包含正在接受服务的对象，见<a href="#little-ref1">文献1</a>。</p>
+
+<dl class="article-symbols" aria-label="Little定律计量口径"><div><dt>L｜时间平均在途数</dt><dd>对N(t)沿时间积分后除以观察长度，单位为请求。忙时长短必须进入权重，不能只平均几个事件采样点。</dd></div><div><dt>λ｜有效流量</dt><dd>在匹配的长期口径下，每秒经过边界的请求数。入口外被拒绝的工作不属于本边界，不能直接计入已接纳请求的吞吐。</dd></div><div><dt>W｜对象平均停留时间</dt><dd>每个匹配请求从进入到离开的总时间，单位s。它包含排队，且应与L、λ描述同一类对象。</dd></div></dl>
+
+
+<h2 id="四个请求，先把完整账本算清"><a href="#四个请求，先把完整账本算清" class="headerlink" title="四个请求，先把完整账本算清"></a>四个请求，先把完整账本算清</h2><p data-reading-numbers="true">考虑一个串行执行者，不抢占、按下面给定次序执行，观察区间为<span class="reading-number">0</span>至<span class="reading-quantity"><span class="reading-number">8</span>秒</span>，开始和结束时系统均为空。这个样例使用顺序服务以便手算，后面的面积恒等式并不依赖先来先服务。</p>
+
+<div class="table-wrap"><table id="little-hand-table"><thead><tr><th>请求</th><th>进入a，s</th><th>开始s，s</th><th>离开d，s</th><th>等待Wq，s</th><th>执行S，s</th><th>停留W，s</th></tr></thead><tbody><tr><td>A</td><td class="reading-numeric-cell"><span class="reading-number">0</span></td><td class="reading-numeric-cell"><span class="reading-number">0</span></td><td class="reading-numeric-cell"><span class="reading-number">2</span></td><td class="reading-numeric-cell"><span class="reading-number">0</span></td><td class="reading-numeric-cell"><span class="reading-number">2</span></td><td class="reading-numeric-cell"><span class="reading-number">2</span></td></tr><tr><td>B</td><td class="reading-numeric-cell"><span class="reading-number">1</span></td><td class="reading-numeric-cell"><span class="reading-number">2</span></td><td class="reading-numeric-cell"><span class="reading-number">5</span></td><td class="reading-numeric-cell"><span class="reading-number">1</span></td><td class="reading-numeric-cell"><span class="reading-number">3</span></td><td class="reading-numeric-cell"><span class="reading-number">4</span></td></tr><tr><td>C</td><td class="reading-numeric-cell"><span class="reading-number">3</span></td><td class="reading-numeric-cell"><span class="reading-number">5</span></td><td class="reading-numeric-cell"><span class="reading-number">6</span></td><td class="reading-numeric-cell"><span class="reading-number">2</span></td><td class="reading-numeric-cell"><span class="reading-number">1</span></td><td class="reading-numeric-cell"><span class="reading-number">3</span></td></tr><tr><td>D</td><td class="reading-numeric-cell"><span class="reading-number">4</span></td><td class="reading-numeric-cell"><span class="reading-number">6</span></td><td class="reading-numeric-cell"><span class="reading-number">8</span></td><td class="reading-numeric-cell"><span class="reading-number">2</span></td><td class="reading-numeric-cell"><span class="reading-number">2</span></td><td class="reading-numeric-cell"><span class="reading-number">4</span></td></tr></tbody></table></div>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="四个请求的排队和执行区间，可横向滚动"><img class="no-lazy" src="/images/posts/little-request-timeline.svg" width="900" height="460" alt="A执行0到2，B等待1到2执行2到5，C等待3到5执行5到6，D等待4到6执行6到8；总停留面积13请求秒"></div><figcaption>图1｜原创合成时间线，横坐标以秒计，色条长度按时间比例绘制；浅色为等待，深色为执行。<a href="/images/posts/little-request-timeline.svg">查看原图</a></figcaption></figure>
+
+
+<p data-reading-numbers="true">四个停留时间之和为<span class="reading-quantity"><span class="reading-number">13</span>秒</span>，对象平均W=<span class="reading-number">13/4</span>=<span class="reading-quantity"><span class="reading-number">3.25</span>秒</span>。八秒离开四个请求，吞吐X=<span class="reading-number">4/8</span>=<span class="reading-quantity"><span class="reading-number">0.5</span>请求</span>/秒。若计算平均在途数，还不能直接把某个时刻的并发拿来相乘，而要计算N(t)曲线下的面积。</p>
+<p data-reading-numbers="true"><span class="reading-number">0</span>—<span class="reading-quantity"><span class="reading-number">1</span>秒</span>有<span class="reading-quantity"><span class="reading-number">1</span>个</span>请求，<span class="reading-number">1</span>—<span class="reading-quantity"><span class="reading-number">2</span>秒</span>有<span class="reading-quantity"><span class="reading-number">2</span>个</span>，<span class="reading-number">2</span>—<span class="reading-quantity"><span class="reading-number">3</span>秒</span>有<span class="reading-quantity"><span class="reading-number">1</span>个</span>，<span class="reading-number">3</span>—<span class="reading-quantity"><span class="reading-number">4</span>秒</span>有<span class="reading-quantity"><span class="reading-number">2</span>个</span>，<span class="reading-number">4</span>—<span class="reading-quantity"><span class="reading-number">5</span>秒</span>有<span class="reading-quantity"><span class="reading-number">3</span>个</span>，<span class="reading-number">5</span>—<span class="reading-quantity"><span class="reading-number">6</span>秒</span>有<span class="reading-quantity"><span class="reading-number">2</span>个</span>，<span class="reading-number">6</span>—<span class="reading-quantity"><span class="reading-number">8</span>秒</span>有<span class="reading-quantity"><span class="reading-number">1</span>个</span>。面积为<span class="reading-number">1</span><span class="reading-number">+2</span><span class="reading-number">+1</span><span class="reading-number">+2</span><span class="reading-number">+3</span><span class="reading-number">+2</span><span class="reading-number">+2</span>=<span class="reading-quantity"><span class="reading-number">13</span>请求</span>·秒，时间平均L=<span class="reading-number">13/8</span>=<span class="reading-quantity"><span class="reading-number">1.625</span>请求</span>。于是XW=<span class="reading-number">0.5</span>×<span class="reading-number">3.25</span>=<span class="reading-number">1.625</span>，与面积结果相同。</p>
+<h2 id="一个轨迹，沿两个方向累计同一块面积"><a href="#一个轨迹，沿两个方向累计同一块面积" class="headerlink" title="一个轨迹，沿两个方向累计同一块面积"></a>一个轨迹，沿两个方向累计同一块面积</h2><p data-reading-numbers="true">每个请求从进入到离开，给N(t)贡献一个高度为<span class="reading-number">1</span>的矩形。沿时间方向把所有矩形叠起来得到N(t)，沿请求方向把宽度相加得到总停留时间。两种累计对应同一块面积。</p>
+
+<figure class="article-equation" id="little-eq1"><figcaption><strong>公式L1｜有限窗口的精确面积账本</strong></figcaption><div class="equation-body">∫ᵤᵛ N(t)dt = Σᵢ |[aᵢ,dᵢ) ∩ [u,v)|</div><p class="equation-note">求和覆盖所有与窗口相交的请求，区间长度以s计，面积单位请求·s。对有限条记录且aᵢ≤dᵢ，这是逐条指示函数相加的恒等式，不要求平稳、泊松到达或指数服务时间。端点单个时刻不改变积分。</p></figure>
+
+
+<p>若观察完整的一批请求，所有请求均在窗口内进入并离开，设数量m、窗口长度T，则面积等于ΣWᵢ。再把两边除以T，把右侧写成(m/T)(ΣWᵢ/m)，便得到有限完整账本中的L=XW。这个证明没有把短窗口的完成请求均值，自动等同于所有在途请求的窗口贡献。</p>
+<p>在长期稳定流量的常用表述中，若匹配的长期平均存在、有限，有正的有效流量，且窗口边界影响相对窗口长度消失，就得到下面的Little关系。原论文出版元信息见<a href="#little-ref2">文献2</a>；本文不把有限样例当作对原论文一般随机过程条件的完整证明。</p>
+
+<figure class="article-equation" id="little-eq2"><figcaption><strong>公式L2｜口径匹配的长期均值关系</strong></figcaption><div class="equation-body">L = λW</div><p class="equation-note">L为时间平均系统内数量，λ为匹配对象的长期有效流量，W为对象平均总停留时间。单位：请求=(请求/s)×s。需要一致边界与可用的长期平均，不能把不断积压时的短窗入口速率与任意完成均值强行组合。</p></figure>
+
+
+<h2 id="队列与执行可以拆，但不能偷换边界"><a href="#队列与执行可以拆，但不能偷换边界" class="headerlink" title="队列与执行可以拆，但不能偷换边界"></a>队列与执行可以拆，但不能偷换边界</h2><p data-reading-numbers="true">在四请求样例中，总排队时间为<span class="reading-quantity"><span class="reading-number">5</span>秒</span>，总执行时间为<span class="reading-quantity"><span class="reading-number">8</span>秒</span>；因此Wq=<span class="reading-quantity"><span class="reading-number">1.25</span>秒</span>、S=<span class="reading-quantity"><span class="reading-number">2</span>秒</span>，总停留W=Wq+S=<span class="reading-quantity"><span class="reading-number">3.25</span>秒</span>。队列面积为<span class="reading-quantity"><span class="reading-number">5</span>请求</span>·秒，执行面积为<span class="reading-quantity"><span class="reading-number">8</span>请求</span>·秒，各除以<span class="reading-quantity"><span class="reading-number">8</span>秒</span>，得到平均等待数<span class="reading-number">0.625</span>与平均执行数<span class="reading-number">1</span>。</p>
+
+<figure class="article-equation" id="little-eq3"><figcaption><strong>公式L3｜同一批流量的阶段拆分</strong></figcaption><div class="equation-body">W = Wq + S<br>L = Lq + Ls；Lq = λWq；Ls = λS</div><p class="equation-note" data-reading-numbers="true">要求各阶段描述匹配对象且相应平均关系适用。本例所有四个请求都经过等待/执行阶段，等待可以为<span class="reading-number">0</span>。若有排队过期或提前退出，不能只用最终成功执行请求的吞吐解释全部等待者。</p></figure>
+
+
+<p data-reading-numbers="true">这里平均执行数<span class="reading-number">1</span>，是因为整个<span class="reading-number">0</span>—<span class="reading-quantity"><span class="reading-number">8</span>秒</span>执行者没有空闲。它不是“一次最多只能有一个在途请求”的证明；系统内最多曾有<span class="reading-quantity"><span class="reading-number">3</span>个</span>，平均有<span class="reading-quantity"><span class="reading-number">1.625</span>个</span>。把队列边界移到执行区外，L和W都要相应改变，不能只改其中一个。</p>
+
+<details class="mechanism-check"><summary>自检1：执行并发上限为1，为什么平均在途数还能大于1？</summary><div><p data-reading-numbers="true">本文边界包含等待与执行。执行区始终最多<span class="reading-quantity"><span class="reading-number">1</span>个</span>，但队列里还可等待其他请求。四请求样例的总在途平均为<span class="reading-number">1.625</span>，执行平均为<span class="reading-number">1</span>，两者统计对象不同。</p></div></details>
+
+
+<h2 id="截取两秒到五秒，完成均值为什么对不上"><a href="#截取两秒到五秒，完成均值为什么对不上" class="headerlink" title="截取两秒到五秒，完成均值为什么对不上"></a>截取两秒到五秒，完成均值为什么对不上</h2><p data-reading-numbers="true">现在只观察[<span class="reading-number">2</span>,<span class="reading-number">5</span>]这三秒。B在窗内贡献<span class="reading-quantity"><span class="reading-number">3</span>秒</span>，C贡献<span class="reading-quantity"><span class="reading-number">2</span>秒</span>，D贡献<span class="reading-quantity"><span class="reading-number">1</span>秒</span>，总面积<span class="reading-quantity"><span class="reading-number">6</span>请求</span>·秒，所以L=<span class="reading-number">6/3</span>=<span class="reading-number">2</span>。若只统计离开时刻落在(<span class="reading-number">2</span>,<span class="reading-number">5</span>]的请求，则只有B，它从<span class="reading-quantity"><span class="reading-number">1</span>秒</span>进入到<span class="reading-quantity"><span class="reading-number">5</span>秒</span>离开，总停留<span class="reading-quantity"><span class="reading-number">4</span>秒</span>。用完成吞吐<span class="reading-number">1/3</span>乘<span class="reading-number">4</span>，得到<span class="reading-number">4/3</span>，与<span class="reading-number">2</span>不同。</p>
+<p data-reading-numbers="true">公式没有失效，使用者漏了窗口边界。B的完整停留包含窗前<span class="reading-quantity"><span class="reading-number">1</span>秒</span>，不能全算作窗内面积；C和D虽未在窗口内完成，却已经占用了<span class="reading-quantity"><span class="reading-number">2</span>秒</span>和<span class="reading-quantity"><span class="reading-number">1</span>秒</span>。修正后是<span class="reading-number">4</span><span class="reading-number">−1</span><span class="reading-number">+2</span><span class="reading-number">+1</span>=<span class="reading-quantity"><span class="reading-number">6</span>请求</span>·秒。B之外的未完成请求，不能因为还没出现在完成日志里就从在途曲线中消失。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="两秒到五秒窗口中的截断贡献，可横向滚动"><img class="no-lazy" src="/images/posts/little-window-boundary.svg" width="900" height="460" alt="窗口2到5秒，B贡献3秒、C贡献2秒、D贡献1秒，共6请求秒；只使用完成的B全程4秒会遗漏窗口修正"></div><figcaption>图2｜原创窗口裁剪图。虚线外部分不计入窗口面积；C、D在窗内未完成，仍贡献在途面积。<a href="/images/posts/little-window-boundary.svg">查看原图</a></figcaption></figure>
+
+
+<p>测量中常见的陷阱是：延迟面板来自“本分钟完成的请求”，并发面板却来自“本分钟所有在途请求”，入口速率又来自“本分钟所有尝试”，最后还把拒绝与重试混在里面。即使每个面板分别正确，三者也未必能直接相乘。长期窗口能减轻某些边界影响，但不能修复对象定义不一致。</p>
+<h2 id="平均数量要按持续时间加权"><a href="#平均数量要按持续时间加权" class="headerlink" title="平均数量要按持续时间加权"></a>平均数量要按持续时间加权</h2><p data-reading-numbers="true">本例各事件间隔起点的N值为<span class="reading-number">1</span>、<span class="reading-number">2</span>、<span class="reading-number">1</span>、<span class="reading-number">2</span>、<span class="reading-number">3</span>、<span class="reading-number">2</span>、<span class="reading-number">1</span>。直接算它们的算术平均得到<span class="reading-number">12/7</span>≈<span class="reading-number">1.714286</span>，而正确时间平均是<span class="reading-number">13/8</span>=<span class="reading-number">1.625</span>。最后一个N=<span class="reading-number">1</span>的区间持续两秒，其他区间各一秒，平均事件点会少给它一份权重。</p>
+
+<figure class="article-equation" id="little-eq4"><figcaption><strong>公式L4｜分段常量计数的时间平均</strong></figcaption><div class="equation-body">L̂ = Σⱼ Nⱼ·Δtⱼ / Σⱼ Δtⱼ</div><p class="equation-note">Δtⱼ是每段持续时间，必须非负且总时长为正，Nⱼ为该段在途数。此估计对完整事件轨迹精确；固定频率采样是另一种近似，不能混称为已精确积分。</p></figure>
+<details class="mechanism-check"><summary>自检2：只把每次到达或完成后的并发值取平均，够不够？</summary><div><p>不够。事件间隔长短可能不同，直接平均事件值不是时间平均。应保存每个计数状态持续多久，再用数量乘时长求面积，或明确说明采样近似方法。</p></div></details>
+
+
+<h2 id="关系式不等于容量预测或尾延迟保证"><a href="#关系式不等于容量预测或尾延迟保证" class="headerlink" title="关系式不等于容量预测或尾延迟保证"></a>关系式不等于容量预测或尾延迟保证</h2><p data-reading-numbers="true">如果一个口径稳定的系统吞吐为<span class="reading-quantity"><span class="reading-number">200</span>请求</span>/秒，平均总停留<span class="reading-quantity"><span class="reading-number">50</span>ms</span>，则平均在途为<span class="reading-quantity"><span class="reading-number">10</span>请求</span>。目标若是同样吞吐下平均<span class="reading-quantity"><span class="reading-number">10</span>ms</span>，对应的平均在途是<span class="reading-number">2</span>；但不能据此声称“把执行并发上限调成<span class="reading-number">2</span>，响应就会变<span class="reading-quantity"><span class="reading-number">10</span>ms</span>”。并发限制可能改变吞吐、排队、批处理效率与资源争用，这些因果关系需要额外模型或测量。</p>
+<p data-reading-numbers="true">若每秒接纳<span class="reading-quantity"><span class="reading-number">120</span>个</span>请求，但只能离开<span class="reading-quantity"><span class="reading-number">100</span>个</span>，且不丢弃也不提前退出，积压会持续增长。在这种持续状态下，不能假设系统有一个固定有限的长期L与W，再把<span class="reading-number">120</span>硬塞进稳定均值公式。入口限流、排队上限和超时语义仍要由<a href="/esblog/65831.html">背压</a>等机制落实。</p>
+<p data-reading-numbers="true">均值关系也不会决定尾部。<span class="reading-quantity"><span class="reading-number">100</span>个</span>请求都耗时<span class="reading-quantity"><span class="reading-number">2</span>秒</span>，与<span class="reading-quantity"><span class="reading-number">99</span>个</span>耗时<span class="reading-quantity"><span class="reading-number">1</span>秒</span>、<span class="reading-quantity"><span class="reading-number">1</span>个</span>耗时<span class="reading-quantity"><span class="reading-number">101</span>秒</span>，平均都为<span class="reading-quantity"><span class="reading-number">2</span>秒</span>，但长请求的体验完全不同。需要研究分位数、超时和服务目标时，必须保留分布信息，不能把W当作p99。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart LR
+ A[定义单位与系统边界] --&gt; B[记录进入和离开事件]
+ B --&gt; C[按时间累计在途面积]
+ B --&gt; D[按匹配对象累计停留时间]
+ C --&gt; E[核对窗口边界与平均口径]
+ D --&gt; E
+  </pre></div>
+
+
+<aside class="article-takeaway" role="note"><strong>重点｜先对账，再解释性能</strong><p>入口尝试、已接纳请求、执行尝试与业务成功数可以是四种不同单位。先统一对象、边界和窗口，再使用均值关系；等式本身不会替代容量测试或尾延迟分析。</p></aside>
+<details class="mechanism-check"><summary>自检3：排队超时的请求没有成功，能否从全部在途账本里删去？</summary><div><p>不能。它进入后直到退出前实际占用了在途面积。若边界统计全部接纳请求，超时退出也必须有离开记录；只统计成功吞吐与成功延迟，会与全部在途数量不匹配。</p></div></details>
+<details class="mechanism-check"><summary>自检4：平均延迟相同，是否就说明p99和超时率也相同？</summary><div><p>不是。均值没有确定整个分布。少量极长请求可以与大量短请求形成同一个平均值，应另外核对分位数、超时比例和请求类别。</p></div></details>
+
+
+<h2 id="把监控字段变成一份计量契约"><a href="#把监控字段变成一份计量契约" class="headerlink" title="把监控字段变成一份计量契约"></a>把监控字段变成一份计量契约</h2><p>为每条进入与离开记录保留匹配标识、时刻、结果和边界名称。重试若产生新的执行尝试，就同时记录业务请求标识与尝试标识；不能把尝试吞吐乘业务端到端延迟。入口外被拒绝的请求，可另建入口层账本，而不应悄悄混进已接纳系统。</p>
+<p>检查数据时，先验证退出不早于进入，再重建分段N(t)，保留窗前存量和窗后未完成项。短窗先用L1对账；只有在长期条件和口径允许时，再使用L2概括。内部验证用事件扫描、逐时间单位计数与请求区间裁剪三种路径核对合成轨迹，不对实际服务吞吐作预测。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[发现L与吞吐乘延迟不一致] --&gt; B[检查请求与尝试是否混用]
+ B --&gt; C[检查等待执行与拒绝的边界]
+ C --&gt; D[补窗前存量与未完成贡献]
+ D --&gt; E[检查时间加权和长期条件]
+ E --&gt; F[再调查计量错误或模型失配]
+  </pre></div>
+
+<h2 id="参考文献与适用位置"><a href="#参考文献与适用位置" class="headerlink" title="参考文献与适用位置"></a>参考文献与适用位置</h2>
+<ol class="article-references"><li id="little-ref1"><cite>MIT 6.826，Principles of Computer Systems，2000，Handout 10：Performance，PDF第5页。</cite> <a target="_blank" rel="noopener" href="https://web.mit.edu/6.826/archive/S00-www/notes/10-11_even.pdf">官方讲义</a>。核对平衡流量下的均值关系，以及系统内计数包含正在服务对象的口径；本篇时间线、有限窗口和事件加权例子独立构造。<a href="#little-eq2">返回L2</a>。</li><li id="little-ref2"><cite>John D. C. Little，A Proof for the Queuing Formula: L=λW，Operations Research，9(3)，383–387，1961。</cite> <a target="_blank" rel="noopener" href="https://pubsonline.informs.org/doi/10.1287/opre.9.3.383">出版社DOI入口</a>。核对作者、题名、卷期页与历史来源；未声称取得受限原论文全文，也未把本文有限轨迹证明替代其一般条件。</li><li id="little-ref3"><cite>本站服务控制路线。</cite> <a href="/esblog/46650.html">令牌桶</a>处理速率和突发，<a href="/esblog/65831.html">并发与背压</a>处理有界准入，<a href="/esblog/65742.html">超时与安全重放</a>区分尝试和业务结果。它们为本文边界例子提供衔接，不作为Little定律的原始来源。<a href="#little-eq1">返回面积账本</a>。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/46883.html">https://eulersail.com/esblog/46883.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9C%8D%E5%8A%A1%E5%8F%AF%E9%9D%A0%E6%80%A7/">服务可靠性</a><a class="post-meta__tags" href="/tags/%E6%8E%92%E9%98%9F%E8%AE%BA/">排队论</a><a class="post-meta__tags" href="/tags/Little%E5%AE%9A%E5%BE%8B/">Little定律</a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/">性能分析</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/65927.html" title="贝叶斯更新 从基率和似然比到重复证据的边界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">贝叶斯更新 从基率和似然比到重复证据的边界</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/46650.html" title="令牌桶限流 从补充速率到突发预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-31</div><div class="title">令牌桶限流 从补充速率到突发预算</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">150</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">267</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E8%BE%B9%E7%95%8C%EF%BC%8C%E6%AF%94%E8%AE%B0%E4%BD%8F%E5%AD%97%E6%AF%8D%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="toc-text">定义边界，比记住字母更重要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E4%B8%AA%E8%AF%B7%E6%B1%82%EF%BC%8C%E5%85%88%E6%8A%8A%E5%AE%8C%E6%95%B4%E8%B4%A6%E6%9C%AC%E7%AE%97%E6%B8%85"><span class="toc-text">四个请求，先把完整账本算清</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E8%BD%A8%E8%BF%B9%EF%BC%8C%E6%B2%BF%E4%B8%A4%E4%B8%AA%E6%96%B9%E5%90%91%E7%B4%AF%E8%AE%A1%E5%90%8C%E4%B8%80%E5%9D%97%E9%9D%A2%E7%A7%AF"><span class="toc-text">一个轨迹，沿两个方向累计同一块面积</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%9F%E5%88%97%E4%B8%8E%E6%89%A7%E8%A1%8C%E5%8F%AF%E4%BB%A5%E6%8B%86%EF%BC%8C%E4%BD%86%E4%B8%8D%E8%83%BD%E5%81%B7%E6%8D%A2%E8%BE%B9%E7%95%8C"><span class="toc-text">队列与执行可以拆，但不能偷换边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%AA%E5%8F%96%E4%B8%A4%E7%A7%92%E5%88%B0%E4%BA%94%E7%A7%92%EF%BC%8C%E5%AE%8C%E6%88%90%E5%9D%87%E5%80%BC%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AF%B9%E4%B8%8D%E4%B8%8A"><span class="toc-text">截取两秒到五秒，完成均值为什么对不上</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E5%9D%87%E6%95%B0%E9%87%8F%E8%A6%81%E6%8C%89%E6%8C%81%E7%BB%AD%E6%97%B6%E9%97%B4%E5%8A%A0%E6%9D%83"><span class="toc-text">平均数量要按持续时间加权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E7%B3%BB%E5%BC%8F%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%AE%B9%E9%87%8F%E9%A2%84%E6%B5%8B%E6%88%96%E5%B0%BE%E5%BB%B6%E8%BF%9F%E4%BF%9D%E8%AF%81"><span class="toc-text">关系式不等于容量预测或尾延迟保证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%8A%E7%9B%91%E6%8E%A7%E5%AD%97%E6%AE%B5%E5%8F%98%E6%88%90%E4%B8%80%E4%BB%BD%E8%AE%A1%E9%87%8F%E5%A5%91%E7%BA%A6"><span class="toc-text">把监控字段变成一份计量契约</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E9%80%82%E7%94%A8%E4%BD%8D%E7%BD%AE"><span class="toc-text">参考文献与适用位置</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46883.html" title="Little定律 从在途面积到吞吐与响应时间的口径">Little定律 从在途面积到吞吐与响应时间的口径</a><time datetime="2026-11-07T02:40:00.000Z" title="发表于 2026-11-07 10:40:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/65927.html" title="贝叶斯更新 从基率和似然比到重复证据的边界">贝叶斯更新 从基率和似然比到重复证据的边界</a><time datetime="2026-11-07T02:30:00.000Z" title="发表于 2026-11-07 10:30:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/85972.html" title="辐射换热 从绝对温度到等效系数与线性化边界">辐射换热 从绝对温度到等效系数与线性化边界</a><time datetime="2026-11-06T16:40:00.000Z" title="发表于 2026-11-07 00:40:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/71179.html" title="反例笔记 从绝对断言到可核对的适用条件">反例笔记 从绝对断言到可核对的适用条件</a><time datetime="2026-11-06T16:30:00.000Z" title="发表于 2026-11-07 00:30:00">2026-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53185.html" title="Git worktree 从多工作区到分支占用与审查隔离">Git worktree 从多工作区到分支占用与审查隔离</a><time datetime="2026-11-06T02:20:00.000Z" title="发表于 2026-11-06 10:20:00">2026-11-06</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

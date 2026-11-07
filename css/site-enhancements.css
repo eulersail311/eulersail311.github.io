@@ -2854,6 +2854,11 @@
 #post #article-container.reading-article .reading-number { font-size:1em; }
 #post #article-container.reading-article .reading-quantity { color:var(--article-accent); }
 #post #article-container.reading-article .reading-quantity > .reading-number { padding:0; border:0; border-radius:0; background:transparent; }
+/* Keep one painted frame per value; long values wrap inside the bounded box. */
+@media screen {
+  #post #article-container.reading-article :is(.reading-number,.reading-quantity) { display:inline-block; max-width:100%; box-sizing:border-box; line-height:1.25; vertical-align:baseline; }
+  #post #article-container.reading-article .reading-quantity > .reading-number { display:inline; max-width:none; line-height:inherit; }
+}
 @media print { #post #article-container.reading-article :is(.reading-number,.reading-quantity,.reading-numeric-cell) { color:#111; background:transparent; border:0; padding:0; } }
 #post #article-container.reading-article figure.reading-math-block { margin:1.6em 0; border:1px solid var(--article-rule); border-top:3px solid var(--article-accent); background:var(--article-soft); color:var(--font-color); box-shadow:none; }
 #post #article-container.reading-article figure.reading-math-block :is(table,td,pre,.line) { color:inherit; background:transparent; border:0; }
@@ -2899,6 +2904,7 @@
 #post .reading-article .article-workshop { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1em; margin: 1.6em 0 2em; }
 #post .reading-article .article-workshop > div { min-width: 0; padding: 1.15em; border: 1px solid var(--article-rule); border-top: 4px solid var(--article-accent); border-radius: 12px; background: var(--article-soft); overflow-wrap: anywhere; }
 #post .reading-article .workshop-kicker { color: var(--article-accent); font-size: 0.8em; font-weight: 700; }
+@media screen { #post #article-container.reading-article .article-workshop .workshop-kicker { display:inline-block; font-size:0.95em; line-height:1.8; padding:0.15em 0.55em; border:1px solid var(--article-rule); border-radius:5px; background:var(--article-soft); } }
 #post #article-container.reading-article .article-workshop .workshop-title { display: block; margin: 0.5em 0; color: var(--article-accent); font-size: 1.08em; line-height: 1.6; }
 #post .reading-article .article-workshop p { margin: 0; font-size: 0.95em; line-height: 1.9; }
 @media (max-width:600px) { #post .reading-article .article-workshop { grid-template-columns:minmax(0,1fr); } }
