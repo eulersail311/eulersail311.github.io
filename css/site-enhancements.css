@@ -3086,6 +3086,9 @@
 }
 #post .reading-article :is(.reading-brief > div, .reflection-panel) { border-color: var(--article-rule); }
 #post .reading-article .reading-brief > div > strong { color: var(--article-accent); }
+@media screen {
+  #post #article-container.reading-article .reading-brief-label { display:inline-block; max-width:100%; box-sizing:border-box; padding:0.15em 0.55em; border:1px solid var(--article-rule); border-radius:5px; background:var(--article-soft); color:var(--article-accent); font-size:0.95em; line-height:1.7; letter-spacing:0.04em; }
+}
 /* A single reading prompt is prose, while child divs remain a card grid. */
 @media screen {
   #post #article-container.reading-article .reading-brief:has(> strong):not(:has(> div)) { display:block; padding:1em 1.2em; border:1px solid var(--article-rule); border-left:4px solid var(--article-accent); border-radius:0 12px 12px 0; background:var(--article-soft); }
