@@ -3325,6 +3325,76 @@
 #post #article-container.reading-article table:not(figure.highlight table) :is(th, td) {
   vertical-align: top;
 }
+
+/* Authored extensions share a reading structure; every case remains in its
+   own Markdown source and is fully readable without client-side scripts. */
+#post #article-container.reading-article .article-deepening {
+  margin: 2.4em 0;
+  padding: 1.3em;
+  border: 1px solid var(--article-rule);
+  border-top: 4px solid var(--article-accent);
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--article-soft), transparent 72%);
+  color: var(--font-color);
+  overflow-wrap: anywhere;
+}
+#post .reading-article .article-deepening > header { margin-bottom: 1.25em; }
+#post .reading-article .deepening-kicker {
+  display: inline-block;
+  padding: .12em .55em;
+  border: 1px solid var(--article-rule);
+  border-radius: 5px;
+  background: var(--article-soft);
+  color: var(--article-accent);
+  font-size: .95em;
+  line-height: 1.7;
+}
+#post #article-container .article-deepening h2 {
+  margin: .65em 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--font-color);
+  font-size: 1.3em;
+  line-height: 1.65;
+  transform: none;
+  transition: none;
+  scroll-margin-top: 90px;
+}
+#post #article-container .article-deepening h2::before { display: none; }
+#post .reading-article .article-deepening dl { margin: 0; }
+#post .reading-article .article-deepening dl > div {
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr);
+  gap: 1.1em;
+  padding: 1.15em 0;
+  border-top: 1px solid var(--article-rule);
+}
+#post .reading-article .article-deepening dt {
+  display: flex;
+  gap: .45em;
+  align-items: baseline;
+  color: var(--article-accent);
+  font-size: .95em;
+  font-weight: 700;
+  line-height: 1.9;
+}
+#post .reading-article .article-deepening dt > span { font-family: Consolas, monospace; font-variant-numeric: tabular-nums; }
+#post .reading-article .article-deepening dd { min-width: 0; margin: 0; }
+#post #article-container .article-deepening dd p { margin: 0; font-size: 1em; line-height: 1.95; }
+#post #article-container .article-deepening .deepening-source { margin: .5em 0 0; padding-top: .8em; border-top: 1px dashed var(--article-rule); font-size: .95em; line-height: 1.9; }
+#post #article-container .article-deepening .deepening-source a { color:var(--article-accent); text-decoration:underline; text-underline-offset:.2em; overflow-wrap:anywhere; }
+@media screen and (max-width: 768px) {
+  #post #article-container.reading-article .article-deepening { padding: 1em; border-radius: 12px; }
+  #post .reading-article .article-deepening dl > div { grid-template-columns: minmax(0, 1fr); gap: .4em; }
+}
+@media print {
+  #post #article-container.reading-article .article-deepening { background: #fff; color: #111; border-color: #777; box-shadow: none; padding: 1em; }
+  #post #article-container .article-deepening :is(h2,dt,.deepening-kicker) { color: #111; background: none; }
+  #post .reading-article .article-deepening dl > div { grid-template-columns: minmax(0, 1fr); gap: .35em; }
+  #post .reading-article .article-deepening h2 { break-after: avoid; }
+  #post #article-container .article-deepening .deepening-source a { color:#111; }
+}
 @media screen {
   #post #article-container.reading-article table:not(figure.highlight table) :is(th, td) {
     min-width: 8.5em;

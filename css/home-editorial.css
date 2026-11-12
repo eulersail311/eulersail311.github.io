@@ -144,7 +144,7 @@
 }
 
 /* All eight subjects now have a visible, colour-consistent entry point. */
-.sail-journal .home-subjects { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:0; margin:0; border:0; }
+.sail-journal .home-subjects { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:stretch; gap:12px; padding:0; margin:0; border:0; }
 .sail-journal :is(.home-subjects,.home-subject-card) > pangu { display:none; }
 .sail-journal .home-subject-card { display:grid; grid-template-columns:36px minmax(0,1fr) auto; gap:12px; align-items:center; min-height:100px; padding:18px; border:1px solid var(--editorial-line); border-left:3px solid var(--topic-color); border-radius:12px; background:var(--topic-wash); text-decoration:none; color:var(--editorial-ink); }
 .sail-journal .home-subject-card:hover { border-color:var(--topic-color); text-decoration:none; }
@@ -156,3 +156,23 @@
 .sail-journal .sail-post-card { background:linear-gradient(145deg,var(--topic-wash),transparent 46%),var(--editorial-paper); box-shadow:0 5px 18px #172d4908; }
 .sail-journal .sail-post-card:hover { border-color:var(--topic-color); }
 @media (max-width:600px) { .sail-journal .home-subjects { grid-template-columns:minmax(0,1fr); } .sail-journal .home-subject-card { padding:16px; min-height:92px; } }
+
+/* The overview is a reading surface too: measured 11–13px supporting text
+   now has room to breathe, while dates and subject labels stay secondary. */
+.sail-journal .sail-post-description { font-size:15px; line-height:1.9; }
+.sail-journal :is(.sail-topic-title,.sail-topic-description,.home-subject-copy > span) { font-size:14px; line-height:1.9; }
+.sail-journal :is(.sail-post-metrics,.sail-post-top time,.sail-category-chip,.home-subject-count) { font-size:12.5px; }
+.sail-journal :is(.sail-post-open,.sail-topic-bottom) { font-size:13px; }
+.sail-journal .sail-post-card { padding:26px; border-radius:16px; }
+.sail-journal .sail-post-top { gap:10px; }
+.sail-journal .sail-post-bottom { margin-top:20px; padding-top:14px; }
+@media (max-width:600px) { .sail-journal .sail-post-card { padding:22px; } }
+
+/* Reserve the same usable gutter as article pages for the fixed mobile tools. */
+@media screen and (max-width:768px) {
+  .sail-journal { box-sizing:border-box; padding-right:42px; }
+}
+/* On narrower desktop layouts the mascot enters the first card's text area. */
+@media screen and (max-width:1500px) {
+  body:has(.sail-journal) #live2d-widget { display:none !important; }
+}

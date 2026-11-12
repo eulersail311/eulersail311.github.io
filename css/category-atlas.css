@@ -1,4 +1,4 @@
-/* Category atlas and topic libraries. Article styles and legacy pagination stay unchanged. */
+/* Category atlas and topic libraries. */
 #page-header.subject-header { height: 215px; background-color: #243c52; }
 #page-header.subject-header #page-site-info { top: 88px; }
 .sail-journal [data-tone='data'] { --topic-color: #146e65; --topic-wash: #eaf6f1; }
@@ -37,13 +37,13 @@
 .atlas-latest a { display: block; margin-top: 6px; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
 #category-atlas a:hover, #subject-hub a:hover, #algorithm-hub a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .subject-nav { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; color: var(--editorial-muted); }
-.subject-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid transparent; border-radius: 7px; font-size: 12px; line-height: 1.5; }
+.subject-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid transparent; border-radius: 7px; font-size: 13px; line-height: 1.7; }
 .subject-nav a:hover { background: var(--editorial-paper); }
 .subject-nav a[aria-current='page'] { color: var(--editorial-ink); background: var(--editorial-paper); border-color: var(--editorial-line); font-weight: 600; }
 .subject-hero { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 26px; padding: 34px; overflow: hidden; border: 1px solid var(--editorial-line); border-radius: 18px; background: var(--topic-wash); }
 .subject-intro > .sail-eyebrow { color: var(--topic-color); }
 .subject-intro h2 { margin: 18px 0 14px; font-size: clamp(25px, 2.5vw, 34px); line-height: 1.5; letter-spacing: -.025em; }
-.subject-intro p { margin: 0; max-width: 38em; color: var(--editorial-muted); font-size: 14px; line-height: 1.95; }
+.subject-intro p { margin: 0; max-width: 38em; color: var(--editorial-muted); font-size: 15px; line-height: 1.95; }
 .subject-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 24px; font-size: 12px; }
 .subject-actions a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 14px; border: 1px solid var(--topic-color); border-radius: 7px; }
 #subject-hub .subject-actions a, #algorithm-hub .subject-actions a { color: var(--editorial-ink); }
@@ -64,15 +64,15 @@
 .subject-start-label { display: flex; flex-direction: column; gap: 6px; color: var(--topic-color); font-size: 14px; }
 .subject-start-label > .sail-eyebrow { font-size: 9px; }
 .subject-start h3 { margin: 0; font-size: 17px; line-height: 1.7; }
-.subject-start p { margin: 7px 0 0; font-size: 12px; line-height: 1.8; color: var(--editorial-muted); }
+.subject-start p { margin: 7px 0 0; font-size: 14px; line-height: 1.9; color: var(--editorial-muted); }
 .subject-start-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--topic-color) !important; font-size: 12px; white-space: nowrap; }
 .subject-routes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .subject-route { min-width: 0; padding: 24px; border: 1px solid var(--editorial-line); border-radius: 13px; background: var(--editorial-paper); }
 .subject-route-top { display: flex; align-items: center; justify-content: space-between; color: var(--topic-color); font-size: 11px; }
 .subject-route-top > span:first-child { font: 30px Georgia, serif; }
 .subject-route h3 { margin: 15px 0 8px; font-size: 19px; }
-.subject-route p { color: var(--editorial-muted); font-size: 12px; line-height: 1.9; }
-.subject-route ol { margin: 15px 0 5px; padding: 15px 0 0 20px; border-top: 1px solid var(--editorial-line); font-size: 12px; color: var(--topic-color); }
+.subject-route p { color: var(--editorial-muted); font-size: 14px; line-height: 1.9; }
+.subject-route ol { margin: 15px 0 5px; padding: 15px 0 0 20px; border-top: 1px solid var(--editorial-line); font-size: 14px; color: var(--topic-color); }
 .subject-route li { padding: 5px 0 7px 2px; line-height: 1.8; }
 .subject-route-more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; color: var(--topic-color) !important; font-size: 12px; }
 
@@ -126,7 +126,7 @@
   .atlas-heading { padding-bottom: 20px; }
   .atlas-tile { padding: 22px; }
   .subject-nav { gap: 3px; margin-bottom: 15px; }
-  .subject-nav a { padding: 8px 10px; font-size: 11px; }
+  .subject-nav a { padding: 8px 10px; font-size: 13px; }
   .subject-hero { grid-template-columns: 1fr; padding: 24px 22px; }
   .subject-visual { display: none; }
   .subject-intro h2 { font-size: 27px; }
