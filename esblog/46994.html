@@ -1,0 +1,324 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>SQLite事务 从WAL读快照到写入升级失败 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用两个真实SQLite连接按确定顺序交错执行，核对WAL读快照、SQLITE_BUSY_SNAPSHOT和单写者限制；附完整Python3.11程序、状态时间线、条件更新及重试边界，不把并发模型当吞吐实测。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLite事务 从WAL读快照到写入升级失败">
+<meta property="og:url" content="https://eulersail.com/esblog/46994.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用两个真实SQLite连接按确定顺序交错执行，核对WAL读快照、SQLITE_BUSY_SNAPSHOT和单写者限制；附完整Python3.11程序、状态时间线、条件更新及重试边界，不把并发模型当吞吐实测。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-12T04:10:00.000Z">
+<meta property="article:modified_time" content="2026-11-12T04:10:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="SQLite">
+<meta property="article:tag" content="事务">
+<meta property="article:tag" content="WAL">
+<meta property="article:tag" content="快照隔离">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/46994.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'SQLite事务 从WAL读快照到写入升级失败',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-12 12:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261112-1"><link rel="stylesheet" href="/css/home-editorial.css?v=20261111-1"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261111-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">156</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">282</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">SQLite事务 从WAL读快照到写入升级失败</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-12T04:10:00.000Z" title="发表于 2026-11-12 12:10:00">2026-11-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-12T04:10:00.000Z" title="更新于 2026-11-12 12:10:00">2026-11-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="SQLite事务 从WAL读快照到写入升级失败" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="systems"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>SYSTEMS NOTES</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>5</strong><small>组图片与图表</small></span></div></div><p>从一个具体请求或状态变化出发，追踪数据流与方法成立的条件。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#固定数据库、连接与快照这三个层次"><span>01</span><strong>固定数据库、连接与快照这三个层次</strong></a></li><li><a href="#BEGIN之后，何时真正取得读视图"><span>02</span><strong>BEGIN之后，何时真正取得读视图</strong></a></li><li><a href="#把两个连接的顺序逐行算出来"><span>03</span><strong>把两个连接的顺序逐行算出来</strong></a></li><li><a href="#为什么旧快照的写入升级会失败"><span>04</span><strong>为什么旧快照的写入升级会失败</strong></a></li><li><a href="#BEGIN-IMMEDIATE把写者竞争提前到哪里"><span>05</span><strong>BEGIN IMMEDIATE把写者竞争提前到哪里</strong></a></li><li><a href="#完整Python：两个真实连接，逐阶段核对"><span>06</span><strong>完整Python：两个真实连接，逐阶段核对</strong></a></li><li><a href="#SQL执行成功与业务条件满足还要分开"><span>07</span><strong>SQL执行成功与业务条件满足还要分开</strong></a></li><li><a href="#参考文献与验证范围"><span>08</span><strong>参考文献与验证范围</strong></a></li></ol></nav></details></section><p><a href="/esblog/45892.html">数据库索引</a>解释怎样定位记录。找到同一行以后，两个连接是否会读到同一个值，仍然取决于事务与可见性：另一个连接已经提交，不代表当前读事务立刻更换视图。</p>
+<p>本篇只研究<strong>同一台机器上的一个新建SQLite数据库、WAL模式、两个独立连接、未启用共享缓存与脏读</strong>。我们用一个整数计数器，把读快照、读后写入升级和写者名额分开验证。程序实际调用标准库sqlite3，不用数组模拟数据库；操作按明确顺序交错，不测并行吞吐或等待时长。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="SQLite事务学习任务"><div><span class="workshop-kicker">先问看见哪一版</span><strong class="workshop-title">连接身份之外，还要记录事务边界</strong><p>同一连接结束旧读事务并重新读取后，结果可能改变。不能只在日志里记连接名与SQL。</p></div><div><span class="workshop-kicker">再问能否继续写</span><strong class="workshop-title">旧快照可读，不保证能升级为写者</strong><p>WAL允许读者继续看旧视图，但不会允许它依据过期快照分叉写入历史；写入失败需要重新判断事务状态。</p></div></section>
+
+
+<h2 id="固定数据库、连接与快照这三个层次"><a href="#固定数据库、连接与快照这三个层次" class="headerlink" title="固定数据库、连接与快照这三个层次"></a>固定数据库、连接与快照这三个层次</h2><p>数据库文件是两连接共享的存储对象，连接是各自的会话入口，事务则界定一段操作的状态与可见性。把连接A重新用于下一次事务，不会让下一次读取天然延续上一份快照。</p>
+<p>SQLite官方隔离说明指出，在本文限定的独立连接条件下，一个连接不会读到另一个连接尚未提交的修改；WAL下，活动读事务还会继续看到自己的历史快照，见<a href="#sqlite-ref1">文献1</a>。这两点分别排除脏读与解释提交后的旧视图，不能缩成一句“所有查询始终返回最新值”。</p>
+<p>WAL也不意味着可以有任意多个同时活动的写事务。SQLite仍然只允许一个写者；读写能够重叠，与写写可以并行，是两件事。本文所有后续推演都维持这一限制。</p>
+
+<dl class="article-symbols" aria-label="事务案例的状态身份"><div><dt>数据库状态v</dt><dd data-reading-numbers="true">示例表中唯一一行的整数值，初始为<span class="reading-number">0</span>，没有物理单位，也不代表真实库存或余额。</dd></div><div><dt>连接A的读事务</dt><dd>首次实际读取时建立本次读视图；本文随后让它保持活动，直到明确ROLLBACK。</dd></div><div><dt>连接B的写事务</dt><dd data-reading-numbers="true">获得写者位置后将v改为<span class="reading-number">1</span>并提交。提交完成是操作顺序中的事件，不是某个固定毫秒。</dd></div></dl>
+
+
+<h2 id="BEGIN之后，何时真正取得读视图"><a href="#BEGIN之后，何时真正取得读视图" class="headerlink" title="BEGIN之后，何时真正取得读视图"></a>BEGIN之后，何时真正取得读视图</h2><p>默认的<code>BEGIN DEFERRED</code>并不等于已经开始读取数据库。SQLite事务文档说明，DEFERRED先建立相应控制状态，第一次数据库访问才决定开始读还是写；如果先执行SELECT，就建立读事务，见<a href="#sqlite-ref2">文献2</a>。</p>
+<p data-reading-numbers="true">因此“先写了一条BEGIN”与“先完成了一次SELECT”不能互换。若A执行BEGIN以后尚未读取，B就提交了新值，A之后的第一次读取可以看到这个新提交。下面主案例则明确让A先读到<span class="reading-number">0</span>，再让B提交，以消除这个歧义。</p>
+
+<figure class="article-equation" id="sqlite-eq1"><figcaption><strong>可见性约定S1｜保持同一份活动读快照</strong></figcaption><div class="equation-body">A首次读到v=0 → B提交v=1 → A仍读到v=0<br>A结束旧读事务 → 新读事务读到v=1</div><p class="equation-note">只描述本文WAL、独立连接和这条确定执行顺序；后半行假定没有其他提交插入。箭头不是时长或性能关系。同一活动事务的视图与数据库最新已提交状态要分别记录。</p></figure>
+
+
+<p data-reading-numbers="true">重新执行SELECT不会自动开启另一份快照。如果应用需要看见新的提交，应先明确结束旧事务，再建立新的读取；不能只在同一事务里反复查询，然后把仍返回<span class="reading-number">0</span>解释成索引或缓存故障。</p>
+<h2 id="把两个连接的顺序逐行算出来"><a href="#把两个连接的顺序逐行算出来" class="headerlink" title="把两个连接的顺序逐行算出来"></a>把两个连接的顺序逐行算出来</h2><p>本例表<code>counter</code>只有<code class="reading-math-inline">id=1</code>这一行。A与B都使用显式SQL控制事务；B先取得写事务、更新并提交，随后A继续读，再尝试写入。</p>
+
+<div class="table-wrap"><table id="sqlite-timeline-table"><thead><tr><th>顺序</th><th>连接A</th><th>连接B</th><th>应核对的结果</th></tr></thead><tbody><tr><td class="reading-numeric-cell"><span class="reading-number">1</span></td><td>BEGIN；SELECT</td><td>空闲</td><td data-reading-numbers="true">A读到<span class="reading-number">0</span></td></tr><tr><td class="reading-numeric-cell"><span class="reading-number">2</span></td><td>保持读事务</td><td data-reading-numbers="true">BEGIN IMMEDIATE；更新为<span class="reading-number">1</span>；COMMIT</td><td>B的修改已提交</td></tr><tr><td class="reading-numeric-cell"><span class="reading-number">3</span></td><td>再次SELECT</td><td>空闲</td><td data-reading-numbers="true">A仍读到<span class="reading-number">0</span></td></tr><tr><td class="reading-numeric-cell"><span class="reading-number">4</span></td><td>尝试UPDATE</td><td>空闲</td><td>升级失败：SQLITE_BUSY_SNAPSHOT</td></tr><tr><td class="reading-numeric-cell"><span class="reading-number">5</span></td><td>ROLLBACK；BEGIN；SELECT</td><td>空闲</td><td data-reading-numbers="true">新读事务看到<span class="reading-number">1</span></td></tr></tbody></table></div>
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="SQLite活动读快照和新提交的分离，可横向滚动"><img class="no-lazy" src="/images/posts/sqlite-snapshot-timeline.svg" width="900" height="460" alt="A先读0，B提交1，A旧事务仍读0；A结束旧事务后，新事务读取1"></div><figcaption data-reading-numbers="true">图1｜原创确定调度图，列宽不代表耗时。<span class="reading-number">0</span>与<span class="reading-number">1</span>是教学行的状态，图不表示数据库内部页布局，也不是吞吐测量。<a href="/images/posts/sqlite-snapshot-timeline.svg">查看原图</a></figcaption></figure>
+<details class="mechanism-check"><summary>自检1：只看到A先执行BEGIN，能否断言A的快照早于B的提交？</summary><div><p data-reading-numbers="true">不能。DEFERRED下还要看第一次实际数据库访问何时发生。本例明确让A先完成SELECT并读到<span class="reading-number">0</span>，才执行B的提交；缺少这一顺序就不能照搬时间线。</p></div></details>
+
+
+<p>在第3步，A返回旧值是这个活动读事务的预期行为。若想观察“数据库现在最新的已提交值”，可以在未持有旧快照的连接或新的事务中读取；日志中的问题也必须说清究竟在询问哪一种视图。</p>
+<h2 id="为什么旧快照的写入升级会失败"><a href="#为什么旧快照的写入升级会失败" class="headerlink" title="为什么旧快照的写入升级会失败"></a>为什么旧快照的写入升级会失败</h2><p>第4步发生时，B已经提交并释放写事务，失败仍可能出现。原因并不是一定还有写者占着位置，而是A试图把一份已落后于数据库历史的读快照升级为写入基础。官方隔离文档与扩展错误码说明对应到<code>SQLITE_BUSY_SNAPSHOT</code>，见<a href="#sqlite-ref3">文献3</a>。</p>
+
+<figure class="article-equation" id="sqlite-eq2"><figcaption><strong>状态约定S2｜读后写入不是无条件升级</strong></figcaption><div class="equation-body">旧读快照 + 其他连接已提交新版本<br>→ 本例UPDATE返回SQLITE_BUSY_SNAPSHOT<br>→ 结束旧事务后，重新读取并判断业务条件</div><p class="equation-note">这是指定调度下的状态关系，不是所有写入失败的统一解释。应用应读取错误身份并检查事务状态；本篇不提供对任意错误自动回滚、重试或恢复的通用算法。</p></figure>
+
+
+<p>仅仅把等待时间拉长，不会把A正在持有的旧快照变成新快照。正确的后续动作需要重新建立业务前提：结束旧事务、重新读取，在新状态下决定是否还应执行原操作。若此前已经向外部系统产生副作用，还要另外处理重试的重复执行问题，可对照<a href="/esblog/65742.html">总预算与安全重放</a>。</p>
+<p>不要由这个案例推断任意SQL错误后事务都自动结束。SQLite对不同错误有不同处理规则；示例在预期错误后检查<code>in_transaction</code>并明确结束当前教学事务，避免后面的实验借用一个不清楚的状态。</p>
+<h2 id="BEGIN-IMMEDIATE把写者竞争提前到哪里"><a href="#BEGIN-IMMEDIATE把写者竞争提前到哪里" class="headerlink" title="BEGIN IMMEDIATE把写者竞争提前到哪里"></a>BEGIN IMMEDIATE把写者竞争提前到哪里</h2><p data-reading-numbers="true">当A执行<code>BEGIN IMMEDIATE</code>并取得写事务时，B再尝试同样操作可能得到<code>SQLITE_BUSY</code>。本文把连接的等待时间设为<span class="reading-number">0</span>，目的是立即观察这个拒绝，不比较谁等待得更久。</p>
+<p>这与旧快照升级失败的情境不同：一个是在已经落后的读视图上尝试升级，一个是在写者位置已被占用时尝试开始写事务。它们都可能落在busy类别，却需要保留具体错误与操作阶段，不能只统计一个笼统的数据库忙次数。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="旧快照升级与写者位置竞争的区别，可横向滚动"><img class="no-lazy" src="/images/posts/sqlite-write-boundaries.svg" width="900" height="440" alt="一种失败来自旧快照升级，另一种来自已有活动写者；两者应分别记录错误身份与事务阶段"></div><figcaption>图2｜原创边界对照，不表示锁的内部实现或重试成功率。WAL保留单写者限制，提前获得写者位置也不等于业务条件已经正确。<a href="/images/posts/sqlite-write-boundaries.svg">查看原图</a></figcaption></figure>
+<details class="mechanism-check"><summary>自检2：B已经提交，A的UPDATE还报忙，是否就能认定数据库没有释放锁？</summary><div><p>不能。本文旧快照情境可以在B提交后触发SQLITE_BUSY_SNAPSHOT。应核对扩展错误和A仍持有的读事务，而不是把所有失败都解释成另一个写者尚未退出。</p></div></details>
+
+
+<p>提前取得写事务可以让某些竞争更早显现，但也可能让写者位置被更久占用。选择事务模式需要结合实际读写步骤与持有时间，本文没有据此推荐把所有查询统一改为IMMEDIATE。</p>
+<h2 id="完整Python：两个真实连接，逐阶段核对"><a href="#完整Python：两个真实连接，逐阶段核对" class="headerlink" title="完整Python：两个真实连接，逐阶段核对"></a>完整Python：两个真实连接，逐阶段核对</h2><p>程序在当前目录里创建新的随机命名教学目录，数据库与产物保留。请使用Python 3.11；程序使用该版本sqlite3提供的错误码属性与显式事务方式，参考<a href="#sqlite-ref4">文献4</a>。<code class="reading-math-inline">isolation_level=None</code>在这里用于关闭Python包装层的隐式开事务，由代码里的BEGIN、COMMIT、ROLLBACK明确控制边界。</p>
+
+<aside class="article-code-note" id="sqlite-code"><strong>代码说明｜Python 3.11，标准库sqlite3与tempfile</strong><p data-reading-numbers="true">只操作本次新建数据库，要求运行时支持WAL。输入为固定教学状态<span class="reading-number">0</span>；成功输出依次核对<span class="reading-number">0</span>、提交后的<span class="reading-number">1</span>、旧视图0、快照升级错误、新视图1、写者竞争错误和最终<span class="reading-number">1</span>。程序不使用sleep，也不把SQL执行时间当成结论。</p></aside>
+
+
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"><span class="keyword">from</span> tempfile <span class="keyword">import</span> mkdtemp</span><br><span class="line"><span class="keyword">import</span> sqlite3</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">scalar</span>(<span class="params">conn, sql</span>):</span><br><span class="line">    cursor = conn.execute(sql)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">return</span> cursor.fetchone()[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        cursor.close()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    folder = Path(mkdtemp(prefix=<span class="string">"sqlite-snapshot-"</span>, <span class="built_in">dir</span>=<span class="string">"."</span>)).resolve()</span><br><span class="line">    database = folder / <span class="string">"demo.db"</span></span><br><span class="line">    a = sqlite3.connect(database, isolation_level=<span class="literal">None</span>, timeout=<span class="number">0</span>)</span><br><span class="line">    b = <span class="literal">None</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">if</span> scalar(a, <span class="string">"PRAGMA journal_mode=WAL"</span>).lower() != <span class="string">"wal"</span>:</span><br><span class="line">            <span class="keyword">raise</span> RuntimeError(<span class="string">"WAL required"</span>)</span><br><span class="line">        a.execute(<span class="string">"CREATE TABLE counter(id INTEGER PRIMARY KEY, v INTEGER)"</span>).close()</span><br><span class="line">        a.execute(<span class="string">"INSERT INTO counter VALUES (1, 0)"</span>).close()</span><br><span class="line">        b = sqlite3.connect(database, isolation_level=<span class="literal">None</span>, timeout=<span class="number">0</span>)</span><br><span class="line">        a.execute(<span class="string">"BEGIN"</span>).close()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"first="</span> + <span class="built_in">str</span>(scalar(a, <span class="string">"SELECT v FROM counter WHERE id=1"</span>)))</span><br><span class="line">        b.execute(<span class="string">"BEGIN IMMEDIATE"</span>).close()</span><br><span class="line">        b.execute(<span class="string">"UPDATE counter SET v=1 WHERE id=1"</span>).close()</span><br><span class="line">        b.execute(<span class="string">"COMMIT"</span>).close()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"writer_committed="</span> + <span class="built_in">str</span>(scalar(b, <span class="string">"SELECT v FROM counter WHERE id=1"</span>)))</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"same_transaction="</span> + <span class="built_in">str</span>(scalar(a, <span class="string">"SELECT v FROM counter WHERE id=1"</span>)))</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            a.execute(<span class="string">"UPDATE counter SET v=v+10 WHERE id=1"</span>).close()</span><br><span class="line">        <span class="keyword">except</span> sqlite3.OperationalError <span class="keyword">as</span> error:</span><br><span class="line">            <span class="keyword">if</span> error.sqlite_errorcode != sqlite3.SQLITE_BUSY_SNAPSHOT:</span><br><span class="line">                <span class="keyword">raise</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">"upgrade="</span> + error.sqlite_errorname)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">raise</span> AssertionError(<span class="string">"stale snapshot unexpectedly upgraded"</span>)</span><br><span class="line">        <span class="keyword">finally</span>:</span><br><span class="line">            <span class="keyword">if</span> a.in_transaction:</span><br><span class="line">                a.execute(<span class="string">"ROLLBACK"</span>).close()</span><br><span class="line">        a.execute(<span class="string">"BEGIN"</span>).close()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"new_transaction="</span> + <span class="built_in">str</span>(scalar(a, <span class="string">"SELECT v FROM counter WHERE id=1"</span>)))</span><br><span class="line">        a.execute(<span class="string">"ROLLBACK"</span>).close()</span><br><span class="line">        a.execute(<span class="string">"BEGIN IMMEDIATE"</span>).close()</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            b.execute(<span class="string">"BEGIN IMMEDIATE"</span>).close()</span><br><span class="line">        <span class="keyword">except</span> sqlite3.OperationalError <span class="keyword">as</span> error:</span><br><span class="line">            <span class="keyword">if</span> error.sqlite_errorcode != sqlite3.SQLITE_BUSY:</span><br><span class="line">                <span class="keyword">raise</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">"second_writer="</span> + error.sqlite_errorname)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">raise</span> AssertionError(<span class="string">"two active writers unexpectedly admitted"</span>)</span><br><span class="line">        <span class="keyword">finally</span>:</span><br><span class="line">            <span class="keyword">if</span> b.in_transaction:</span><br><span class="line">                b.execute(<span class="string">"ROLLBACK"</span>).close()</span><br><span class="line">            <span class="keyword">if</span> a.in_transaction:</span><br><span class="line">                a.execute(<span class="string">"ROLLBACK"</span>).close()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"final="</span> + <span class="built_in">str</span>(scalar(b, <span class="string">"SELECT v FROM counter WHERE id=1"</span>)))</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"database="</span> + <span class="built_in">str</span>(database))</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        <span class="keyword">if</span> b <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            b.close()</span><br><span class="line">        a.close()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个程序刻意关闭等待，按确定顺序安排两个连接。它验证SQL可见性、错误身份与事务边界，不证明真实应用在高负载下的延迟、吞吐或重试成本。运行时SQLite版本应从<code>sqlite3.sqlite_version</code>另外记录，不能把Python版本当成数据库库版本。</p>
+<h2 id="SQL执行成功与业务条件满足还要分开"><a href="#SQL执行成功与业务条件满足还要分开" class="headerlink" title="SQL执行成功与业务条件满足还要分开"></a>SQL执行成功与业务条件满足还要分开</h2><p data-reading-numbers="true">若业务要求一个非负计数减<span class="reading-number">1</span>，可以把条件写进同一条更新，例如<code>UPDATE stock SET qty=qty-1 WHERE id=? AND qty&gt;0</code>。随后检查实际受影响行数：<span class="reading-quantity"><span class="reading-number">0</span>行</span>可能表示记录不存在或条件不成立，不能仅凭没有抛SQL异常，就报告业务成功。</p>
+<p>这条语句只示范单行条件更新，不是完整库存服务。多表不变量、外部消息、请求去重与失败后的业务决策，仍需明确事务边界。读到旧状态以后在应用中先算一个新值，再无条件覆盖数据库，和由数据库在更新时判断当前条件，是不同的并发契约。</p>
+<p>SQLite的WAL还需要相应文件与共享内存协调条件。不要把本机教学数据库的行为直接推广到任意网络文件系统或跨机器共享，运行环境边界见<a href="#sqlite-ref5">文献5</a>。本文不提供修改生产数据库模式的操作步骤。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart LR
+ A[明确两个连接与WAL模式] --&gt; B[A先完成SELECT]
+ B --&gt; C[B更新并提交]
+ C --&gt; D[A旧事务仍读原值]
+ D --&gt; E[结束旧事务]
+ E --&gt; F[重新读取新提交]
+  </pre></div>
+
+
+<aside class="article-takeaway"><strong>重点｜先确认事务状态，再决定是否重做业务</strong><p>记录连接、事务边界、首次读取位置和具体错误。旧快照可重复读取，不保证可以升级写入；SQL没有异常，也不保证条件更新真的改变了目标行。</p></aside>
+<details class="mechanism-check"><summary>自检3：WAL允许读写重叠，是否也允许两个活动写事务同时修改？</summary><div><p data-reading-numbers="true">不允许。SQLite维持单写者限制。本文A持有IMMEDIATE写事务时，等待时间为<span class="reading-number">0</span>的B会在开始IMMEDIATE时得到SQLITE_BUSY；这与读快照能继续存在并不矛盾。</p></div></details>
+<details class="mechanism-check"><summary>自检4：条件UPDATE返回0行，没有异常，能否说扣减成功？</summary><div><p>不能。SQL执行成功与WHERE条件选中了目标行是不同结果。应按业务契约检查受影响行数，并区分记录不存在、条件不成立及其他失败，而不是把没有异常当作成功确认。</p></div></details>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[写入未达到预期] --&gt; B{哪一种结果}
+ B --&gt;|旧快照升级错误| C[结束旧事务并重建判断依据]
+ B --&gt;|写者位置竞争| D[结合截止时间与事务持有情况处理]
+ B --&gt;|条件更新零行| E[按业务条件解释未更新]
+ C --&gt; F[保留错误身份与事务记录]
+ D --&gt; F
+ E --&gt; F
+  </pre></div>
+
+<h2 id="参考文献与验证范围"><a href="#参考文献与验证范围" class="headerlink" title="参考文献与验证范围"></a>参考文献与验证范围</h2>
+<ol class="article-references"><li id="sqlite-ref1"><cite>SQLite：Isolation In SQLite。</cite> <a target="_blank" rel="noopener" href="https://www.sqlite.org/isolation.html">连接隔离、WAL快照与升级案例</a>。用于本文独立连接、活动读事务及提交可见性边界。<a href="#sqlite-eq1">返回S1</a>。</li><li id="sqlite-ref2"><cite>SQLite：Transaction。</cite> <a target="_blank" rel="noopener" href="https://www.sqlite.org/lang_transaction.html">DEFERRED、IMMEDIATE与事务控制</a>。用于首次访问、读写升级和单写者限制；错误后状态应按具体情况检查。</li><li id="sqlite-ref3"><cite>SQLite：Result and Error Codes。</cite> <a target="_blank" rel="noopener" href="https://www.sqlite.org/rescode.html#busy_snapshot">SQLITE_BUSY_SNAPSHOT</a>。用于区分快照升级失败与一般busy类别。<a href="#sqlite-eq2">返回S2</a>。</li><li id="sqlite-ref4"><cite>Python 3.11：sqlite3。</cite> <a target="_blank" rel="noopener" href="https://docs.python.org/3.11/library/sqlite3.html">事务控制与错误属性</a>。本文使用显式SQL事务，不依赖后来版本新增的连接参数。</li><li id="sqlite-ref5"><cite>SQLite：Write-Ahead Logging。</cite> <a target="_blank" rel="noopener" href="https://www.sqlite.org/wal.html">WAL运行环境与限制</a>。核对同机协调等环境条件；本文程序只验证新教学数据库的确定调度，没有硬件、吞吐或生产系统评测。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/46994.html">https://eulersail.com/esblog/46994.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/SQLite/">SQLite</a><a class="post-meta__tags" href="/tags/%E4%BA%8B%E5%8A%A1/">事务</a><a class="post-meta__tags" href="/tags/WAL/">WAL</a><a class="post-meta__tags" href="/tags/%E5%BF%AB%E7%85%A7%E9%9A%94%E7%A6%BB/">快照隔离</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/53296.html" title="Git分支差异 从双点快照到三点共同祖先"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Git分支差异 从双点快照到三点共同祖先</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/63594.html" title="RAG 上下文组装 从权限过滤到预算与引用校验"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="title">RAG 上下文组装 从权限过滤到预算与引用校验</div></div></a></div><div><a href="/esblog/64928.html" title="RAG 回归评测 从逐题对比到发布门槛"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">RAG 回归评测 从逐题对比到发布门槛</div></div></a></div><div><a href="/esblog/65742.html" title="AI 服务超时与重试 从总预算到安全重放"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务超时与重试 从总预算到安全重放</div></div></a></div><div><a href="/esblog/65831.html" title="AI 服务并发与背压 从有界准入到排队预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">AI 服务并发与背压 从有界准入到排队预算</div></div></a></div><div><a href="/esblog/90652.html" title="DQN 原理 从神经 Q 网络到经验回放与目标网络"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">DQN 原理 从神经 Q 网络到经验回放与目标网络</div></div></a></div><div><a href="/esblog/72516.html" title="卷积神经网络 从局部连接到共享权重的梯度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-13</div><div class="title">卷积神经网络 从局部连接到共享权重的梯度</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">156</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">282</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E5%AE%9A%E6%95%B0%E6%8D%AE%E5%BA%93%E3%80%81%E8%BF%9E%E6%8E%A5%E4%B8%8E%E5%BF%AB%E7%85%A7%E8%BF%99%E4%B8%89%E4%B8%AA%E5%B1%82%E6%AC%A1"><span class="toc-text">固定数据库、连接与快照这三个层次</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BEGIN%E4%B9%8B%E5%90%8E%EF%BC%8C%E4%BD%95%E6%97%B6%E7%9C%9F%E6%AD%A3%E5%8F%96%E5%BE%97%E8%AF%BB%E8%A7%86%E5%9B%BE"><span class="toc-text">BEGIN之后，何时真正取得读视图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%8A%E4%B8%A4%E4%B8%AA%E8%BF%9E%E6%8E%A5%E7%9A%84%E9%A1%BA%E5%BA%8F%E9%80%90%E8%A1%8C%E7%AE%97%E5%87%BA%E6%9D%A5"><span class="toc-text">把两个连接的顺序逐行算出来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%97%A7%E5%BF%AB%E7%85%A7%E7%9A%84%E5%86%99%E5%85%A5%E5%8D%87%E7%BA%A7%E4%BC%9A%E5%A4%B1%E8%B4%A5"><span class="toc-text">为什么旧快照的写入升级会失败</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BEGIN-IMMEDIATE%E6%8A%8A%E5%86%99%E8%80%85%E7%AB%9E%E4%BA%89%E6%8F%90%E5%89%8D%E5%88%B0%E5%93%AA%E9%87%8C"><span class="toc-text">BEGIN IMMEDIATE把写者竞争提前到哪里</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4Python%EF%BC%9A%E4%B8%A4%E4%B8%AA%E7%9C%9F%E5%AE%9E%E8%BF%9E%E6%8E%A5%EF%BC%8C%E9%80%90%E9%98%B6%E6%AE%B5%E6%A0%B8%E5%AF%B9"><span class="toc-text">完整Python：两个真实连接，逐阶段核对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SQL%E6%89%A7%E8%A1%8C%E6%88%90%E5%8A%9F%E4%B8%8E%E4%B8%9A%E5%8A%A1%E6%9D%A1%E4%BB%B6%E6%BB%A1%E8%B6%B3%E8%BF%98%E8%A6%81%E5%88%86%E5%BC%80"><span class="toc-text">SQL执行成功与业务条件满足还要分开</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%8C%83%E5%9B%B4"><span class="toc-text">参考文献与验证范围</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46994.html" title="SQLite事务 从WAL读快照到写入升级失败">SQLite事务 从WAL读快照到写入升级失败</a><time datetime="2026-11-12T04:10:00.000Z" title="发表于 2026-11-12 12:10:00">2026-11-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53296.html" title="Git分支差异 从双点快照到三点共同祖先">Git分支差异 从双点快照到三点共同祖先</a><time datetime="2026-11-12T04:00:00.000Z" title="发表于 2026-11-12 12:00:00">2026-11-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86083.html" title="相变潜热 从分段焓账本到升温平台与热平衡">相变潜热 从分段焓账本到升温平台与热平衡</a><time datetime="2026-11-08T02:10:00.000Z" title="发表于 2026-11-08 10:10:00">2026-11-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73086.html" title="梯度累积 从不等长微批到一次正确的优化器更新">梯度累积 从不等长微批到一次正确的优化器更新</a><time datetime="2026-11-08T02:00:00.000Z" title="发表于 2026-11-08 10:00:00">2026-11-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/99092.html" title="斯特拉文斯基火鸟1919 从音色角色到终曲抵达">斯特拉文斯基火鸟1919 从音色角色到终曲抵达</a><time datetime="2026-11-07T16:20:00.000Z" title="发表于 2026-11-08 00:20:00">2026-11-08</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

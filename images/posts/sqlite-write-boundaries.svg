@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="440" viewBox="0 0 900 440" role="img" aria-labelledby="title desc">
+<title id="title">两种写入边界应分别记录</title><desc id="desc">旧快照在另一连接提交后升级失败为SQLITE_BUSY_SNAPSHOT；已有写事务时另一个IMMEDIATE可能因SQLITE_BUSY失败。</desc>
+<rect width="900" height="440" rx="16" fill="#f9fcfe"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#254756"><text x="30" y="40" font-size="25" font-weight="700">可重复读取，不等于随时可以写</text>
+<g fill="#edf5fa" stroke="#a8c5d1" stroke-width="1.5"><rect x="30" y="90" width="405" height="245" rx="12"/><rect x="465" y="90" width="405" height="245" rx="12"/></g>
+<g font-size="20" font-weight="700"><text x="50" y="136">旧读视图上尝试升级</text><text x="485" y="136">写者位置已被占用</text></g>
+<g font-size="18"><text x="50" y="190">A已读0，B随后提交1</text><text x="485" y="190">A持有IMMEDIATE写事务</text></g>
+<g font-size="17" font-weight="700"><text x="50" y="244">SQLITE_BUSY_SNAPSHOT</text><text x="485" y="244">B开始写入：SQLITE_BUSY</text></g>
+<g font-size="17"><text x="50" y="302">重新建立读与业务判断依据</text><text x="485" y="302">结合竞争阶段与等待预算处理</text></g>
+<text x="30" y="391" font-size="16">记录具体错误与事务阶段。本图不是通用重试算法，也不表示等待时长。</text></g></svg>

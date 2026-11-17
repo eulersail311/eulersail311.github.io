@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" role="img" aria-labelledby="title desc">
+<title id="title">WAL旧读快照与新提交</title><desc id="desc">A先读0，B提交1以后A仍读0，A结束旧事务并重新读取才看到1。位置表示调度顺序而非时长。</desc>
+<rect width="900" height="460" rx="16" fill="#f9fcfe"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#254756"><text x="30" y="40" font-size="25" font-weight="700">活动读事务与最新提交，是两份状态</text><text x="285" y="83" font-size="17">执行顺序 →（非时间比例）</text>
+<text x="30" y="166" font-size="21" font-weight="700">A</text><text x="30" y="296" font-size="21" font-weight="700">B</text>
+<path d="M75 160H855M75 290H855" stroke="#adc4ce" stroke-width="2"/><path d="M110 160H710" stroke="#28687e" stroke-width="5"/><path d="M710 160H820" stroke="#28876f" stroke-width="4" stroke-dasharray="7 6"/>
+<g fill="#28687e"><circle cx="110" cy="160" r="7"/><circle cx="520" cy="160" r="7"/><circle cx="710" cy="160" r="7"/><circle cx="330" cy="290" r="7"/></g><circle cx="820" cy="160" r="7" fill="#28876f"/>
+<g font-size="18"><text x="76" y="128">先读0</text><text x="486" y="128">仍读0</text><text x="773" y="128">新读1</text><text x="648" y="217">结束旧事务</text><text x="268" y="338">更新并提交1</text></g>
+<path d="M330 278V180" stroke="#adc4ce" stroke-width="2" stroke-dasharray="5 5"/><text x="30" y="403" font-size="18" font-weight="700">B的提交完成，不会替A更换正在持有的读快照。</text><text x="30" y="438" font-size="16">0与1为教学计数器状态；图不是数据库页布局或吞吐测量。</text></g></svg>

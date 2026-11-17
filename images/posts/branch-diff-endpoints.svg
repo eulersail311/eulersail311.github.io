@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="440" viewBox="0 0 900 440" role="img" aria-labelledby="title desc">
+<title id="title">分叉历史与两个比较起点</title><desc id="desc">A到B是主分支，A到C再到D是功能分支；双点比较B与D，正向三点比较A与D。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#537b44"/></marker></defs>
+<rect width="900" height="440" rx="16" fill="#fbfdf8"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#293f29"><text x="30" y="40" font-size="25" font-weight="700">同到D，比较起点却不同</text>
+<rect x="30" y="80" width="540" height="300" rx="12" fill="#f0f5e9" stroke="#a9be94"/><rect x="605" y="80" width="265" height="300" rx="12" fill="#f0f5e9" stroke="#a9be94"/>
+<g stroke="#537b44" stroke-width="2.5" fill="none" marker-end="url(#arrow)"><path d="M125 215L310 140"/><path d="M125 240L310 285"/><path d="M365 290L485 290"/></g>
+<g fill="#fff" stroke="#537b44" stroke-width="2"><circle cx="100" cy="225" r="27"/><circle cx="338" cy="130" r="27"/><circle cx="338" cy="290" r="27"/><circle cx="515" cy="290" r="27"/></g>
+<g font-size="23" font-weight="700" text-anchor="middle"><text x="100" y="233">A</text><text x="338" y="138">B</text><text x="338" y="298">C</text><text x="515" y="298">D</text></g>
+<g font-size="18"><text x="64" y="277">共同祖先</text><text x="280" y="92">main指向B</text><text x="342" y="355">功能分支指向D</text></g>
+<text x="629" y="126" font-size="18" font-weight="700">双点：当前端点</text><text x="629" y="174" font-size="26">B → D</text>
+<text x="629" y="236" font-size="18" font-weight="700">三点：共同历史</text><text x="629" y="284" font-size="26">A → D</text><text x="629" y="346" font-size="16">这里的祖先唯一</text>
+<text x="30" y="419" font-size="16">箭头为父到子；位置和框宽不表示耗时、文件大小或审查成本。</text></g></svg>

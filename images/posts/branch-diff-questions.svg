@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="440" viewBox="0 0 900 440" role="img" aria-labelledby="title desc">
+<title id="title">三个审查问题与不同对象</title><desc id="desc">当前快照比较B到D，共同历史净变化比较A到D，右侧独有提交集合为C与D。</desc>
+<rect width="900" height="440" rx="16" fill="#fbfdf8"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#293f29"><text x="30" y="40" font-size="25" font-weight="700">先写问题，再选比较对象</text>
+<g fill="#f0f5e9" stroke="#a9be94" stroke-width="1.5"><rect x="30" y="95" width="260" height="240" rx="12"/><rect x="320" y="95" width="260" height="240" rx="12"/><rect x="610" y="95" width="260" height="240" rx="12"/></g>
+<g font-size="19" font-weight="700"><text x="47" y="143">两个当前版本哪里不同</text><text x="337" y="143">功能分支净改了什么</text><text x="627" y="143">右侧独有提交有哪些</text></g>
+<g font-size="25" font-weight="700"><text x="47" y="205">B → D</text><text x="337" y="205">A → D</text><text x="627" y="205">集合 C、D</text></g>
+<g font-size="17"><text x="47" y="262">diff main topic</text><text x="337" y="262">diff main...topic</text><text x="627" y="262">log main..topic</text><text x="47" y="305">两个文件树</text><text x="337" y="305">祖先树与右侧树</text><text x="627" y="305">提交身份集合</text></g>
+<text x="30" y="391" font-size="16">topic为功能分支简称。三点diff有方向，不是三点log的对称差集合。</text></g></svg>

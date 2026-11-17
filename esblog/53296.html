@@ -1,0 +1,318 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Git分支差异 从双点快照到三点共同祖先 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用分叉历史和一个文件的三份快照，区分git diff的双点端点、三点共同祖先与git log的提交集合；附完整PowerShell独立实验、方向反转、多个最佳共同祖先和审查边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git分支差异 从双点快照到三点共同祖先">
+<meta property="og:url" content="https://eulersail.com/esblog/53296.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用分叉历史和一个文件的三份快照，区分git diff的双点端点、三点共同祖先与git log的提交集合；附完整PowerShell独立实验、方向反转、多个最佳共同祖先和审查边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-12T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-12T04:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="差异审查">
+<meta property="article:tag" content="merge-base">
+<meta property="article:tag" content="分支">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/53296.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Git分支差异 从双点快照到三点共同祖先',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-12 12:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261112-1"><link rel="stylesheet" href="/css/home-editorial.css?v=20261111-1"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261111-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">156</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">282</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Git分支差异 从双点快照到三点共同祖先</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-12T04:00:00.000Z" title="发表于 2026-11-12 12:00:00">2026-11-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-12T04:00:00.000Z" title="更新于 2026-11-12 12:00:00">2026-11-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="Git分支差异 从双点快照到三点共同祖先" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="tools"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DEVELOPER DESK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>7</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>6</strong><small>组图片与图表</small></span></div></div><p>先定位当前任务，再对照操作前提、结果与容易混淆的边界。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>7 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先画清历史，再给内容命名"><span>01</span><strong>先画清历史，再给内容命名</strong></a></li><li><a href="#双点diff仍然是在比较两个端点"><span>02</span><strong>双点diff仍然是在比较两个端点</strong></a></li><li><a href="#三点diff把左端点换成共同祖先"><span>03</span><strong>三点diff把左端点换成共同祖先</strong></a></li><li><a href="#同样的双点与三点，log选择的是提交集合"><span>04</span><strong>同样的双点与三点，log选择的是提交集合</strong></a></li><li><a href="#一段可以实际运行的PowerShell实验"><span>05</span><strong>一段可以实际运行的PowerShell实验</strong></a></li><li><a href="#三点审查没有替你完成哪些判断"><span>06</span><strong>三点审查没有替你完成哪些判断</strong></a></li><li><a href="#参考文献与复查入口"><span>07</span><strong>参考文献与复查入口</strong></a></li></ol></nav></details></section><p><a href="/esblog/52716.html">Git差异审查</a>比较工作区、暂存区与HEAD，回答下一次提交准备保存什么。分支审查还有另一层问题：主分支与功能分支都前进以后，我们想看的是<strong>两个当前版本哪里不同，还是功能分支相对共同历史增加了什么？</strong></p>
+<p><code>git diff main topic</code>、<code>git diff main..topic</code>、<code>git diff main...topic</code>外观接近，比较的起点却不相同。更容易混淆的是，<code>git log</code>也使用双点与三点，但它在选择提交集合，不能把它的语义直接搬给文件差异。</p>
+<p>本篇用一个明确分叉、唯一最佳共同祖先的小仓库推导这些关系。实验只新建本地教学仓库，保留所有产物，不连接远端，也不操作博客部署仓。</p>
+<span id="more"></span>
+
+
+<section class="article-workshop" aria-label="分支差异阅读任务"><div><span class="workshop-kicker">先写两个端点</span><strong class="workshop-title">是当前主分支，还是共同祖先？</strong><p>比较命令之前，先给提交和文件树命名。同一个右端点，换一个左端点就会得到不同补丁。</p></div><div><span class="workshop-kicker">再核对命令对象</span><strong class="workshop-title">文件变化与提交集合分开</strong><p>diff显示快照之间怎样变化；log选择历史里的哪些提交。标点相同，不代表两者在回答同一个问题。</p></div></section>
+
+
+<h2 id="先画清历史，再给内容命名"><a href="#先画清历史，再给内容命名" class="headerlink" title="先画清历史，再给内容命名"></a>先画清历史，再给内容命名</h2><p>设最初提交为A，文件<code>note.txt</code>只有一行<code>base</code>。从A建立功能分支后，主分支增加一行<code>main</code>，形成B；功能分支先增加<code>topic-1</code>形成C，再增加<code>topic-2</code>形成D。当前<code>main</code>指向B，<code>codex/demo-topic</code>指向D。</p>
+<p>为了避免把名称当成时间，先记住父关系：B的父提交是A，C的父提交也是A，D的父提交是C。A是两条历史共有的祖先；在本例中，它也是唯一的最佳共同祖先。这里的最佳不是日期最新，而是按提交可达关系比较，见<a href="#branch-ref2">文献2</a>。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="分叉历史与两个不同的比较起点，可横向滚动"><img class="no-lazy" src="/images/posts/branch-diff-endpoints.svg" width="900" height="440" alt="A分叉到主分支B和功能分支C、D；双点比较B到D，三点比较A到D"></div><figcaption>图1｜原创教学历史。箭头表示父到子的关系，位置不表示提交耗时。两个比较都以D为右端点，但左端点不同。<a href="/images/posts/branch-diff-endpoints.svg">查看原图</a></figcaption></figure>
+<div class="table-wrap"><table id="branch-snapshot-table"><thead><tr><th>提交</th><th>所在位置</th><th>note.txt的有序行</th></tr></thead><tbody><tr><td>A</td><td>共同历史</td><td>base</td></tr><tr><td>B</td><td>main当前端点</td><td>base；main</td></tr><tr><td>C</td><td>功能分支中间提交</td><td>base；topic-1</td></tr><tr><td>D</td><td>功能分支当前端点</td><td>base；topic-1；topic-2</td></tr></tbody></table></div>
+
+
+<p>表中的分号只是分隔文本行，不是文件里实际写入的字符。先读出这四份快照，后面每一项差异就能直接手算，不必把标点记成抽象口诀。</p>
+<h2 id="双点diff仍然是在比较两个端点"><a href="#双点diff仍然是在比较两个端点" class="headerlink" title="双点diff仍然是在比较两个端点"></a>双点diff仍然是在比较两个端点</h2><p><code>git diff main codex/demo-topic</code>询问：把B的文件树变成D的文件树，需要哪些文本变化？本例会移去<code>main</code>这一行，再加入两行<code>topic-1</code>和<code>topic-2</code>。补丁里的减号描述比较方向，<strong>不表示命令已经删除文件或修改分支</strong>。</p>
+<p>官方diff文档明确，提交参数的双点形式与两个独立端点形式同义，见<a href="#branch-ref1">文献1</a>。因此<code>git diff main..codex/demo-topic</code>在这里也比较B与D，而不是先枚举主分支没有的每个提交再分别输出。</p>
+
+<figure class="article-equation" id="branch-eq1"><figcaption><strong>比较约定G1｜双点diff的左右快照</strong></figcaption><div class="equation-body">git diff L R ≡ git diff L..R<br>比较：tree(L) → tree(R)</div><p class="equation-note">L、R在本文均为已解析的提交；tree(X)表示X记录的文件树。箭头是补丁方向，不是时间轴，也不是会被执行的合并。本文命令不包含工作区与暂存区的未提交修改。</p></figure>
+<details class="mechanism-check"><summary>自检1：双点补丁出现-main，是否证明功能分支曾经删过这一行？</summary><div><p>不能。功能分支从A出发，可能从未拥有这一行。减号只说明左端点B有它、右端点D没有它；必须回到比较端点和历史，才能解释变化的来源。</p></div></details>
+
+
+<p>将方向改为<code>git diff codex/demo-topic main</code>，补丁就会移去两行topic内容、加入main行。快照差异有方向，交换左右端点不是同一个问题。</p>
+<h2 id="三点diff把左端点换成共同祖先"><a href="#三点diff把左端点换成共同祖先" class="headerlink" title="三点diff把左端点换成共同祖先"></a>三点diff把左端点换成共同祖先</h2><p><code>git diff main...codex/demo-topic</code>先从两个端点的历史寻找共同祖先，再把这个祖先的文件树与右端点D比较。本例从A到D，所以只增加两行topic内容，不出现<code>-main</code>：A本来就没有main行。</p>
+
+<figure class="article-equation" id="branch-eq2"><figcaption><strong>比较约定G2｜唯一最佳共同祖先下的三点diff</strong></figcaption><div class="equation-body">M = merge-base(L, R)<br>git diff L...R ≡ git diff M R</div><p class="equation-note">本式限定存在唯一最佳共同祖先M，且端点保持不变。它不是将L与R的全部改动相加；只显示M到右端点R的文件树差异。多个最佳共同祖先需要额外检查。</p></figure>
+
+
+<p>反过来写<code>git diff codex/demo-topic...main</code>，共同祖先仍为A，右端点却成为B，因此只增加main行。这说明三点diff也不是对称比较：它对共同历史的选择对称，对最终显示哪一侧的变化并不对称。</p>
+<p>一种有用的审查习惯是，先用日常语言写下问题，再选命令：若要看两个待运行版本的文件树差异，比较端点；若要看分支相对共同历史的净变化，选择合适的三点方向。两者可以一起看，但不应互相代替。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart LR
+ A[明确两个提交身份] --&gt; B{想比较什么}
+ B --&gt;|两个当前快照| C[diff L R 或 L..R]
+ B --&gt;|右侧相对共同历史| D[检查最佳共同祖先]
+ D --&gt; E[diff L...R]
+ C --&gt; F[解释补丁左右方向]
+ E --&gt; F
+  </pre></div>
+
+<h2 id="同样的双点与三点，log选择的是提交集合"><a href="#同样的双点与三点，log选择的是提交集合" class="headerlink" title="同样的双点与三点，log选择的是提交集合"></a>同样的双点与三点，log选择的是提交集合</h2><p>对这份历史，<code>git log main..codex/demo-topic</code>选择从D可达、但从B不可达的提交，即C和D。<code>git log main...codex/demo-topic</code>选择两侧可达历史的对称差，即B、C、D；共同的A不在其中。集合定义见<a href="#branch-ref3">文献3</a>，这里不约定这几项在日志里出现的顺序。</p>
+
+<figure class="article-equation" id="branch-eq3"><figcaption><strong>集合约定G3｜log的可达集合</strong></figcaption><div class="equation-body">log L..R：Reach(R) ∖ Reach(L)<br>log L...R：两侧可达集合的对称差</div><p class="equation-note">Reach(X)含提交X自身及沿父关系可达的祖先。这里选择的是提交身份，单位是离散提交；不是diff补丁的行数，也不是对补丁求并集。</p></figure>
+<div class="table-wrap"><table id="branch-command-table"><thead><tr><th>命令</th><th>本例在问什么</th><th>应看到的核心结果</th></tr></thead><tbody><tr><td>diff main topic</td><td>B到D的树差异</td><td>移去main，加入两行topic</td></tr><tr><td>diff main..topic</td><td>仍是B到D</td><td>与上行相同</td></tr><tr><td>diff main...topic</td><td>A到D</td><td>只加入两行topic</td></tr><tr><td>diff topic...main</td><td>A到B</td><td>只加入main</td></tr><tr><td>log main..topic</td><td>右侧独有可达提交</td><td>集合C、D</td></tr><tr><td>log main...topic</td><td>两侧可达集合对称差</td><td>集合B、C、D</td></tr></tbody></table></div>
+
+
+<p>表中topic是功能分支的简写，实际实验使用完整名字<code>codex/demo-topic</code>。如果一个分支修改某行后又改回原状，log仍可能选中这两次提交，而端点diff可以为空：提交身份、提交数量和净文件变化并不是同一份信息。</p>
+<h2 id="一段可以实际运行的PowerShell实验"><a href="#一段可以实际运行的PowerShell实验" class="headerlink" title="一段可以实际运行的PowerShell实验"></a>一段可以实际运行的PowerShell实验</h2><p>下面的代码只在当前目录下建立一个带随机名字的新教学仓库。所有历史都在这一个新目录里；它不设置remote，也不触碰已有仓库。若任意Git命令失败，包装函数立即抛错，不继续把后续输出当成有效结果。</p>
+
+<aside class="article-code-note" id="branch-code"><strong>代码说明｜PowerShell 5.1或更新版本，Git支持switch与初始分支命名</strong><p>输入不依赖用户仓库。新建note.txt后仅追加教学行，仓库内设置示例身份、行尾和自动维护选项；结束时恢复原当前目录，教学仓库保留。预期双点补丁包含-main，而正向三点不含-main。</p></aside>
+
+
+<figure class="highlight powershell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$ErrorActionPreference</span> = <span class="string">'Stop'</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Invoke-TeachingGit</span></span> {</span><br><span class="line">    &amp; git @args</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$LASTEXITCODE</span> <span class="operator">-ne</span> <span class="number">0</span>) { <span class="keyword">throw</span> <span class="string">'Teaching Git command failed'</span> }</span><br><span class="line">}</span><br><span class="line"><span class="variable">$start</span> = (<span class="built_in">Get-Location</span>).Path</span><br><span class="line"><span class="variable">$demo</span> = <span class="built_in">Join-Path</span> <span class="variable">$start</span> (<span class="string">'branch-diff-'</span> + [<span class="type">guid</span>]::NewGuid().ToString(<span class="string">'N'</span>))</span><br><span class="line"><span class="built_in">New-Item</span> <span class="literal">-ItemType</span> Directory <span class="literal">-Path</span> <span class="variable">$demo</span> | <span class="built_in">Out-Null</span></span><br><span class="line"><span class="keyword">try</span> {</span><br><span class="line">    <span class="built_in">Set-Location</span> <span class="literal">-LiteralPath</span> <span class="variable">$demo</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> init <span class="literal">--quiet</span> <span class="literal">--initial-branch</span>=main</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> config user.name <span class="string">'Branch Diff Demo'</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> config user.email <span class="string">'demo@example.invalid'</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> config core.autocrlf input</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> config gc.auto <span class="number">0</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> config maintenance.auto false</span><br><span class="line">    <span class="built_in">New-Item</span> <span class="literal">-ItemType</span> File <span class="literal">-Path</span> <span class="string">'note.txt'</span> <span class="literal">-Value</span> <span class="string">"base`n"</span> | <span class="built_in">Out-Null</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> add <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> commit <span class="literal">--quiet</span> <span class="literal">-m</span> A</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> branch codex/demo<span class="literal">-topic</span></span><br><span class="line">    <span class="built_in">Add-Content</span> <span class="literal">-LiteralPath</span> <span class="string">'note.txt'</span> <span class="literal">-Value</span> <span class="string">'main'</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> add <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> commit <span class="literal">--quiet</span> <span class="literal">-m</span> B</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> <span class="keyword">switch</span> <span class="literal">--quiet</span> codex/demo<span class="literal">-topic</span></span><br><span class="line">    <span class="built_in">Add-Content</span> <span class="literal">-LiteralPath</span> <span class="string">'note.txt'</span> <span class="literal">-Value</span> <span class="string">'topic-1'</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> add <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> commit <span class="literal">--quiet</span> <span class="literal">-m</span> C</span><br><span class="line">    <span class="built_in">Add-Content</span> <span class="literal">-LiteralPath</span> <span class="string">'note.txt'</span> <span class="literal">-Value</span> <span class="string">'topic-2'</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> add <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> commit <span class="literal">--quiet</span> <span class="literal">-m</span> D</span><br><span class="line">    <span class="built_in">Write-Output</span> <span class="string">'=== endpoint diff ==='</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> <span class="built_in">diff</span> main codex/demo<span class="literal">-topic</span> <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Write-Output</span> <span class="string">'=== two-dot diff ==='</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> <span class="built_in">diff</span> main..codex/demo<span class="literal">-topic</span> <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Write-Output</span> <span class="string">'=== three-dot diff ==='</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> <span class="built_in">diff</span> main...codex/demo<span class="literal">-topic</span> <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Write-Output</span> <span class="string">'=== reverse three-dot diff ==='</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> <span class="built_in">diff</span> codex/demo<span class="literal">-topic</span>...main <span class="literal">--</span> note.txt</span><br><span class="line">    <span class="built_in">Write-Output</span> <span class="string">'=== right-only commits ==='</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> log <span class="literal">--format</span>=%s main..codex/demo<span class="literal">-topic</span></span><br><span class="line">    <span class="built_in">Write-Output</span> <span class="string">'=== symmetric commits ==='</span></span><br><span class="line">    <span class="built_in">Invoke-TeachingGit</span> log <span class="literal">--format</span>=%s main...codex/demo<span class="literal">-topic</span></span><br><span class="line">    <span class="built_in">Write-Output</span> (<span class="string">'Teaching repository: '</span> + <span class="variable">$demo</span>)</span><br><span class="line">} <span class="keyword">finally</span> {</span><br><span class="line">    <span class="built_in">Set-Location</span> <span class="literal">-LiteralPath</span> <span class="variable">$start</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>把每段输出与上面的手算表比较，重点看补丁中的内容行，不要把<code>---</code>与<code>+++</code>文件头误算成正文增减。完整提交哈希、运行目录和日志顺序可能不同，不应拿一份固定截图作为唯一正确输出。</p>
+<h2 id="三点审查没有替你完成哪些判断"><a href="#三点审查没有替你完成哪些判断" class="headerlink" title="三点审查没有替你完成哪些判断"></a>三点审查没有替你完成哪些判断</h2><p>首先，它不证明分支能无冲突合并。主分支与功能分支可能独立改动相邻区域；以共同祖先为起点的补丁只展示一侧净变化，不运行合并算法，更不运行构建、测试或权限检查。</p>
+<p>其次，共同祖先不是永远固定的分叉日期。分支如果合入过其他历史，最佳共同祖先可能随提交图改变；长期保存的审查结论应记录当时两端的完整提交身份与采用的比较起点，而不只保存容易继续移动的分支名字。</p>
+<p>最后，复杂的交叉合并历史可能有多个互不优于对方的最佳共同祖先。官方merge-base文档说明，不带<code>--all</code>时输出哪一个并无保证。遇到这类图，应先检查所有最佳候选并明确审查规则，不能继续把G2中的M当成天然唯一。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="审查快照与审查提交集合的选择，可横向滚动"><img class="no-lazy" src="/images/posts/branch-diff-questions.svg" width="900" height="440" alt="端点差异选B与D，共同历史差异选A与D，独有提交集合选C与D；三类问题分别记录起点、终点或集合"></div><figcaption>图2｜原创问题对照。框宽不表示提交数量、文件大小或审查成本。三点diff与三点log在这里属于不同的对象类型。<a href="/images/posts/branch-diff-questions.svg">查看原图</a></figcaption></figure>
+<aside class="article-takeaway"><strong>重点｜先固定身份，再解释差异</strong><p>写清左右端点、共同祖先是否唯一、比较的是文件树还是提交集合。补丁为空不代表没有独有提交；补丁里出现减号也不证明右侧历史曾执行过删除。</p></aside>
+<details class="mechanism-check"><summary>自检2：交换三点diff左右参数，是否只是给原补丁换个正负号？</summary><div><p>通常不是。本例正向比较A到D，反向比较A到B，左侧共同祖先不变，但右侧换成了另一条分支。两份补丁展示各自的净变化，不是同一对端点的简单反向。</p></div></details>
+<details class="mechanism-check"><summary>自检3：log选出了两个独有提交，diff是否一定非空？</summary><div><p>不一定。两次修改可以互相抵消，最终文件树回到原状。log保留提交身份，diff比较所选快照；提交集合非空不能推出净文件变化非空。</p></div></details>
+<details class="mechanism-check"><summary>自检4：三点补丁看起来很小，能据此保证合并后测试通过吗？</summary><div><p>不能。比较没有执行集成，更没有验证运行行为。需要另外核对合并条件、候选集成结果与相应测试；小补丁也可能改变关键条件。</p></div></details>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[准备保存审查结论] --&gt; B[记录左右完整提交身份]
+ B --&gt; C[核对共同祖先与比较方向]
+ C --&gt; D[将文件树差异与提交集合分开]
+ D --&gt; E[另外验证候选集成结果]
+ E --&gt; F[保留命令与核对依据]
+  </pre></div>
+
+<h2 id="参考文献与复查入口"><a href="#参考文献与复查入口" class="headerlink" title="参考文献与复查入口"></a>参考文献与复查入口</h2>
+<ol class="article-references"><li id="branch-ref1"><cite>Git：git-diff。</cite> <a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-diff/2.41.0">2.41版官方手册</a>。核对双点端点同义、三点共同祖先方向及diff不按提交范围解释的说明。<a href="#branch-eq1">返回G1</a>。</li><li id="branch-ref2"><cite>Git：git-merge-base。</cite> <a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-merge-base">官方手册</a>。用于最佳共同祖先、祖先关系与多个最佳候选的边界。<a href="#branch-eq2">返回G2</a>。</li><li id="branch-ref3"><cite>Git：gitrevisions，Dotted Range Notations。</cite> <a target="_blank" rel="noopener" href="https://git-scm.com/docs/gitrevisions">提交可达集合与范围</a>。用于log双点与三点的集合语义；教学文件与A至D历史均为本文独立构造。<a href="#branch-eq3">返回G3</a>。</li></ol>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/53296.html">https://eulersail.com/esblog/53296.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Git/">Git</a><a class="post-meta__tags" href="/tags/%E5%B7%AE%E5%BC%82%E5%AE%A1%E6%9F%A5/">差异审查</a><a class="post-meta__tags" href="/tags/merge-base/">merge-base</a><a class="post-meta__tags" href="/tags/%E5%88%86%E6%94%AF/">分支</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/46994.html" title="SQLite事务 从WAL读快照到写入升级失败"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">SQLite事务 从WAL读快照到写入升级失败</div></div></a></div><div class="next-post pull-right"><a href="/esblog/86083.html" title="相变潜热 从分段焓账本到升温平台与热平衡"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">相变潜热 从分段焓账本到升温平台与热平衡</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/52716.html" title="Git 差异审查 从工作区到暂存区与提交"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="title">Git 差异审查 从工作区到暂存区与提交</div></div></a></div><div><a href="/esblog/52847.html" title="Git bisect 从判定器到首个坏提交"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-20</div><div class="title">Git bisect 从判定器到首个坏提交</div></div></a></div><div><a href="/esblog/52963.html" title="Git revert 从逆向补丁到合并主线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-22</div><div class="title">Git revert 从逆向补丁到合并主线</div></div></a></div><div><a href="/esblog/53074.html" title="Git reflog 从本地记录到提交找回"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="title">Git reflog 从本地记录到提交找回</div></div></a></div><div><a href="/esblog/53185.html" title="Git worktree 从多工作区到分支占用与审查隔离"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-06</div><div class="title">Git worktree 从多工作区到分支占用与审查隔离</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">156</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">282</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%94%BB%E6%B8%85%E5%8E%86%E5%8F%B2%EF%BC%8C%E5%86%8D%E7%BB%99%E5%86%85%E5%AE%B9%E5%91%BD%E5%90%8D"><span class="toc-text">先画清历史，再给内容命名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E7%82%B9diff%E4%BB%8D%E7%84%B6%E6%98%AF%E5%9C%A8%E6%AF%94%E8%BE%83%E4%B8%A4%E4%B8%AA%E7%AB%AF%E7%82%B9"><span class="toc-text">双点diff仍然是在比较两个端点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%82%B9diff%E6%8A%8A%E5%B7%A6%E7%AB%AF%E7%82%B9%E6%8D%A2%E6%88%90%E5%85%B1%E5%90%8C%E7%A5%96%E5%85%88"><span class="toc-text">三点diff把左端点换成共同祖先</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%A0%B7%E7%9A%84%E5%8F%8C%E7%82%B9%E4%B8%8E%E4%B8%89%E7%82%B9%EF%BC%8Clog%E9%80%89%E6%8B%A9%E7%9A%84%E6%98%AF%E6%8F%90%E4%BA%A4%E9%9B%86%E5%90%88"><span class="toc-text">同样的双点与三点，log选择的是提交集合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AE%B5%E5%8F%AF%E4%BB%A5%E5%AE%9E%E9%99%85%E8%BF%90%E8%A1%8C%E7%9A%84PowerShell%E5%AE%9E%E9%AA%8C"><span class="toc-text">一段可以实际运行的PowerShell实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%82%B9%E5%AE%A1%E6%9F%A5%E6%B2%A1%E6%9C%89%E6%9B%BF%E4%BD%A0%E5%AE%8C%E6%88%90%E5%93%AA%E4%BA%9B%E5%88%A4%E6%96%AD"><span class="toc-text">三点审查没有替你完成哪些判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E5%A4%8D%E6%9F%A5%E5%85%A5%E5%8F%A3"><span class="toc-text">参考文献与复查入口</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46994.html" title="SQLite事务 从WAL读快照到写入升级失败">SQLite事务 从WAL读快照到写入升级失败</a><time datetime="2026-11-12T04:10:00.000Z" title="发表于 2026-11-12 12:10:00">2026-11-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53296.html" title="Git分支差异 从双点快照到三点共同祖先">Git分支差异 从双点快照到三点共同祖先</a><time datetime="2026-11-12T04:00:00.000Z" title="发表于 2026-11-12 12:00:00">2026-11-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86083.html" title="相变潜热 从分段焓账本到升温平台与热平衡">相变潜热 从分段焓账本到升温平台与热平衡</a><time datetime="2026-11-08T02:10:00.000Z" title="发表于 2026-11-08 10:10:00">2026-11-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73086.html" title="梯度累积 从不等长微批到一次正确的优化器更新">梯度累积 从不等长微批到一次正确的优化器更新</a><time datetime="2026-11-08T02:00:00.000Z" title="发表于 2026-11-08 10:00:00">2026-11-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/99092.html" title="斯特拉文斯基火鸟1919 从音色角色到终曲抵达">斯特拉文斯基火鸟1919 从音色角色到终曲抵达</a><time datetime="2026-11-07T16:20:00.000Z" title="发表于 2026-11-08 00:20:00">2026-11-08</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

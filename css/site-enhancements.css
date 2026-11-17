@@ -2869,6 +2869,17 @@
 #post #article-container.reading-article .reading-math-label { padding:0.8em 1.1em 0.3em; margin:0; color:var(--article-accent); font-family:inherit; font-size:0.86em; line-height:1.7; font-weight:700; }
 #post #article-container.reading-article .reading-math-quote { border-color:var(--article-accent); background:var(--article-soft); }
 #post #article-container.reading-article .reading-math-quote .reading-math-label { padding:0 0 0.45em; }
+/* The all-post census found 178 expression labels at only 12.04px with
+   14px prose. Match other explanatory labels and preserve print rules. */
+@media screen {
+  #post #article-container.reading-article .reading-math-label {
+    font-size: .95em;
+    line-height: 1.8;
+    border-bottom: 1px solid var(--article-rule);
+    padding-bottom: .55em;
+    margin-bottom: .35em;
+  }
+}
 #post #article-container.reading-article .reading-math-quote p { font-size:1.05em; line-height:2; }
 #post #article-container.reading-article figure.reading-math-block .highlight-tools { color:var(--article-accent); background:transparent; }
 @media screen { #post #article-container.reading-article figure.reading-math-block:has(> .highlight-tools .code-lang) > .reading-math-label { display:none; } }
