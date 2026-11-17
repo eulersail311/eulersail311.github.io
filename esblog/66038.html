@@ -1,0 +1,332 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>全方差分解 从组内波动到组间均值差异 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从六条合成记录推导总体平方和的组内组间分解，区分记录权重与组权重、描述方差与样本方差，并解释合并方差、改变分组和因果解释的边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全方差分解 从组内波动到组间均值差异">
+<meta property="og:url" content="https://eulersail.com/esblog/66038.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从六条合成记录推导总体平方和的组内组间分解，区分记录权重与组权重、描述方差与样本方差，并解释合并方差、改变分组和因果解释的边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-17T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="统计">
+<meta property="article:tag" content="方差">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/66038.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '全方差分解 从组内波动到组间均值差异',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-17 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261117-1"><link rel="stylesheet" href="/css/home-editorial.css?v=20261111-1"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261111-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">158</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">全方差分解 从组内波动到组间均值差异</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-17T02:00:00.000Z" title="发表于 2026-11-17 10:00:00">2026-11-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-17T02:00:00.000Z" title="更新于 2026-11-17 10:00:00">2026-11-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="全方差分解 从组内波动到组间均值差异" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="data"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DATA NOTEBOOK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>7</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>3</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>先确认变量、单位与假设，再核对手算、图表和解释范围。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>7 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先确定六条记录怎样被抽到"><span>01</span><strong>先确定六条记录怎样被抽到</strong></a></li><li><a href="#交叉项为什么严格消失"><span>02</span><strong>交叉项为什么严格消失</strong></a></li><li><a href="#六条数据完整算一次"><span>03</span><strong>六条数据完整算一次</strong></a></li><li><a href="#样本方差不能直接塞进原式"><span>04</span><strong>样本方差不能直接塞进原式</strong></a></li><li><a href="#分组越细，组内项为何不会增加"><span>05</span><strong>分组越细，组内项为何不会增加</strong></a></li><li><a href="#两块合并与因果边界"><span>06</span><strong>两块合并与因果边界</strong></a></li><li><a href="#参考资料"><span>07</span><strong>参考资料</strong></a></li></ol></nav></details></section><p>两个批次各自很稳定，合并后为什么波动反而很大？<a href="/esblog/65705.html">Welford在线方差</a>解决怎样累计中心矩，<a href="/esblog/65816.html">在线协方差</a>解释分块合并的跨块修正。本篇把修正项拆开看：总体离散程度既来自每组内部，也来自各组均值的位置。</p>
+<p>问题不是挑一个更小的方差报告，而是说清楚：随机抽取的是一条记录，还是先等概率抽一个组？本文所有数字都是合成算例，讨论描述性恒等式，不把分组差异解释为处理效果。</p>
+<span id="more"></span>
+
+<h2 id="先确定六条记录怎样被抽到"><a href="#先确定六条记录怎样被抽到" class="headerlink" title="先确定六条记录怎样被抽到"></a>先确定六条记录怎样被抽到</h2><p data-reading-numbers="true">A组为<span class="reading-number">1</span>、<span class="reading-number">3</span>，B组为<span class="reading-number">5</span>、<span class="reading-number">7</span>、<span class="reading-number">9</span>、<span class="reading-number">11</span>。等概率抽取六条记录时，抽到A的概率为<span class="reading-number">1/3</span>，抽到B为<span class="reading-number">2/3</span>。组均值分别为<span class="reading-number">2</span>与<span class="reading-number">8</span>，全体均值为<span class="reading-number">6</span>。直接平均两个均值却得到<span class="reading-number">5</span>，它对应先等概率抽组、再组内抽记录的另一个分布。</p>
+<p>下文v均按记录数n作分母，单位是原变量单位的平方；若变量是毫秒，方差就是ms²。标准差才恢复为ms，不能把方差说成“平均多等待多少毫秒”。</p>
+
+<figure class="article-equation"><figcaption><strong>约定V1｜有限记录的描述口径</strong></figcaption><div class="equation-body">N=Σn_g；w_g=n_g/N；μ=Σw_g μ_g<br>v_g=Σ组内(x−μ_g)²/n_g；v=Σ全体(x−μ)²/N</div><p class="equation-note">各组非空、互不重叠且覆盖所有记录。每条记录恰好出现一次；本篇不处理负权重或重复归属。</p></figure>
+
+
+<p>这是概率形式全方差定律在经验分布上的应用。有限二阶矩条件与条件期望版本见<a target="_blank" rel="noopener" href="https://live.ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/d973b10c2587781f86ca4f2aff49098f_MITRES_6_012S18_Textbook.pdf">MIT概率课程总结</a>；下面直接展开有限和，不需要假设各组独立或正态。</p>
+<h2 id="交叉项为什么严格消失"><a href="#交叉项为什么严格消失" class="headerlink" title="交叉项为什么严格消失"></a>交叉项为什么严格消失</h2><p data-reading-numbers="true">对属于g组的记录，把偏离全体均值的量写为(x−μ_g)+(μ_g−μ)。平方后有组内平方、组均值偏离平方与交叉项。组内偏差之和Σ组内(x−μ_g)=<span class="reading-number">0</span>，因此交叉项求和严格为零，而不是“大样本下近似抵消”。</p>
+
+<figure class="article-equation"><figcaption><strong>公式V2｜平方和与方差分解</strong></figcaption><div class="equation-body">SST = SSW + SSB<br>SSW=Σ_g Σ组内(x−μ_g)²<br>SSB=Σ_g n_g(μ_g−μ)²<br>v=Σ_g w_g v_g + Σ_g w_g(μ_g−μ)²</div><p class="equation-note">SST、SSW、SSB分别为总、组内、组间平方和。最后一行只因前三项同时除以N而成立。</p></figure>
+
+
+<p>第一项是随机记录所在组的条件方差的平均；第二项是随机记录所在组的均值的方差。“组间”不是对所有两两均值差直接相加，也不是给每组同样的权重。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[一条记录的总偏差] --&gt; B[相对本组均值]
+ A --&gt; C[本组均值相对总体]
+ B --&gt; D[组内偏差和为零]
+ C --&gt; D
+ D --&gt; E[交叉项消失]
+  </pre></div>
+
+<h2 id="六条数据完整算一次"><a href="#六条数据完整算一次" class="headerlink" title="六条数据完整算一次"></a>六条数据完整算一次</h2><p data-reading-numbers="true">全体偏差为<span class="reading-number">−5</span>、<span class="reading-number">−3</span>、<span class="reading-number">−1</span>、<span class="reading-number">1</span>、<span class="reading-number">3</span>、<span class="reading-number">5</span>，总平方和<span class="reading-number">70</span>。A组内平方和为<span class="reading-number">2</span>，B组内平方和为<span class="reading-number">20</span>，所以SSW=<span class="reading-number">22</span>。组间平方和为<span class="reading-number">2</span>×(<span class="reading-number">2</span><span class="reading-number">−6</span>)²<span class="reading-number">+4</span>×(<span class="reading-number">8</span><span class="reading-number">−6</span>)²=<span class="reading-number">48</span>，恰好<span class="reading-number">22</span><span class="reading-number">+48</span>=<span class="reading-number">70</span>。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>A组</th>
+<th>B组</th>
+<th>合并口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>记录数</td>
+<td class="reading-numeric-cell"><span class="reading-number">2</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">4</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">6</span></td>
+</tr>
+<tr>
+<td>均值</td>
+<td class="reading-numeric-cell"><span class="reading-number">2</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">8</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">6</span></td>
+</tr>
+<tr>
+<td>描述方差</td>
+<td class="reading-numeric-cell"><span class="reading-number">1</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">5</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">35/3</span></td>
+</tr>
+<tr>
+<td>组内贡献</td>
+<td class="reading-numeric-cell"><span class="reading-number">1/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">10/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">11/3</span></td>
+</tr>
+<tr>
+<td>组间贡献</td>
+<td class="reading-numeric-cell"><span class="reading-number">16/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">8/3</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">8</span></td>
+</tr>
+</tbody></table>
+<p data-reading-numbers="true">只平均组内方差得到<span class="reading-number">11/3</span>，遗漏了<span class="reading-number">8</span>；简单平均<span class="reading-number">1</span>与<span class="reading-number">5</span>得到<span class="reading-number">3</span>，还额外把记录权重换成了组权重。用“每个批次都很稳定”代替合并结果，等于忽略了批次中心不同。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="六条合成记录的平方和分解，可横向滚动"><img class="no-lazy" src="/images/posts/variance-within-between.svg" width="900" height="300" alt="总平方和70分为组内22与组间48，条长使用同一比例"></div><figcaption>图1｜原创合成账本，条长按平方和同尺度绘制，不是置信区间。<a href="/images/posts/variance-within-between.svg">查看原图</a></figcaption></figure>
+<details class="mechanism-check"><summary>自检1：组内方差都为零，总体方差也一定为零吗？</summary><div><p data-reading-numbers="true">不一定。若A组全为<span class="reading-number">2</span>、B组全为<span class="reading-number">8</span>，组内项为零，组间项仍为<span class="reading-number">8</span>。只有所有记录数为正的组具有相同均值，总体方差才为零。</p></div></details>
+
+
+<h2 id="样本方差不能直接塞进原式"><a href="#样本方差不能直接塞进原式" class="headerlink" title="样本方差不能直接塞进原式"></a>样本方差不能直接塞进原式</h2><p data-reading-numbers="true">若使用n_g−1分母的样本方差s_g²，必须先恢复平方和SSW=Σ(n_g−1)s_g²，再加SSB，最后除以N−1。这里A组s²=<span class="reading-number">2</span>，B组s²=<span class="reading-number">20/3</span>，全体s²=<span class="reading-number">14</span>。按记录权重平均组样本方差既不是描述方差，也不是全体样本方差。</p>
+<p data-reading-numbers="true">常见的合并组内方差SSW/(N−G)，本例为<span class="reading-number">22/4</span>=<span class="reading-number">5.5</span>。它只总结去掉各组均值后的残差尺度；要把它作为共同总体方差的估计，还需模型条件。它没有包含组均值偏移，不能作为全体记录方差<span class="reading-number">14</span>的替代品。只有一个观测的组仍可参与描述分解，其描述方差为零，但该组的通常无偏样本方差没有定义。</p>
+<h2 id="分组越细，组内项为何不会增加"><a href="#分组越细，组内项为何不会增加" class="headerlink" title="分组越细，组内项为何不会增加"></a>分组越细，组内项为何不会增加</h2><p>在同一批记录上，把一个组再细分，可对原组内部再次应用平方和分解：旧组内平方和等于新组内平方和加新增组间平方和。后者非负，因此细分后的总组内平方和不增加。这个结论要求是细化关系；两种互相交叉的分组不能直接比较单调性。</p>
+<p data-reading-numbers="true">极端地，每条记录独立成组，SSW变成<span class="reading-number">0</span>，SSB变成SST。这不是完美解释了数据来源，而是分组记住了每个观测。报告“组别解释了多少波动”时应同时报告组数、每组数量和分组是否事先确定。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[固定同一批记录] --&gt; B[原组继续细分]
+ B --&gt; C[新增均值差异非负]
+ C --&gt; D[组内平方和不增加]
+ D --&gt; E[另查样本外意义]
+  </pre></div>
+
+<h2 id="两块合并与因果边界"><a href="#两块合并与因果边界" class="headerlink" title="两块合并与因果边界"></a>两块合并与因果边界</h2><p>对只有两组的情况，SSB可化为n_A n_B/N乘(μ_A−μ_B)²，正是在线中心矩合并时的跨块修正。这说明即使没有原始记录，只保留计数、均值与组内中心矩，也能恢复合并方差；只保留均值与标准差却忘记数量，就通常不足以唯一恢复。</p>
+
+<details class="mechanism-check"><summary>自检2：本例48/70的组间比例能证明批次造成波动吗？</summary><div><p>不能。这是当前记录与分组的描述比例。批次可能同时关联设备、时间、原料和筛选方式；没有识别条件，不能把代数分解当成干预效果。</p></div></details>
+<aside class="article-takeaway"><strong>阅读重点</strong><p>先固定抽样对象与方差分母，再恢复平方和。分解解释账本怎样相加，不自动给出显著性、预测能力或因果结论。</p></aside>
+
+
+<p>进一步比较构成变化可读<a href="/esblog/64973.html">辛普森悖论</a>，比较估计不确定性可读<a href="/esblog/64893.html">配对Bootstrap</a>。它们回答的问题不同：恒等式核对算术，重采样讨论特定设计下的估计波动，二者都不能单独替代研究设计。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://live.ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/d973b10c2587781f86ca4f2aff49098f_MITRES_6_012S18_Textbook.pdf">MIT Introduction to Probability：教材总结</a>，条件期望、条件方差及全方差定律。</li>
+<li><a target="_blank" rel="noopener" href="https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/c025b4baa48ff7801b96c3915ee62e5c_mHonq7Gjjqg.pdf">MIT 全方差推导课程文字稿</a>。本文有限记录展开、数据和图均自行构造。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/66038.html">https://eulersail.com/esblog/66038.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BB%9F%E8%AE%A1/">统计</a><a class="post-meta__tags" href="/tags/%E6%96%B9%E5%B7%AE/">方差</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/86194.html" title="内热源导热 从能量守恒到抛物温度与峰值位置"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">内热源导热 从能量守恒到抛物温度与峰值位置</div></div></a></div><div class="next-post pull-right"><a href="/esblog/46994.html" title="SQLite事务 从WAL读快照到写入升级失败"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">SQLite事务 从WAL读快照到写入升级失败</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-31</div><div class="title">Welford 在线方差 从中心矩到分块合并</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">158</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%A1%AE%E5%AE%9A%E5%85%AD%E6%9D%A1%E8%AE%B0%E5%BD%95%E6%80%8E%E6%A0%B7%E8%A2%AB%E6%8A%BD%E5%88%B0"><span class="toc-text">先确定六条记录怎样被抽到</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E5%8F%89%E9%A1%B9%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%A5%E6%A0%BC%E6%B6%88%E5%A4%B1"><span class="toc-text">交叉项为什么严格消失</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E6%9D%A1%E6%95%B0%E6%8D%AE%E5%AE%8C%E6%95%B4%E7%AE%97%E4%B8%80%E6%AC%A1"><span class="toc-text">六条数据完整算一次</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B7%E6%9C%AC%E6%96%B9%E5%B7%AE%E4%B8%8D%E8%83%BD%E7%9B%B4%E6%8E%A5%E5%A1%9E%E8%BF%9B%E5%8E%9F%E5%BC%8F"><span class="toc-text">样本方差不能直接塞进原式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E7%BB%84%E8%B6%8A%E7%BB%86%EF%BC%8C%E7%BB%84%E5%86%85%E9%A1%B9%E4%B8%BA%E4%BD%95%E4%B8%8D%E4%BC%9A%E5%A2%9E%E5%8A%A0"><span class="toc-text">分组越细，组内项为何不会增加</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E5%9D%97%E5%90%88%E5%B9%B6%E4%B8%8E%E5%9B%A0%E6%9E%9C%E8%BE%B9%E7%95%8C"><span class="toc-text">两块合并与因果边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86194.html" title="内热源导热 从能量守恒到抛物温度与峰值位置">内热源导热 从能量守恒到抛物温度与峰值位置</a><time datetime="2026-11-17T02:10:00.000Z" title="发表于 2026-11-17 10:10:00">2026-11-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66038.html" title="全方差分解 从组内波动到组间均值差异">全方差分解 从组内波动到组间均值差异</a><time datetime="2026-11-17T02:00:00.000Z" title="发表于 2026-11-17 10:00:00">2026-11-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/46994.html" title="SQLite事务 从WAL读快照到写入升级失败">SQLite事务 从WAL读快照到写入升级失败</a><time datetime="2026-11-12T04:10:00.000Z" title="发表于 2026-11-12 12:10:00">2026-11-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/53296.html" title="Git分支差异 从双点快照到三点共同祖先">Git分支差异 从双点快照到三点共同祖先</a><time datetime="2026-11-12T04:00:00.000Z" title="发表于 2026-11-12 12:00:00">2026-11-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86083.html" title="相变潜热 从分段焓账本到升温平台与热平衡">相变潜热 从分段焓账本到升温平台与热平衡</a><time datetime="2026-11-08T02:10:00.000Z" title="发表于 2026-11-08 10:10:00">2026-11-08</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

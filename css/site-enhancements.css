@@ -3063,6 +3063,14 @@
 #post .reading-article .algorithm-topic-return { display: inline-block; padding: 8px 0; font-size: 14px; font-weight: 700; color: var(--article-accent); text-decoration: underline; text-underline-offset: 4px; }
 #post .reading-article .algorithm-topic :is(a, summary):focus-visible { outline: 2px solid var(--article-accent); outline-offset: 3px; }
 
+@media screen {
+  #post .reading-article .algorithm-topic-position { font-size: 0.95em; }
+  #post .reading-article .algorithm-topic-list li,
+  #post .reading-article .algorithm-topic-pager a,
+  #post .reading-article .algorithm-topic-return { font-size: 1em; }
+  #post .reading-article .algorithm-topic-pager a span { font-size: 0.95em; }
+}
+
 #article-container .algorithm-exercises { margin: 2em 0; padding: 18px; border: 1px solid var(--sail-border); border-radius: 14px; background: var(--sail-surface-strong); }
 #article-container .algorithm-exercises > summary { min-height: 44px; color: var(--sail-accent); font-weight: 700; line-height: 1.8; cursor: pointer; }
 #article-container .algorithm-exercises > summary:focus-visible { outline: 2px solid var(--sail-accent); outline-offset: 3px; }

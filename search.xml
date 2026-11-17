@@ -4,6 +4,60 @@
   
     
     <entry>
+      <title>内热源导热 从能量守恒到抛物温度与峰值位置</title>
+      <link href="/esblog/86194.html"/>
+      <url>/esblog/86194.html</url>
+      
+        <content type="html"><![CDATA[<p><a href="/esblog/85750.html">稳态导热</a>讨论无内热源的串联热阻，此时同一通路的热流率不变。如果平板每一小段都在产热，还能把两个端点用直线连起来吗？端面温度相同，又是否意味着板内没有热流？</p><p>本篇从一段薄片的收支推导答案。全部参数为合成教学数据，不对应电池、真实材料牌号或设备安全限值；讨论的是既定恒定热源下的稳态解，不研究热失控或升温所需时间。</p><span id="more"></span><h2 id="模型先限定到一维平板"><a href="#模型先限定到一维平板" class="headerlink" title="模型先限定到一维平板"></a>模型先限定到一维平板</h2><p>取坐标0≤x≤L，横截面积A恒定，侧面绝热，导热系数k&gt;0恒定，均匀体积产热率qᵥ≥0。假定稳态、没有相变、没有质量流动，温度只随x变化。qᵥ的单位为W&#x2F;m³，沿正x的热流密度j为W&#x2F;m²，总功率则是W，三者不能混用。</p><p>内部产热是能量从其他形式转成内能的源项，不等于温度以同样速度积累。稳态的储能变化为零，但产出的能量持续从边界流走。内源稳态导热的教学背景见<a href="https://tfaws.nasa.gov/wp-content/uploads/TFAWS18-IN-18.pdf">NASA热分析课程</a>。</p><h2 id="薄片收支决定温度曲率"><a href="#薄片收支决定温度曲率" class="headerlink" title="薄片收支决定温度曲率"></a>薄片收支决定温度曲率</h2><p>对宽dx的薄片，流入j(x)A，流出j(x+dx)A，内部产热qᵥA dx。稳态要求流出减流入等于产热，故dj&#x2F;dx&#x3D;qᵥ。与Fourier定律j&#x3D;−k dT&#x2F;dx合并，就得到温度二阶导数为负常数。</p><figure class="article-equation"><figcaption><strong>公式H1｜恒定物性的一维稳态方程</strong></figcaption><div class="equation-body">dj/dx=qᵥ；j=−k dT/dx<br>d²T/dx²=−qᵥ/k</div><p class="equation-note">x、L用m，k用W/(m·K)。温度差用K或°C的数值相同；本篇没有绝对温度的幂运算。</p></figure><p>这一步已经否定了直线温度猜测：只要qᵥ&gt;0、k有限，曲率就不是零。曲线向下弯不表示热总是向右流，热流方向还由局部一阶导数决定。</p><div class="mermaid-wrap"><pre class="mermaid-src" hidden>  flowchart TD A[薄片流入加产热] --&gt; B[等于薄片流出] B --&gt; C[热流随位置增加] C --&gt; D[结合导热定律] D --&gt; E[温度曲率为负]  </pre></div><h2 id="两端温度已知，峰值不一定在中点"><a href="#两端温度已知，峰值不一定在中点" class="headerlink" title="两端温度已知，峰值不一定在中点"></a>两端温度已知，峰值不一定在中点</h2><p>令T(0)&#x3D;T₀，T(L)&#x3D;T₁。积分两次再代入端点，得到直线背景与产热鼓包之和。两端温差记为Δ&#x3D;T₁−T₀。</p><figure class="article-equation"><figcaption><strong>公式H2｜定温边界下的温度与热流</strong></figcaption><div class="equation-body">T(x)=T₀+Δx/L+qᵥx(L−x)/(2k)<br>j(x)=−kΔ/L+qᵥ(x−L/2)<br>x*=L/2+kΔ/(qᵥL)，仅当qᵥ>0</div><p class="equation-note">x*只有落在[0,L]内才是板内最高温的位置。若落在区间外，最高温位于端面；qᵥ=0时回到线性温度，不能使用含qᵥ分母的峰值式。</p></figure><p>当两端相同，峰值在中点；右端更热，峰值向右移。内部峰值条件为|Δ|≤qᵥL²&#x2F;(2k)，等号时峰值恰在端点。超过该差值，温度全程单调，即便内部仍然产热，也可能有一侧边界从外界吸热。</p><h2 id="一块板，核对三笔功率"><a href="#一块板，核对三笔功率" class="headerlink" title="一块板，核对三笔功率"></a>一块板，核对三笔功率</h2><p>取L&#x3D;0.02m、A&#x3D;0.01m²、k&#x3D;2W&#x2F;(m·K)、qᵥ&#x3D;100000W&#x2F;m³，两端都是20°C。中点高于端面qᵥL²&#x2F;(8k)&#x3D;2.5K，所以最高22.5°C。左、右端沿正x热流分别为−1000和1000W&#x2F;m²。</p><table><thead><tr><th>位置x</th><th>温度</th><th>正x热流密度</th></tr></thead><tbody><tr><td>0mm</td><td>20°C</td><td>−1000W&#x2F;m²</td></tr><tr><td>5mm</td><td>21.875°C</td><td>−500W&#x2F;m²</td></tr><tr><td>10mm</td><td>22.5°C</td><td>0W&#x2F;m²</td></tr><tr><td>15mm</td><td>21.875°C</td><td>500W&#x2F;m²</td></tr><tr><td>20mm</td><td>20°C</td><td>1000W&#x2F;m²</td></tr></tbody></table><p>左表面的外法线朝负x，所以左侧向外功率为−Aj(0)&#x3D;10W，右侧为Aj(L)&#x3D;10W，总和20W，等于qᵥAL。中点热流为零只表示那一个截面的净流为零；其右侧产生的热量向右排出，左侧向左排出。</p><figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="合成平板温度曲线，可横向滚动"><img class="no-lazy" src="/images/posts/internal-heat-profile.svg" width="900" height="360" alt="等温端面平板在0到20毫米间形成抛物线，中心22.5摄氏度，两端20摄氏度"></div><figcaption>图1｜原创合成曲线，坐标由H2计算；不是实测温度场。<a href="/images/posts/internal-heat-profile.svg">查看原图</a></figcaption></figure><details class="mechanism-check"><summary>自检1：两端温度相同，为什么仍有20W流出？</summary><div><p>内部热源持续供能。两端相同只消除了直线背景，产热鼓包仍有梯度；两个端面的向外功率各10W。</p></div></details><h2 id="右端升高以后，热流可以反向"><a href="#右端升高以后，热流可以反向" class="headerlink" title="右端升高以后，热流可以反向"></a>右端升高以后，热流可以反向</h2><p>保持其他参数不变，令右端24°C，则Δ&#x3D;4K。峰值移到14mm，最高24.9°C；左侧外排14W，右侧外排6W，仍合计20W。最高温略高于更热端面，这个差距来自内部产热与右端附近仍向右排热。</p><p>若右端改成32°C，则Δ&#x3D;12K，大于内部峰值门槛10K，形式上的x*&#x3D;22mm在板外。物理区间内温度单调上升，最高就是右端32°C。此时左侧外排22W，右侧向外功率为−2W，即右边界还从外界吸收2W；22−2&#x3D;20W仍守恒。不能把“右侧排热为负”改成绝对值后再相加。</p><h2 id="对流边界需要另列端面温度"><a href="#对流边界需要另列端面温度" class="headerlink" title="对流边界需要另列端面温度"></a>对流边界需要另列端面温度</h2><p>两侧面对同样的环境T∞、具有相同h&gt;0时，利用中面对称性，每侧必须排出热流密度qᵥL&#x2F;2。由对流边界条件，端面温升为qᵥL&#x2F;(2h)，再加内部传导温升得到中心温度。</p><figure class="article-equation"><figcaption><strong>公式H3｜两侧对称对流冷却</strong></figcaption><div class="equation-body">T_s−T∞=qᵥL/(2h)<br>T_max−T∞=qᵥL/(2h)+qᵥL²/(8k)</div><p class="equation-note">h单位W/(m²·K)。两侧环境、h相同且侧面绝热；若边界不对称，不能继续直接平分功率。</p></figure><p>对流边界与表面导热通量连续的关系见<a href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node123.html">MIT导热与对流讲义</a>。上式由本篇收支与对称性推导；不能沿用无内热源平壁的单一路径恒定热流假设。</p><p>本例令T∞&#x3D;20°C、h&#x3D;100W&#x2F;(m²·K)，得到表面30°C、中心32.5°C。若h加倍，表面变25°C、中心27.5°C；若k加倍但h不变，表面仍30°C，中心变31.25°C。因此改善内部导热只能减少内部温差，不能消除既定边界换热造成的10K温升。</p><div class="mermaid-wrap"><pre class="mermaid-src" hidden>  flowchart TD A[给定产热与几何] --&gt; B[能量收支确定端面热流] B --&gt; C[对流关系确定表面温度] C --&gt; D[内部导热确定中心温差] D --&gt; E[分别检查两种热阻贡献]  </pre></div><h2 id="厚度缩放先说明保持什么"><a href="#厚度缩放先说明保持什么" class="headerlink" title="厚度缩放先说明保持什么"></a>厚度缩放先说明保持什么</h2><p>固定qᵥ时，厚度加倍使每单位面积产热加倍，内部中心温升变四倍，对流温升变两倍。如果固定的却是每单位面积总产热p&#x3D;qᵥL，增加厚度意味着qᵥ下降：此时内部温升pL&#x2F;(8k)只随厚度一次增长，对流温升p&#x2F;(2h)不变。</p><p>这两种比较没有矛盾，控制量不同。若实际电阻发热还随温度、几何或电路条件变化，必须先求电功率和热源分布。恒定qᵥ的模型不能自行判定热稳定性；若k随温度变化，也不能把本篇抛物线直接外推。</p><details class="mechanism-check"><summary>自检2：两侧完全绝热、持续正产热，能达到本篇稳态吗？</summary><div><p>不能。边界总流出为零，而总体产热qᵥAL大于零，稳态收支矛盾。需研究瞬态储能，或加入其他能量排出通路。</p></div></details><aside class="article-takeaway"><strong>阅读重点</strong><p>先做总体功率守恒，再查局部曲率和边界符号。内热源使热流随位置变化，端面同温也不能推出板内等温。</p></aside><p>需要讨论随时间演化时，可接着比较<a href="/esblog/85861.html">集总热容</a>的内部近等温假设与<a href="/esblog/85526.html">Fick扩散</a>的空间场思路；存在相变时还须重新引入潜热账本。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol><li><a href="https://tfaws.nasa.gov/wp-content/uploads/TFAWS18-IN-18.pdf">NASA TFAWS：Candidate Benchmark Cases for Thermal and Fluid Software</a>，第10页HT005列出内部产热导热基准问题；该页包含瞬态背景，并非本篇稳态公式的直接出处。</li><li><a href="https://web.mit.edu/16.unified/www/FALL/thermodynamics/notes/node123.html">MIT：Combined Conduction and Convection</a>，对流边界、导热通量连续与热阻单位。本文内源解、参数、比较与图自行推导。</li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> 化学与材料 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 导热 </tag>
+            
+            <tag> 传热 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>全方差分解 从组内波动到组间均值差异</title>
+      <link href="/esblog/66038.html"/>
+      <url>/esblog/66038.html</url>
+      
+        <content type="html"><![CDATA[<p>两个批次各自很稳定，合并后为什么波动反而很大？<a href="/esblog/65705.html">Welford在线方差</a>解决怎样累计中心矩，<a href="/esblog/65816.html">在线协方差</a>解释分块合并的跨块修正。本篇把修正项拆开看：总体离散程度既来自每组内部，也来自各组均值的位置。</p><p>问题不是挑一个更小的方差报告，而是说清楚：随机抽取的是一条记录，还是先等概率抽一个组？本文所有数字都是合成算例，讨论描述性恒等式，不把分组差异解释为处理效果。</p><span id="more"></span><h2 id="先确定六条记录怎样被抽到"><a href="#先确定六条记录怎样被抽到" class="headerlink" title="先确定六条记录怎样被抽到"></a>先确定六条记录怎样被抽到</h2><p>A组为1、3，B组为5、7、9、11。等概率抽取六条记录时，抽到A的概率为1&#x2F;3，抽到B为2&#x2F;3。组均值分别为2与8，全体均值为6。直接平均两个均值却得到5，它对应先等概率抽组、再组内抽记录的另一个分布。</p><p>下文v均按记录数n作分母，单位是原变量单位的平方；若变量是毫秒，方差就是ms²。标准差才恢复为ms，不能把方差说成“平均多等待多少毫秒”。</p><figure class="article-equation"><figcaption><strong>约定V1｜有限记录的描述口径</strong></figcaption><div class="equation-body">N=Σn_g；w_g=n_g/N；μ=Σw_g μ_g<br>v_g=Σ组内(x−μ_g)²/n_g；v=Σ全体(x−μ)²/N</div><p class="equation-note">各组非空、互不重叠且覆盖所有记录。每条记录恰好出现一次；本篇不处理负权重或重复归属。</p></figure><p>这是概率形式全方差定律在经验分布上的应用。有限二阶矩条件与条件期望版本见<a href="https://live.ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/d973b10c2587781f86ca4f2aff49098f_MITRES_6_012S18_Textbook.pdf">MIT概率课程总结</a>；下面直接展开有限和，不需要假设各组独立或正态。</p><h2 id="交叉项为什么严格消失"><a href="#交叉项为什么严格消失" class="headerlink" title="交叉项为什么严格消失"></a>交叉项为什么严格消失</h2><p>对属于g组的记录，把偏离全体均值的量写为(x−μ_g)+(μ_g−μ)。平方后有组内平方、组均值偏离平方与交叉项。组内偏差之和Σ组内(x−μ_g)&#x3D;0，因此交叉项求和严格为零，而不是“大样本下近似抵消”。</p><figure class="article-equation"><figcaption><strong>公式V2｜平方和与方差分解</strong></figcaption><div class="equation-body">SST = SSW + SSB<br>SSW=Σ_g Σ组内(x−μ_g)²<br>SSB=Σ_g n_g(μ_g−μ)²<br>v=Σ_g w_g v_g + Σ_g w_g(μ_g−μ)²</div><p class="equation-note">SST、SSW、SSB分别为总、组内、组间平方和。最后一行只因前三项同时除以N而成立。</p></figure><p>第一项是随机记录所在组的条件方差的平均；第二项是随机记录所在组的均值的方差。“组间”不是对所有两两均值差直接相加，也不是给每组同样的权重。</p><div class="mermaid-wrap"><pre class="mermaid-src" hidden>  flowchart TD A[一条记录的总偏差] --&gt; B[相对本组均值] A --&gt; C[本组均值相对总体] B --&gt; D[组内偏差和为零] C --&gt; D D --&gt; E[交叉项消失]  </pre></div><h2 id="六条数据完整算一次"><a href="#六条数据完整算一次" class="headerlink" title="六条数据完整算一次"></a>六条数据完整算一次</h2><p>全体偏差为−5、−3、−1、1、3、5，总平方和70。A组内平方和为2，B组内平方和为20，所以SSW&#x3D;22。组间平方和为2×(2−6)²+4×(8−6)²&#x3D;48，恰好22+48&#x3D;70。</p><table><thead><tr><th>项目</th><th>A组</th><th>B组</th><th>合并口径</th></tr></thead><tbody><tr><td>记录数</td><td>2</td><td>4</td><td>6</td></tr><tr><td>均值</td><td>2</td><td>8</td><td>6</td></tr><tr><td>描述方差</td><td>1</td><td>5</td><td>35&#x2F;3</td></tr><tr><td>组内贡献</td><td>1&#x2F;3</td><td>10&#x2F;3</td><td>11&#x2F;3</td></tr><tr><td>组间贡献</td><td>16&#x2F;3</td><td>8&#x2F;3</td><td>8</td></tr></tbody></table><p>只平均组内方差得到11&#x2F;3，遗漏了8；简单平均1与5得到3，还额外把记录权重换成了组权重。用“每个批次都很稳定”代替合并结果，等于忽略了批次中心不同。</p><figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="六条合成记录的平方和分解，可横向滚动"><img class="no-lazy" src="/images/posts/variance-within-between.svg" width="900" height="300" alt="总平方和70分为组内22与组间48，条长使用同一比例"></div><figcaption>图1｜原创合成账本，条长按平方和同尺度绘制，不是置信区间。<a href="/images/posts/variance-within-between.svg">查看原图</a></figcaption></figure><details class="mechanism-check"><summary>自检1：组内方差都为零，总体方差也一定为零吗？</summary><div><p>不一定。若A组全为2、B组全为8，组内项为零，组间项仍为8。只有所有记录数为正的组具有相同均值，总体方差才为零。</p></div></details><h2 id="样本方差不能直接塞进原式"><a href="#样本方差不能直接塞进原式" class="headerlink" title="样本方差不能直接塞进原式"></a>样本方差不能直接塞进原式</h2><p>若使用n_g−1分母的样本方差s_g²，必须先恢复平方和SSW&#x3D;Σ(n_g−1)s_g²，再加SSB，最后除以N−1。这里A组s²&#x3D;2，B组s²&#x3D;20&#x2F;3，全体s²&#x3D;14。按记录权重平均组样本方差既不是描述方差，也不是全体样本方差。</p><p>常见的合并组内方差SSW&#x2F;(N−G)，本例为22&#x2F;4&#x3D;5.5。它只总结去掉各组均值后的残差尺度；要把它作为共同总体方差的估计，还需模型条件。它没有包含组均值偏移，不能作为全体记录方差14的替代品。只有一个观测的组仍可参与描述分解，其描述方差为零，但该组的通常无偏样本方差没有定义。</p><h2 id="分组越细，组内项为何不会增加"><a href="#分组越细，组内项为何不会增加" class="headerlink" title="分组越细，组内项为何不会增加"></a>分组越细，组内项为何不会增加</h2><p>在同一批记录上，把一个组再细分，可对原组内部再次应用平方和分解：旧组内平方和等于新组内平方和加新增组间平方和。后者非负，因此细分后的总组内平方和不增加。这个结论要求是细化关系；两种互相交叉的分组不能直接比较单调性。</p><p>极端地，每条记录独立成组，SSW变成0，SSB变成SST。这不是完美解释了数据来源，而是分组记住了每个观测。报告“组别解释了多少波动”时应同时报告组数、每组数量和分组是否事先确定。</p><div class="mermaid-wrap"><pre class="mermaid-src" hidden>  flowchart TD A[固定同一批记录] --&gt; B[原组继续细分] B --&gt; C[新增均值差异非负] C --&gt; D[组内平方和不增加] D --&gt; E[另查样本外意义]  </pre></div><h2 id="两块合并与因果边界"><a href="#两块合并与因果边界" class="headerlink" title="两块合并与因果边界"></a>两块合并与因果边界</h2><p>对只有两组的情况，SSB可化为n_A n_B&#x2F;N乘(μ_A−μ_B)²，正是在线中心矩合并时的跨块修正。这说明即使没有原始记录，只保留计数、均值与组内中心矩，也能恢复合并方差；只保留均值与标准差却忘记数量，就通常不足以唯一恢复。</p><details class="mechanism-check"><summary>自检2：本例48/70的组间比例能证明批次造成波动吗？</summary><div><p>不能。这是当前记录与分组的描述比例。批次可能同时关联设备、时间、原料和筛选方式；没有识别条件，不能把代数分解当成干预效果。</p></div></details><aside class="article-takeaway"><strong>阅读重点</strong><p>先固定抽样对象与方差分母，再恢复平方和。分解解释账本怎样相加，不自动给出显著性、预测能力或因果结论。</p></aside><p>进一步比较构成变化可读<a href="/esblog/64973.html">辛普森悖论</a>，比较估计不确定性可读<a href="/esblog/64893.html">配对Bootstrap</a>。它们回答的问题不同：恒等式核对算术，重采样讨论特定设计下的估计波动，二者都不能单独替代研究设计。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol><li><a href="https://live.ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/d973b10c2587781f86ca4f2aff49098f_MITRES_6_012S18_Textbook.pdf">MIT Introduction to Probability：教材总结</a>，条件期望、条件方差及全方差定律。</li><li><a href="https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/c025b4baa48ff7801b96c3915ee62e5c_mHonq7Gjjqg.pdf">MIT 全方差推导课程文字稿</a>。本文有限记录展开、数据和图均自行构造。</li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> 数据分析 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 统计 </tag>
+            
+            <tag> 方差 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>SQLite事务 从WAL读快照到写入升级失败</title>
       <link href="/esblog/46994.html"/>
       <url>/esblog/46994.html</url>
