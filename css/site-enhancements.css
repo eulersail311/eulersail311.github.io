@@ -3012,6 +3012,10 @@
 #post .reading-article :is(.reading-overview-heading span, .reading-overview-metric > i, .reading-chapters-header i, .reading-tools-label i) { color: var(--article-accent); }
 #post .reading-article .reading-overview-metric { border-color: var(--article-rule); background: var(--sail-surface-strong); }
 #post .reading-article .reading-overview-metric small { white-space: normal; overflow: visible; line-height: 1.55; opacity: 1; }
+@media screen {
+  #post .reading-article .reading-overview-metric small,
+  #post .reading-article .reading-overview > p { font-size: 0.95em; line-height: 1.8; opacity: 1; }
+}
 #post .reading-article .reading-overview > p { color: var(--sail-reading-ink); opacity: 1; }
 #post .reading-article .reading-static-chapters { margin-top: 1em; border-top: 1px solid var(--article-rule); }
 #post .reading-article .reading-static-chapters[hidden] { display: none; }
