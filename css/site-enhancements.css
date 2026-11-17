@@ -3206,6 +3206,9 @@
   background: var(--article-soft);
 }
 #post #article-container.reading-article .concept-figure-label { color: var(--article-accent); }
+@media screen {
+  #post #article-container.reading-article .mechanism-map > div > span { font-size: 0.95em; line-height: 1.8; }
+}
 #post #article-container.reading-article :is(.concept-figure-canvas, .table-wrap, .mermaid-wrap, figure.highlight):focus-visible {
   outline: 2px solid var(--article-accent);
   outline-offset: -2px;

@@ -1,0 +1,315 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>加权均值 从权重含义到集中程度与有效样本量 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用固定权重的独立同方差模型推导加权均值方差与有效样本量，比较频数、精度和目标人群权重，说明复制记录、相关性与权重裁剪的边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="加权均值 从权重含义到集中程度与有效样本量">
+<meta property="og:url" content="https://eulersail.com/esblog/66258.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用固定权重的独立同方差模型推导加权均值方差与有效样本量，比较频数、精度和目标人群权重，说明复制记录、相关性与权重裁剪的边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-17T02:40:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T02:40:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="加权统计">
+<meta property="article:tag" content="有效样本量">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/66258.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '加权均值 从权重含义到集中程度与有效样本量',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-17 10:40:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261117-3"><link rel="stylesheet" href="/css/home-editorial.css?v=20261111-1"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261111-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">162</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">288</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">加权均值 从权重含义到集中程度与有效样本量</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-17T02:40:00.000Z" title="发表于 2026-11-17 10:40:00">2026-11-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-17T02:40:00.000Z" title="更新于 2026-11-17 10:40:00">2026-11-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="加权均值 从权重含义到集中程度与有效样本量" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="data"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DATA NOTEBOOK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>7</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>3</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>先确认变量、单位与假设，再核对手算、图表和解释范围。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>7 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#一次归一化，固定正在计算的对象"><span>01</span><strong>一次归一化，固定正在计算的对象</strong></a></li><li><a href="#四条记录，三个不同的问题"><span>02</span><strong>四条记录，三个不同的问题</strong></a></li><li><a href="#什么时候方差能写成权重平方和"><span>03</span><strong>什么时候方差能写成权重平方和</strong></a></li><li><a href="#上下界与缩放不变性"><span>04</span><strong>上下界与缩放不变性</strong></a></li><li><a href="#独立与同方差一旦失效，要保留什么"><span>05</span><strong>独立与同方差一旦失效，要保留什么</strong></a></li><li><a href="#裁剪大权重，改变的不只有方差"><span>06</span><strong>裁剪大权重，改变的不只有方差</strong></a></li><li><a href="#参考资料"><span>07</span><strong>参考资料</strong></a></li></ol></nav></details></section><p><a href="/esblog/66038.html">全方差分解</a>区分记录权重与组权重，<a href="/esblog/66149.html">分位数合并</a>提醒我们并非所有统计量都能加权平均。即使目标确实是均值，仍要先问：权重代表记录数量、测量精度，还是希望描述的目标人群？</p>
+<p>本文从同一组数值开始，说明相同算式为什么可能对应不同的不确定性。所有数字均为合成教学数据；有效样本量只在明确模型下解释，不能用它替代抽样设计或真实独立单位的检查。</p>
+<span id="more"></span>
+
+<h2 id="一次归一化，固定正在计算的对象"><a href="#一次归一化，固定正在计算的对象" class="headerlink" title="一次归一化，固定正在计算的对象"></a>一次归一化，固定正在计算的对象</h2><p data-reading-numbers="true">设有n个有限实数xᵢ，权重wᵢ≥<span class="reading-number">0</span>，至少一个严格为正。令W=Σwᵢ，aᵢ=wᵢ/W，则aᵢ之和为<span class="reading-number">1</span>。加权均值m=Σaᵢxᵢ，单位与x相同；权重若共同带有某个单位，会在归一化中抵消。</p>
+<p><a target="_blank" rel="noopener" href="https://numpy.org/doc/stable/reference/generated/numpy.average.html">NumPy average官方文档</a>给出乘积和除以权重和的计算形式。库函数允许的输入范围不等于每种统计解释都合理：本文进一步限定非负权重，保证均值在最小值与最大值之间，也便于讨论权重集中程度。</p>
+<p>把全部权重乘同一个正常数，aᵢ、m均不变。把某一条权重单独放大，则改变了目标。若某些权重为零，相应记录不影响均值，但不等于那条记录在现实中不存在。缺失值及其对应权重应一起处理，不能先删除x再让权重错位。</p>
+<h2 id="四条记录，三个不同的问题"><a href="#四条记录，三个不同的问题" class="headerlink" title="四条记录，三个不同的问题"></a>四条记录，三个不同的问题</h2><p data-reading-numbers="true">取x=[<span class="reading-number">0</span>,<span class="reading-number">0</span>,<span class="reading-number">0</span>,<span class="reading-number">10</span>]，w=[<span class="reading-number">1</span>,<span class="reading-number">1</span>,<span class="reading-number">1</span>,<span class="reading-number">7</span>]。归一化系数为<span class="reading-number">0.1</span>、<span class="reading-number">0.1</span>、<span class="reading-number">0.1</span>、<span class="reading-number">0.7</span>，m=<span class="reading-number">7</span>；等权均值则为<span class="reading-number">2.5</span>。</p>
+<table>
+<thead>
+<tr>
+<th>权重含义</th>
+<th>7可能代表什么</th>
+<th>不能直接推出什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>频数</td>
+<td>该数值在压缩表中出现七次</td>
+<td>七条记录一定独立</td>
+</tr>
+<tr>
+<td>精度</td>
+<td>该测量的方差倒数较大</td>
+<td>结果可用同方差公式</td>
+</tr>
+<tr>
+<td>目标构成</td>
+<td>该类对象占目标总量七成</td>
+<td>目标人群已无偏识别</td>
+</tr>
+</tbody></table>
+<p data-reading-numbers="true">三种解释可以算出同一个<span class="reading-number">7</span>，却不是同一个统计实验。频数表若来自十次独立测量的压缩记录，原始独立单位可能是十个；若只是把同一次测量复制七遍，独立信息不会凭复制增加。精度权重则必须结合各测量方差，而不是只检查权重总和。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="固定权重的集中程度，可横向滚动"><img class="no-lazy" src="/images/posts/weighted-concentration.svg" width="900" height="300" alt="四条记录的归一化权重分别为0.1、0.1、0.1、0.7，最后一条占七成"></div><figcaption>图1｜原创合成权重条，条长按同一比例绘制；它表示贡献份额，不是四个人群的实际比例。<a href="/images/posts/weighted-concentration.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="什么时候方差能写成权重平方和"><a href="#什么时候方差能写成权重平方和" class="headerlink" title="什么时候方差能写成权重平方和"></a>什么时候方差能写成权重平方和</h2><p>现在换用随机变量Xᵢ，并明确一组条件：权重固定，不由本次随机数据决定；Xᵢ相互独立，具有相同均值μ和相同有限方差σ²。这些条件下，加权均值M仍以μ为期望，交叉协方差为零，因此方差是各系数平方乘方差之和。</p>
+
+<figure class="article-equation"><figcaption><strong>公式W1｜固定权重、独立同方差模型</strong></figcaption><div class="equation-body">E[M]=μ<br>Var(M)=σ²Σaᵢ²<br>n_eff=1/Σaᵢ²=(Σwᵢ)²/Σwᵢ²</div><p class="equation-note">n_eff没有单位，通常不是整数。它使本模型下Var(M)=σ²/n_eff，与同方差独立等权均值的方差形式相同；不是凭空恢复的真实记录数量。</p></figure>
+
+
+<p data-reading-numbers="true">本例Σaᵢ²=<span class="reading-number">0.52</span>，n_eff=<span class="reading-number">25/13</span>，约<span class="reading-number">1.923</span>。若σ²=<span class="reading-number">4</span>，则Var(M)=<span class="reading-number">2.08</span>，而四个独立观测等权平均的方差是<span class="reading-number">1</span>。集中权重让一个随机观测的波动更强地影响结果，因此在这个特定模型中增大均值方差。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html">SciPy gaussian_kde文档</a>也使用上述权重有效数量形式；这里借它核对定义，不把核密度估计的带宽规则当作均值置信区间公式。均值方差的解释来自本篇刚列出的条件与展开。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[先说明权重来源] --&gt; B[归一化为系数]
+ B --&gt; C{独立同方差且权重固定}
+ C --&gt;|满足| D[方差由系数平方和决定]
+ C --&gt;|不满足| E[重新列协方差与权重机制]
+  </pre></div>
+
+<h2 id="上下界与缩放不变性"><a href="#上下界与缩放不变性" class="headerlink" title="上下界与缩放不变性"></a>上下界与缩放不变性</h2><p data-reading-numbers="true">因为aᵢ≥<span class="reading-number">0</span>且Σaᵢ=<span class="reading-number">1</span>，Σaᵢ²≤<span class="reading-number">1</span>；由Cauchy不等式，Σaᵢ²≥<span class="reading-number">1</span>/n，所以<span class="reading-number">1</span>≤n_eff≤n。等权时达到n，只有一个正权重时为<span class="reading-number">1</span>。若只有k个正权重，可把上界进一步写成k。</p>
+<p data-reading-numbers="true">将[<span class="reading-number">1</span>,<span class="reading-number">1</span>,<span class="reading-number">1</span>,<span class="reading-number">7</span>]共同乘十，权重和从<span class="reading-number">10</span>变成<span class="reading-number">100</span>，n_eff仍为<span class="reading-number">25/13</span>。这是一个很有用的检查：如果某个所谓“有效数量”随任意权重单位变化，通常就混淆了频数与归一化贡献。</p>
+
+<details class="mechanism-check"><summary>自检1：权重总和为10，为什么n_eff不是10？</summary><div><p>当前模型有四个独立随机变量，权重只是固定系数。n_eff衡量系数集中造成的方差，不把权重总和解释为独立测量次数。</p></div></details>
+
+
+<h2 id="独立与同方差一旦失效，要保留什么"><a href="#独立与同方差一旦失效，要保留什么" class="headerlink" title="独立与同方差一旦失效，要保留什么"></a>独立与同方差一旦失效，要保留什么</h2><p data-reading-numbers="true">一般情况下，Var(M)=Σaᵢ²Var(Xᵢ)<span class="reading-number">+2</span>Σᵢ&lt;ⱼaᵢaⱼCov(Xᵢ,Xⱼ)。若四个X完全相同而非独立，任意非负归一化加权都得到同一个X，方差仍为σ²；只用Σaᵢ²会低估它。把相关记录当作独立观测，权重有效数量无法自动纠正。</p>
+<p data-reading-numbers="true">独立但方差不同时，应保留每个σᵢ²。若共同均值模型可信，选择与<span class="reading-number">1</span>/σᵢ²成比例的精度权重可由约束最小化推出最小方差，但它回答的是另一组条件下的问题。不能一方面声称最后一个观测更精确，另一方面又用所有观测同方差来解释方差代价。</p>
+<p data-reading-numbers="true">若权重由观测值决定，条件化后的系数与随机变量之间也可能有关联；此时“期望仍为μ”不是单靠系数和为<span class="reading-number">1</span>就能得到的结论。调查加权、逆概率权重与重要性采样各有额外识别和方差条件，本篇不把这个简单模型推广成通用推断。</p>
+<h2 id="裁剪大权重，改变的不只有方差"><a href="#裁剪大权重，改变的不只有方差" class="headerlink" title="裁剪大权重，改变的不只有方差"></a>裁剪大权重，改变的不只有方差</h2><p data-reading-numbers="true">把本例的<span class="reading-number">7</span>截到<span class="reading-number">3</span>，权重变为[<span class="reading-number">1</span>,<span class="reading-number">1</span>,<span class="reading-number">1</span>,<span class="reading-number">3</span>]，m从<span class="reading-number">7</span>变<span class="reading-number">5</span>，n_eff从<span class="reading-number">25/13</span>变<span class="reading-number">3</span>。集中程度降低了，但估计值和目标贡献也变了。不能只报告有效数量提高而隐去目标改变或潜在偏差。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[发现少量权重占多数] --&gt; B[核对来源与重叠]
+ B --&gt; C[比较未裁剪与裁剪结果]
+ C --&gt; D[同时报告目标变化与敏感性]
+ D --&gt; E[再按抽样单位分析不确定性]
+  </pre></div>
+
+
+<details class="mechanism-check"><summary>自检2：把一条观测复制十次并平分它的权重，信息会增加吗？</summary><div><p>不会。复制项完全相关。若只看新的系数平方和，会得到虚假的提升；正确方差计算必须保留它们的协方差或按原始独立单位归组。</p></div></details>
+<aside class="article-takeaway"><strong>阅读重点</strong><p>先写权重含义，再写独立单位与方差模型。n_eff是一个有条件的方差等价数量，不是通用的数据质量分数。</p></aside>
+
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://numpy.org/doc/stable/reference/generated/numpy.average.html">NumPy average</a>：加权平均的计算形式与权重和。</li>
+<li><a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html">SciPy gaussian_kde Notes</a>：权重有效数量定义。均值模型推导与案例为本文自行展开。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/66258.html">https://eulersail.com/esblog/66258.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%8A%A0%E6%9D%83%E7%BB%9F%E8%AE%A1/">加权统计</a><a class="post-meta__tags" href="/tags/%E6%9C%89%E6%95%88%E6%A0%B7%E6%9C%AC%E9%87%8F/">有效样本量</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/47216.html" title="SQLite键集分页 从复合游标到变化数据的读取边界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">SQLite键集分页 从复合游标到变化数据的读取边界</div></div></a></div><div class="next-post pull-right"><a href="/esblog/47105.html" title="HTTP条件写入 从强验证器到并发覆盖与重试边界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">HTTP条件写入 从强验证器到并发覆盖与重试边界</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">162</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">288</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E5%BD%92%E4%B8%80%E5%8C%96%EF%BC%8C%E5%9B%BA%E5%AE%9A%E6%AD%A3%E5%9C%A8%E8%AE%A1%E7%AE%97%E7%9A%84%E5%AF%B9%E8%B1%A1"><span class="toc-text">一次归一化，固定正在计算的对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E6%9D%A1%E8%AE%B0%E5%BD%95%EF%BC%8C%E4%B8%89%E4%B8%AA%E4%B8%8D%E5%90%8C%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">四条记录，三个不同的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E6%96%B9%E5%B7%AE%E8%83%BD%E5%86%99%E6%88%90%E6%9D%83%E9%87%8D%E5%B9%B3%E6%96%B9%E5%92%8C"><span class="toc-text">什么时候方差能写成权重平方和</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E7%95%8C%E4%B8%8E%E7%BC%A9%E6%94%BE%E4%B8%8D%E5%8F%98%E6%80%A7"><span class="toc-text">上下界与缩放不变性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8B%AC%E7%AB%8B%E4%B8%8E%E5%90%8C%E6%96%B9%E5%B7%AE%E4%B8%80%E6%97%A6%E5%A4%B1%E6%95%88%EF%BC%8C%E8%A6%81%E4%BF%9D%E7%95%99%E4%BB%80%E4%B9%88"><span class="toc-text">独立与同方差一旦失效，要保留什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A3%81%E5%89%AA%E5%A4%A7%E6%9D%83%E9%87%8D%EF%BC%8C%E6%94%B9%E5%8F%98%E7%9A%84%E4%B8%8D%E5%8F%AA%E6%9C%89%E6%96%B9%E5%B7%AE"><span class="toc-text">裁剪大权重，改变的不只有方差</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/47216.html" title="SQLite键集分页 从复合游标到变化数据的读取边界">SQLite键集分页 从复合游标到变化数据的读取边界</a><time datetime="2026-11-17T02:50:00.000Z" title="发表于 2026-11-17 10:50:00">2026-11-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66258.html" title="加权均值 从权重含义到集中程度与有效样本量">加权均值 从权重含义到集中程度与有效样本量</a><time datetime="2026-11-17T02:40:00.000Z" title="发表于 2026-11-17 10:40:00">2026-11-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/47105.html" title="HTTP条件写入 从强验证器到并发覆盖与重试边界">HTTP条件写入 从强验证器到并发覆盖与重试边界</a><time datetime="2026-11-17T02:30:00.000Z" title="发表于 2026-11-17 10:30:00">2026-11-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66149.html" title="分位数合并 从经验分布到分片尾延迟的统计边界">分位数合并 从经验分布到分片尾延迟的统计边界</a><time datetime="2026-11-17T02:20:00.000Z" title="发表于 2026-11-17 10:20:00">2026-11-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86194.html" title="内热源导热 从能量守恒到抛物温度与峰值位置">内热源导热 从能量守恒到抛物温度与峰值位置</a><time datetime="2026-11-17T02:10:00.000Z" title="发表于 2026-11-17 10:10:00">2026-11-17</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
