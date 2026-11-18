@@ -2983,6 +2983,20 @@
 }
 #post #article-container.reading-article figure.highlight { border-top: 3px solid var(--article-rule); box-shadow: none; }
 #post #article-container.reading-article .concept-figure-canvas img[width='900'] { min-width: 900px; }
+/* The new case diagrams also need a scroll cue beside a desktop sidebar. */
+@media screen and (min-width: 601px) {
+  #post #article-container.reading-article [data-visual-expansion="20261117"] .concept-figure-canvas::after {
+    content: '图示可左右滚动，也可打开下方原图';
+    display: block;
+    position: sticky;
+    left: 0;
+    padding: 7px 12px;
+    color: #36556a;
+    background: #f6f9fc;
+    font-size: 13px;
+    text-align: center;
+  }
+}
 #post #article-container.reading-article figure figcaption { font-size: 14px; line-height: 1.85; }
 /* Explanatory captions scale with the reader's selected prose size. */
 @media screen {
