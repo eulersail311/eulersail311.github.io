@@ -79,6 +79,8 @@
 /* Algorithm routes reuse the subject hero, navigation and route-card shell.
    Only the extra selection notes and full reading-list captions are specific. */
 #algorithm-topics, #algorithm-hub .algorithm-topic-card { scroll-margin-top: 90px; }
+#learning-paths, #algorithm-hub .learning-path { scroll-margin-top: 90px; }
+#algorithm-hub .learning-path { overflow-wrap: anywhere; }
 #algorithm-hub .algorithm-topic-jump { margin-top: 18px; }
 #algorithm-hub .algorithm-topic-card { overflow-wrap: anywhere; }
 #algorithm-hub .algorithm-topic-notes { margin: 14px 0 0; border-top: 1px solid var(--editorial-line); }
@@ -88,6 +90,8 @@
 #algorithm-hub .algorithm-topic-state dd { margin: 4px 0 10px; }
 #algorithm-hub .algorithm-topic-state dd:last-child { margin-bottom: 0; }
 #algorithm-hub .algorithm-topic-route span { display: block; margin-top: 4px; color: var(--editorial-muted); font-size: 12px; line-height: 1.8; }
+#algorithm-hub .learning-path .algorithm-topic-route span,
+#algorithm-hub .learning-path .algorithm-topic-notes > summary { font-size: 14px; line-height: 1.85; }
 #algorithm-hub .algorithm-topic-notes > summary:focus-visible { outline: 3px solid var(--topic-color); outline-offset: 3px; border-radius: 4px; }
 #algorithm-hub .algorithm-practice #article-container { color: var(--editorial-ink); }
 #algorithm-hub .algorithm-practice .algorithm-exercises { border-color: var(--editorial-line); border-radius: 13px; background: var(--editorial-paper); box-shadow: none; }
