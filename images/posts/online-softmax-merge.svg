@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-labelledby="title desc">
+<title id="title">两块摘要先统一指数基准</title><desc id="desc">A以ln2为基准，B以ln4为基准；合并时A的质量和向量分子同时乘二分之一。</desc>
+<rect width="900" height="360" rx="16" fill="#f3f7fb"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#173651">
+<text x="28" y="42" font-size="24" font-weight="bold">保留尺度、质量和分子，最后才相除</text>
+<g fill="#e2edf7" stroke="#597e9e"><rect x="28" y="70" width="258" height="180" rx="12"/><rect x="320" y="70" width="258" height="180" rx="12"/><rect x="612" y="70" width="260" height="180" rx="12"/></g>
+<g font-size="20"><text x="46" y="106" font-weight="bold">块 A：前两项</text><text x="46" y="146">m = ln2，ℓ = 3/2</text><text x="46" y="182">u = [3, 1]</text><text x="46" y="224">换基准时同时乘 1/2</text>
+<text x="338" y="106" font-weight="bold">块 B：第三项</text><text x="338" y="146">m = ln4，ℓ = 1</text><text x="338" y="182">u = [6, 4]</text><text x="338" y="224">已在新基准，无需缩放</text>
+<text x="630" y="106" font-weight="bold">合并：共同基准 ln4</text><text x="630" y="146">ℓ = 7/4</text><text x="630" y="182">u = [15/2, 9/2]</text><text x="630" y="224">o = [30/7, 18/7]</text></g>
+<text x="28" y="292" font-size="20">A 的质量：3/2 → 3/4；A 的分子：[3, 1] → [3/2, 1/2]</text>
+<text x="28" y="330" font-size="18">原创三项教学案例；等宽框表示步骤，不表示概率、耗时或显存比例。</text>
+</g></svg>

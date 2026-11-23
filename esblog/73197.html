@@ -1,0 +1,373 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>在线Softmax 从分块摘要到精确注意力 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从不能平均分块注意力输出的反例出发，推导最大值、归一化和与加权分子的可合并摘要，证明实数运算下的结合性，并用完整Python核对遮罩、空块与浮点边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在线Softmax 从分块摘要到精确注意力">
+<meta property="og:url" content="https://eulersail.com/esblog/73197.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从不能平均分块注意力输出的反例出发，推导最大值、归一化和与加权分子的可合并摘要，证明实数运算下的结合性，并用完整Python核对遮罩、空块与浮点边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-23T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-23T02:00:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="注意力机制">
+<meta property="article:tag" content="数值计算">
+<meta property="article:tag" content="在线Softmax">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/73197.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '在线Softmax 从分块摘要到精确注意力',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-23 10:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261118-1"><link rel="stylesheet" href="/css/home-editorial.css?v=20261111-1"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261119-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">169</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">294</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">在线Softmax 从分块摘要到精确注意力</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-23T02:00:00.000Z" title="发表于 2026-11-23 10:00:00">2026-11-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-23T02:00:00.000Z" title="更新于 2026-11-23 10:00:00">2026-11-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="在线Softmax 从分块摘要到精确注意力" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="ai"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>AI ENGINEERING</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>9</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="code"><i class="fas fa-code" aria-hidden="true"></i><span><strong>1</strong><small>段代码示例</small></span></div><div class="reading-overview-metric" data-metric-kind="visuals"><i class="fas fa-chart-bar" aria-hidden="true"></i><span><strong>5</strong><small>组图片与图表</small></span></div></div><p>沿定义、计算与实验边界阅读，分开模型原理、教学验证和实际系统效果。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>9 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#先约定：只计算一行，最终只需要加权输出"><span>01</span><strong>先约定：只计算一行，最终只需要加权输出</strong></a></li><li><a href="#分块输出为什么不能直接平均"><span>02</span><strong>分块输出为什么不能直接平均</strong></a></li><li><a href="#三个摘要量：共同尺度下的分子和分母"><span>03</span><strong>三个摘要量：共同尺度下的分子和分母</strong></a></li><li><a href="#合并规则与正确性证明"><span>04</span><strong>合并规则与正确性证明</strong></a></li><li><a href="#手算：更大最大值怎样修正旧累计"><span>05</span><strong>手算：更大最大值怎样修正旧累计</strong></a></li><li><a href="#完整Python：流式读块，显式处理空状态"><span>06</span><strong>完整Python：流式读块，显式处理空状态</strong></a></li><li><a href="#从这条规则到FlashAttention，还隔着哪些工程问题"><span>07</span><strong>从这条规则到FlashAttention，还隔着哪些工程问题</strong></a></li><li><a href="#自检：现在能够定位什么错误"><span>08</span><strong>自检：现在能够定位什么错误</strong></a></li><li><a href="#参考资料"><span>09</span><strong>参考资料</strong></a></li></ol></nav></details></section><p><a href="/esblog/64183.html">Transformer入门</a>介绍了缩放点积注意力，也提到分块能减少中间矩阵搬运。真正困难的一步是：softmax的分母依赖整行分数，尚未读到后面的键，怎么能先处理前一块？新块出现更大的分数时，已经累计的结果又该怎样修正？</p>
+<p>本文把这个问题拆成一个可证明的摘要合并规则，再给出标准库Python实现。进阶增量是从整行归一化走向可合并的充分摘要。所有数值都是教学构造；程序只核对前向数学，不是GPU内核或速度基准。</p>
+<span id="more"></span>
+
+<h2 id="先约定：只计算一行，最终只需要加权输出"><a href="#先约定：只计算一行，最终只需要加权输出" class="headerlink" title="先约定：只计算一行，最终只需要加权输出"></a>先约定：只计算一行，最终只需要加权输出</h2><p>固定一个查询q，键为kᵢ，值向量为vᵢ∈ℝᵈᵥ。分数sᵢ=q·kᵢ/√dₖ，也可以包含预先定义的有限加性偏置；分数无量纲。令I为允许读取的键下标集合，遮罩位置直接不属于I。</p>
+<p>目标是o=Σᵢ∈I exp(sᵢ)vᵢ / Σᵢ∈I exp(sᵢ)，输出每一维与对应值分量同单位。本文假设未遮罩分数、值分量均为有限实数，I非空，没有dropout，也不讨论反向传播。<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1706.03762">原始Transformer论文§3.2.1</a>给出缩放点积与softmax加权定义。</p>
+<p>一行意味着单个查询对多个键的汇总。若有多个查询，每行都有自己的分数、遮罩和摘要，不能让各行共享一个最大值。我们只需要o，不要求返回所有注意力权重；如果要保存完整N×N权重矩阵，单靠下文摘要无法同时免除这份输出存储。</p>
+<h2 id="分块输出为什么不能直接平均"><a href="#分块输出为什么不能直接平均" class="headerlink" title="分块输出为什么不能直接平均"></a>分块输出为什么不能直接平均</h2><p data-reading-numbers="true">构造三项：s=[<span class="reading-number">0</span>, ln<span class="reading-number">2</span>, ln<span class="reading-number">4</span>]，v₁=[<span class="reading-number">0</span>,<span class="reading-number">2</span>]、v₂=[<span class="reading-number">3</span>,<span class="reading-number">0</span>]、v₃=[<span class="reading-number">6</span>,<span class="reading-number">4</span>]。未缩放指数权重为<span class="reading-number">1</span>、<span class="reading-number">2</span>、<span class="reading-number">4</span>，所以完整输出是[<span class="reading-number">30/7</span>,<span class="reading-number">18/7</span>]，约[<span class="reading-number">4.285714</span>,<span class="reading-number">2.571429</span>]。</p>
+<p data-reading-numbers="true">把前两项作为A，第三项作为B。A内部归一化得到o_A=[<span class="reading-number">2</span>,<span class="reading-number">2/3</span>]，B只有一项，得到o_B=[<span class="reading-number">6</span>,<span class="reading-number">4</span>]。直接取两块输出平均为[<span class="reading-number">4</span>,<span class="reading-number">7/3</span>]，已经不等于完整结果；按块长度以<span class="reading-number">2</span>:<span class="reading-number">1</span>平均也不正确，因为softmax权重由分数决定，而不是块里有几项。</p>
+<p data-reading-numbers="true">正确混合比例来自两块的未归一化质量：Z_A=<span class="reading-number">3</span>、Z_B=<span class="reading-number">4</span>，故o=(<span class="reading-number">3/7</span>)o_A+(<span class="reading-number">4/7</span>)o_B。问题转为怎样稳定地保存质量，避免直接计算可能溢出的exp(<span class="reading-number">1000</span>)。</p>
+<h2 id="三个摘要量：共同尺度下的分子和分母"><a href="#三个摘要量：共同尺度下的分子和分母" class="headerlink" title="三个摘要量：共同尺度下的分子和分母"></a>三个摘要量：共同尺度下的分子和分母</h2><p data-reading-numbers="true">对任意非空块B，定义最大分数m_B、缩放后的质量ℓ_B以及向量分子u_B。这里ℓ读作小写ell，不是数字<span class="reading-number">1</span>。</p>
+
+<div class="article-equation"><strong>定义S1：块摘要</strong><p class="reading-math-inline">m_B=maxᵢ∈B sᵢ；ℓ_B=Σᵢ∈B exp(sᵢ−m_B)；u_B=Σᵢ∈B exp(sᵢ−m_B)vᵢ。</p><p data-reading-numbers="true">m与ℓ无量纲，u与值向量同单位；块输出为u_B/ℓ_B。对非空有限块，<span class="reading-number">1</span>≤ℓ_B≤|B|。</p></div>
+
+
+<p data-reading-numbers="true">最大值平移使各指数的输入不大于<span class="reading-number">0</span>，但不会改变归一化结果。仅保存m和ℓ可以恢复归一化因子的信息；注意力还需要u，才能在不保留所有逐项权重的情况下汇总值。<a target="_blank" rel="noopener" href="https://arxiv.org/html/1805.02867v2#S3">Milakov与Gimelshein的原论文§3—3.1</a>推导在线归一化及可并行合并；这里继续把同一尺度修正应用到加权分子。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="两块摘要先统一指数基准再合并，可横向滚动"><img class="no-lazy" src="/images/posts/online-softmax-merge.svg" width="900" height="360" alt="A摘要以ln2为基准，合并时乘二分之一；B以ln4为基准不缩放；分母与向量分子一起缩放后相加"></div><figcaption><p>宽图可左右滚动，也可打开下方原图。</p><strong>基准变化时，分子与分母一起换尺度。</strong><p>图中等宽框是计算步骤，不表示概率、耗时或显存占比。数据均来自本文三项案例。</p><a href="/images/posts/online-softmax-merge.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="合并规则与正确性证明"><a href="#合并规则与正确性证明" class="headerlink" title="合并规则与正确性证明"></a>合并规则与正确性证明</h2><p>设A、B是不相交的允许键集合；否则重叠项会被重复累计。把两块摘要换到共同基准m=max(m_A,m_B)，令a=exp(m_A−m)、b=exp(m_B−m)。</p>
+
+<div class="article-equation"><strong>合并S2：先统一尺度，再相加</strong><p class="reading-math-inline">m=max(m_A,m_B)；ℓ=aℓ_A+bℓ_B；u=au_A+bu_B；o=u/ℓ。</p><p data-reading-numbers="true">a=exp(m_A−m)，b=exp(m_B−m)。每个缩放因子都在(<span class="reading-number">0</span>,<span class="reading-number">1</span>]内，以上范围指实数运算。</p></div>
+
+
+<p>证明只需追踪A中的一项：a·exp(sᵢ−m_A)=exp(sᵢ−m)。因此aℓ_A恰好等于A所有项在新基准下的指数和，au_A同样等于新基准下的值加权和。对B重复该步骤，相加就得到A∪B的S1定义，最后相除得到完整注意力。</p>
+<p>这也解释结合性：无论先合并哪两块，最后都表示同一并集的最大值和两种和；在精确实数运算下，交换块次序、改成平衡树归约都不改变结果。这里交换的是带着原分数和值的块；不能先打乱token再重新计算位置编码和因果关系，那已经改变了输入问题。</p>
+<p data-reading-numbers="true">空块是单位元，用单独的空状态表示。它与任何合法摘要合并都返回后者；两个空块仍为空。不要对两个空块计算exp(−∞−(−∞))，该减法会产生未定义数值。整行全被遮罩时，本篇目标的分母为<span class="reading-number">0</span>，程序明确报错，不擅自选择全零输出。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[读取一个键块] --&gt; B[先排除遮罩位置]
+ B --&gt; C{还有允许项吗}
+ C --&gt;|无| D[保留空状态]
+ C --&gt;|有| E[得到块的三个摘要]
+ E --&gt; F[统一最大值基准]
+ F --&gt; G[同时缩放质量与分子]
+ D --&gt; H[合并到累计摘要]
+ G --&gt; H
+ H --&gt; I[所有块结束后相除]
+  </pre></div>
+
+<h2 id="手算：更大最大值怎样修正旧累计"><a href="#手算：更大最大值怎样修正旧累计" class="headerlink" title="手算：更大最大值怎样修正旧累计"></a>手算：更大最大值怎样修正旧累计</h2><p data-reading-numbers="true">继续用三项例子。A的最大分数是ln2，它的指数系数为<span class="reading-number">1/2</span>、<span class="reading-number">1</span>；B的最大分数为ln4，系数为<span class="reading-number">1</span>。</p>
+<table>
+<thead>
+<tr>
+<th>摘要</th>
+<th>m</th>
+<th>ℓ</th>
+<th>u</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A：前两项</td>
+<td>ln2</td>
+<td class="reading-numeric-cell"><span class="reading-number">3/2</span></td>
+<td data-reading-numbers="true">[<span class="reading-number">3</span>,<span class="reading-number">1</span>]</td>
+</tr>
+<tr>
+<td>B：第三项</td>
+<td>ln4</td>
+<td class="reading-numeric-cell"><span class="reading-number">1</span></td>
+<td data-reading-numbers="true">[<span class="reading-number">6</span>,<span class="reading-number">4</span>]</td>
+</tr>
+<tr>
+<td>A换成ln4基准</td>
+<td>ln4</td>
+<td class="reading-numeric-cell"><span class="reading-number">3/4</span></td>
+<td data-reading-numbers="true">[<span class="reading-number">3/2</span>,<span class="reading-number">1/2</span>]</td>
+</tr>
+<tr>
+<td>合并后</td>
+<td>ln4</td>
+<td class="reading-numeric-cell"><span class="reading-number">7/4</span></td>
+<td data-reading-numbers="true">[<span class="reading-number">15/2</span>,<span class="reading-number">9/2</span>]</td>
+</tr>
+</tbody></table>
+<p data-reading-numbers="true">因为exp(ln<span class="reading-number">2</span>−ln<span class="reading-number">4</span>)=<span class="reading-number">1/2</span>，旧质量与旧分子都缩小一半。相除得到[<span class="reading-number">30/7</span>,<span class="reading-number">18/7</span>]。若只缩小分母却不缩小旧分子，结果就成为[<span class="reading-number">36/7</span>,<span class="reading-number">20/7</span>]；误差不是浮点舍入，而是换尺度漏改了一半状态。</p>
+<p data-reading-numbers="true">把所有分数加<span class="reading-number">1000</span>，最大值也加<span class="reading-number">1000</span>，所有差值不变，输出仍相同。这个不变量适合检查实现，却不能理解为对任意极端浮点输入都能精确保留差值：若输入阶段已把两个接近的巨数舍入成同一个数，后续平移救不回丢失信息。</p>
+<h2 id="完整Python：流式读块，显式处理空状态"><a href="#完整Python：流式读块，显式处理空状态" class="headerlink" title="完整Python：流式读块，显式处理空状态"></a>完整Python：流式读块，显式处理空状态</h2><p>环境为Python3.11及标准库。<code>blocks</code>是块的可迭代对象，每块产生<code>(score, value)</code>；<code class="reading-math-inline">score=None</code>代表遮罩项，直接跳过，其值不参与读取。未遮罩项必须有恰好width个有限分量。<code>_merge</code>只接收程序内部生成的摘要，不承诺验证外部手造状态。</p>
+<p>实现故意把每项看作单元素摘要，再在块内、块间复用合并，便于读者逐行核对S2。它不先建立整行score或weight列表，也不负责从QK计算分数。使用浮点数时，不要求不同分块方案逐位一致；若有限输入的累计分子仍溢出，程序拒绝返回非有限结果。</p>
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> math <span class="keyword">import</span> exp, isfinite, log</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_merge</span>(<span class="params">left, right</span>):</span><br><span class="line">    <span class="keyword">if</span> left <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> right</span><br><span class="line">    <span class="keyword">if</span> right <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> left</span><br><span class="line">    lm, ll, lu = left</span><br><span class="line">    rm, rl, ru = right</span><br><span class="line">    m = <span class="built_in">max</span>(lm, rm)</span><br><span class="line">    a, b = exp(lm - m), exp(rm - m)</span><br><span class="line">    total = a * ll + b * rl</span><br><span class="line">    numerator = <span class="built_in">tuple</span>(a * x + b * y <span class="keyword">for</span> x, y <span class="keyword">in</span> <span class="built_in">zip</span>(lu, ru))</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> isfinite(total) <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">all</span>(<span class="built_in">map</span>(isfinite, numerator)):</span><br><span class="line">        <span class="keyword">raise</span> ArithmeticError(<span class="string">"non-finite accumulated state"</span>)</span><br><span class="line">    <span class="keyword">return</span> m, total, numerator</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_summarize</span>(<span class="params">rows, width</span>):</span><br><span class="line">    state = <span class="literal">None</span></span><br><span class="line">    <span class="keyword">for</span> score, value <span class="keyword">in</span> rows:</span><br><span class="line">        <span class="keyword">if</span> score <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        score = <span class="built_in">float</span>(score)</span><br><span class="line">        vector = <span class="built_in">tuple</span>(<span class="built_in">float</span>(x) <span class="keyword">for</span> x <span class="keyword">in</span> value)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> isfinite(score):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">"score must be finite or None"</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(vector) != width <span class="keyword">or</span> <span class="keyword">not</span> <span class="built_in">all</span>(<span class="built_in">map</span>(isfinite, vector)):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">"wrong value shape or non-finite value"</span>)</span><br><span class="line">        state = _merge(state, (score, <span class="number">1.0</span>, vector))</span><br><span class="line">    <span class="keyword">return</span> state</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">attend</span>(<span class="params">blocks, width</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">type</span>(width) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">int</span> <span class="keyword">or</span> width &lt;= <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">"width must be a positive integer"</span>)</span><br><span class="line">    state = <span class="literal">None</span></span><br><span class="line">    <span class="keyword">for</span> block <span class="keyword">in</span> blocks:</span><br><span class="line">        state = _merge(state, _summarize(block, width))</span><br><span class="line">    <span class="keyword">if</span> state <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">"no allowed key"</span>)</span><br><span class="line">    _, total, numerator = state</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">tuple</span>(x / total <span class="keyword">for</span> x <span class="keyword">in</span> numerator)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    blocks = [</span><br><span class="line">        [(<span class="number">0.0</span>, [<span class="number">0.0</span>, <span class="number">2.0</span>]), (log(<span class="number">2.0</span>), [<span class="number">3.0</span>, <span class="number">0.0</span>])],</span><br><span class="line">        [],</span><br><span class="line">        [(<span class="literal">None</span>, <span class="literal">None</span>), (log(<span class="number">4.0</span>), [<span class="number">6.0</span>, <span class="number">4.0</span>])],</span><br><span class="line">    ]</span><br><span class="line">    <span class="built_in">print</span>([<span class="built_in">round</span>(x, <span class="number">6</span>) <span class="keyword">for</span> x <span class="keyword">in</span> attend(blocks, <span class="number">2</span>)])</span><br></pre></td></tr></tbody></table></figure>
+
+<p>输出为<code>[4.285714, 2.571429]</code>。空列表和只有遮罩项的块都不会改变结果；若所有块都为空或被遮罩，则抛出ValueError。程序不修改调用者传入的数据。</p>
+<p>对M个未遮罩键、值维dᵥ，总计O(Mdᵥ)算术，摘要及合并的额外工作空间O(dᵥ)，输入对象本身占用另计。逐项处理还有遍历遮罩项的成本；如果调用者先把所有块装进列表，这份输入内存不会因函数使用流式接口而自动消失。</p>
+<h2 id="从这条规则到FlashAttention，还隔着哪些工程问题"><a href="#从这条规则到FlashAttention，还隔着哪些工程问题" class="headerlink" title="从这条规则到FlashAttention，还隔着哪些工程问题"></a>从这条规则到FlashAttention，还隔着哪些工程问题</h2><p>这条摘要规则解决了整行分母未知仍可逐块汇总的数学障碍。<a target="_blank" rel="noopener" href="https://arxiv.org/html/2205.14135v2#S3.SS1">FlashAttention原论文§3.1及算法1</a>进一步把查询、键和值分块调入片上存储，把分数、归一化和加权乘法融合，并在反向阶段重算需要的中间量。本文程序仅复现前向摘要恒等式，没有实现这些GPU调度、融合与反向步骤。</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>本文已经说明</th>
+<th>仍需另外验证</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数学目标</td>
+<td>相同允许键的softmax加权和</td>
+<td>稀疏化或近似是否改变连接</td>
+</tr>
+<tr>
+<td>数值算法</td>
+<td>最大值平移和分块重缩放</td>
+<td>低精度累加、溢出和舍入误差</td>
+</tr>
+<tr>
+<td>存储</td>
+<td>一行输出无需保存全行权重</td>
+<td>多查询分块、输入输出、缓存及反向保存</td>
+</tr>
+<tr>
+<td>硬件实现</td>
+<td>没有提供速度结论</td>
+<td>形状、设备、数据类型和内核实际测量</td>
+</tr>
+</tbody></table>
+<p>对N个查询和N个键，稠密注意力仍通常需要二次数量的查询—键配对。省掉N×N中间张量不等于把这些配对变成线性。KV Cache复用历史键值，解决的是另一个重复计算问题；它与行内摘要可配合，不能互相替代。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[检查分块注意力结果不同] --&gt; B[确认允许键集合相同]
+ B --&gt; C[核对分子分母同时换尺度]
+ C --&gt; D[检查空块与全遮罩行]
+ D --&gt; E[比较误差容限与数据类型]
+ E --&gt; F[最后单独测量内核与显存]
+  </pre></div>
+
+<p data-reading-numbers="true">浮点下的结合性还要谨慎使用。有限字长的加法不满足严格结合律，指数也可能下溢成<span class="reading-number">0</span>；u含正负项时还会发生抵消。最大值平移主要避免直接对巨大正分数求指数，并不保证任意值向量的分子不会溢出，也不保证极小概率的贡献完全保留。因此测试应对照高精度参考并约定绝对、相对误差，而不是用字符串相等判断两个正确内核。</p>
+<h2 id="自检：现在能够定位什么错误"><a href="#自检：现在能够定位什么错误" class="headerlink" title="自检：现在能够定位什么错误"></a>自检：现在能够定位什么错误</h2>
+<details class="mechanism-check"><summary>两块各自softmax后输出相同，是否可以丢弃质量信息？</summary><p>若只做这一次两块合并，且两个向量确实完全相同，结果当然相同；但作为可继续合并的通用摘要，输出向量不够。后续第三块的相对贡献仍取决于前两块的质量，需要保留m、ℓ与u或等价信息。</p></details>
+<details class="mechanism-check"><summary>全遮罩行也令最大值为负无穷，是否能照常套公式？</summary><p data-reading-numbers="true">不能。没有允许项时分母为<span class="reading-number">0</span>，负无穷减自身也未定义。本文用None隔离空状态，整行为空明确报错；应用若规定零输出，应另写契约并测试，不能把未定义值当正常结果。</p></details>
+
+
+<p>读者可以先把手算例拆成三个单项块，再在中间插空块、颠倒块顺序、整体平移分数；最后用一个被遮罩的大分数检查遮罩是否在摘要之前生效。这个练习连接<a href="/esblog/65705.html">Welford分块统计</a>的同一设计问题：先找足够的摘要，再证明换基准和合并规则，不能只保存一个看起来已经算完的平均值。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1706.03762">Vaswani等，Attention Is All You Need，§3.2.1</a>：缩放点积注意力的数学定义。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/html/1805.02867v2#S3">Milakov、Gimelshein，Online normalizer calculation for softmax，§3—3.1</a>：在线最大值/归一化及并行合并。本文证明组织、向量案例和Python为原创教学表达。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/html/2205.14135v2#S3.SS1">Dao等，FlashAttention，§3.1、算法1及附录B</a>：分块、IO与重算。本文未复现其性能实验或GPU实现。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/73197.html">https://eulersail.com/esblog/73197.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6/">注意力机制</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">数值计算</a><a class="post-meta__tags" href="/tags/%E5%9C%A8%E7%BA%BFSoftmax/">在线Softmax</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/86251.html" title="双节点热网络 从耦合储能到双时间尺度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">双节点热网络 从耦合储能到双时间尺度</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/64183.html" title="Transformer 入门：从神经网络、自注意力到逐 token 生成"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="title">Transformer 入门：从神经网络、自注意力到逐 token 生成</div></div></a></div><div><a href="/esblog/65705.html" title="Welford 在线方差 从中心矩到分块合并"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-31</div><div class="title">Welford 在线方差 从中心矩到分块合并</div></div></a></div><div><a href="/esblog/65816.html" title="在线协方差 从成对记录到相关系数与分块合并"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-06</div><div class="title">在线协方差 从成对记录到相关系数与分块合并</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">169</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">294</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%BA%A6%E5%AE%9A%EF%BC%9A%E5%8F%AA%E8%AE%A1%E7%AE%97%E4%B8%80%E8%A1%8C%EF%BC%8C%E6%9C%80%E7%BB%88%E5%8F%AA%E9%9C%80%E8%A6%81%E5%8A%A0%E6%9D%83%E8%BE%93%E5%87%BA"><span class="toc-text">先约定：只计算一行，最终只需要加权输出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E8%BE%93%E5%87%BA%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E7%9B%B4%E6%8E%A5%E5%B9%B3%E5%9D%87"><span class="toc-text">分块输出为什么不能直接平均</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E4%B8%AA%E6%91%98%E8%A6%81%E9%87%8F%EF%BC%9A%E5%85%B1%E5%90%8C%E5%B0%BA%E5%BA%A6%E4%B8%8B%E7%9A%84%E5%88%86%E5%AD%90%E5%92%8C%E5%88%86%E6%AF%8D"><span class="toc-text">三个摘要量：共同尺度下的分子和分母</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E8%A7%84%E5%88%99%E4%B8%8E%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="toc-text">合并规则与正确性证明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%8B%E7%AE%97%EF%BC%9A%E6%9B%B4%E5%A4%A7%E6%9C%80%E5%A4%A7%E5%80%BC%E6%80%8E%E6%A0%B7%E4%BF%AE%E6%AD%A3%E6%97%A7%E7%B4%AF%E8%AE%A1"><span class="toc-text">手算：更大最大值怎样修正旧累计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4Python%EF%BC%9A%E6%B5%81%E5%BC%8F%E8%AF%BB%E5%9D%97%EF%BC%8C%E6%98%BE%E5%BC%8F%E5%A4%84%E7%90%86%E7%A9%BA%E7%8A%B6%E6%80%81"><span class="toc-text">完整Python：流式读块，显式处理空状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E8%BF%99%E6%9D%A1%E8%A7%84%E5%88%99%E5%88%B0FlashAttention%EF%BC%8C%E8%BF%98%E9%9A%94%E7%9D%80%E5%93%AA%E4%BA%9B%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98"><span class="toc-text">从这条规则到FlashAttention，还隔着哪些工程问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E6%A3%80%EF%BC%9A%E7%8E%B0%E5%9C%A8%E8%83%BD%E5%A4%9F%E5%AE%9A%E4%BD%8D%E4%BB%80%E4%B9%88%E9%94%99%E8%AF%AF"><span class="toc-text">自检：现在能够定位什么错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73197.html" title="在线Softmax 从分块摘要到精确注意力">在线Softmax 从分块摘要到精确注意力</a><time datetime="2026-11-23T02:00:00.000Z" title="发表于 2026-11-23 10:00:00">2026-11-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86251.html" title="双节点热网络 从耦合储能到双时间尺度">双节点热网络 从耦合储能到双时间尺度</a><time datetime="2026-11-20T02:10:00.000Z" title="发表于 2026-11-20 10:10:00">2026-11-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66369.html" title="重要性采样 从分布迁移到自归一化偏差">重要性采样 从分布迁移到自归一化偏差</a><time datetime="2026-11-20T02:00:00.000Z" title="发表于 2026-11-20 10:00:00">2026-11-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/80194.html" title="Segment Tree Beats 从最大值剪枝到严格次大值与条件更新">Segment Tree Beats 从最大值剪枝到严格次大值与条件更新</a><time datetime="2026-11-19T08:00:00.000Z" title="发表于 2026-11-19 16:00:00">2026-11-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/99183.html" title="拉威尔圆舞曲 从舞步显形到旋转失衡">拉威尔圆舞曲 从舞步显形到旋转失衡</a><time datetime="2026-11-19T06:10:00.000Z" title="发表于 2026-11-19 14:10:00">2026-11-19</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
