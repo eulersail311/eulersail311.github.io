@@ -7,15 +7,23 @@
 .kn-controls input,.kn-controls select,.kn-controls button { background:var(--kn-card); color:var(--kn-text); border:1px solid var(--kn-line); border-radius:8px; padding:10px; font:inherit; max-width:100%; }
 .kn-controls button { cursor:pointer; min-height:44px; }
 .kn-status { font-size:15px; line-height:1.8; }
-.kn-viewport { overflow:auto; max-height:75vh; border:1px solid var(--kn-line); border-radius:18px; background-color:var(--kn-card); background-image:radial-gradient(var(--kn-line) .6px,transparent .6px); background-size:22px 22px; }
-.kn-viewport svg { display:block; max-width:none!important; }
+.kn-viewport { overflow:hidden; height:clamp(460px,70vh,760px); border:1px solid var(--kn-line); border-radius:18px; background-color:var(--kn-card); background-image:radial-gradient(var(--kn-line) .6px,transparent .6px); background-size:22px 22px; }
+.kn-viewport svg { display:block; width:100%!important; height:100%!important; max-width:none!important; touch-action:none; cursor:grab; user-select:none; }
+.kn-viewport svg:active { cursor:grabbing; }
 .kn-edge { fill:none; stroke:var(--kn-line); stroke-width:1.4; opacity:.45; color:var(--kn-line); }
 .kn-edge.kn-active { stroke:#9472cf; opacity:1; stroke-width:3; }
 .kn-node rect { fill:var(--kn-card); stroke:var(--kn-line); stroke-width:1.5; }
-.kn-node text { fill:var(--kn-text); font:15px "Microsoft YaHei",sans-serif; }
-.kn-dot { fill:#9774c8; }
+.kn-node text { fill:var(--kn-text); font:13px "Microsoft YaHei",sans-serif; stroke:var(--kn-card); stroke-width:4px; paint-order:stroke; stroke-linejoin:round; opacity:0; pointer-events:none; }
+.kn-node.kn-prominent text { opacity:.75; }
+.kn-filtered .kn-node text,.kn-node.kn-neighbor text,.kn-node.kn-selected text { opacity:1; }
+.kn-hit { fill:transparent; stroke:none; cursor:grab; }
+.kn-node { pointer-events:none; }
+.kn-world,.kn-node,.kn-node *,.kn-edge { transition:none!important; }
+.kn-node .kn-hit,.kn-node .kn-dot { pointer-events:all; }
+.kn-node .kn-dot { fill:var(--node-color); stroke:var(--kn-card); stroke-width:1.5px; }
+.kn-node.kn-selected .kn-dot,.kn-node:focus .kn-dot { stroke:var(--kn-text); stroke-width:3px; }
 .kn-node:focus rect,.kn-node:hover rect { stroke:#9472cf; stroke-width:3; }
-.kn-dim { opacity:.35; }
+.kn-dim { opacity:.15; }
 .kn-related { padding:16px; border-left:4px solid #9472cf; margin:18px 0; background:var(--kn-card); }
 .kn-related a { display:block; margin:8px 0; text-decoration:underline; }
 .kn-directory { margin:24px 0; padding:16px; border:1px solid var(--kn-line); border-radius:14px; }
