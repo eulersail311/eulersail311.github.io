@@ -1,0 +1,325 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>稀疏注意力 从DSA筛选到遗漏质量误差 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="以DeepSeek Sparse Attention的索引筛选为入口，推导保留集合重新归一化后的输出误差、遗漏概率质量和有界值向量的误差上界，区分筛选分数、注意力概率与端到端成本。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="稀疏注意力 从DSA筛选到遗漏质量误差">
+<meta property="og:url" content="https://eulersail.com/esblog/73520.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="以DeepSeek Sparse Attention的索引筛选为入口，推导保留集合重新归一化后的输出误差、遗漏概率质量和有界值向量的误差上界，区分筛选分数、注意力概率与端到端成本。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-25T02:20:00.000Z">
+<meta property="article:modified_time" content="2026-11-25T02:20:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="稀疏注意力">
+<meta property="article:tag" content="注意力误差">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/73520.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '稀疏注意力 从DSA筛选到遗漏质量误差',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-25 10:20:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/site-enhancements.css?v=20261118-1"><link rel="stylesheet" href="/css/home-editorial.css?v=20261111-1"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261119-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">172</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">300</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">稀疏注意力 从DSA筛选到遗漏质量误差</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-25T02:20:00.000Z" title="发表于 2026-11-25 10:20:00">2026-11-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-25T02:20:00.000Z" title="更新于 2026-11-25 10:20:00">2026-11-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI-%E5%B7%A5%E7%A8%8B/">AI 工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="稀疏注意力 从DSA筛选到遗漏质量误差" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="ai"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>AI ENGINEERING</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>8</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>3</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>沿定义、计算与实验边界阅读，分开模型原理、教学验证和实际系统效果。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>8 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#两阶段：索引器先选，注意力再算"><span>01</span><strong>两阶段：索引器先选，注意力再算</strong></a></li><li><a href="#先写清比较对象，避免偷换完整模型"><span>02</span><strong>先写清比较对象，避免偷换完整模型</strong></a></li><li><a href="#误差来自遗漏质量，也来自两边的值差异"><span>03</span><strong>误差来自遗漏质量，也来自两边的值差异</strong></a></li><li><a href="#三项手算，比较两种筛选"><span>04</span><strong>三项手算，比较两种筛选</strong></a></li><li><a href="#遗漏质量并不是免费的在线指标"><span>05</span><strong>遗漏质量并不是免费的在线指标</strong></a></li><li><a href="#少读位置，不代表整个服务自动线性"><span>06</span><strong>少读位置，不代表整个服务自动线性</strong></a></li><li><a href="#自检与三篇的共同问题"><span>07</span><strong>自检与三篇的共同问题</strong></a></li><li><a href="#参考资料"><span>08</span><strong>参考资料</strong></a></li></ol></nav></details></section><p><a href="/esblog/73197.html">在线Softmax</a>保留同一组允许键，只改变计算与存储顺序。稀疏注意力还会减少参与汇总的位置：如果先用较便宜的索引选择一部分键，后面的昂贵注意力就只处理这些位置。</p>
+<p>这里以<a target="_blank" rel="noopener" href="https://arxiv.org/html/2512.02556v1">DeepSeek-V3.2原报告§2.1</a>中的DeepSeek Sparse Attention（DSA）为研究入口，再独立推导一个可核对的问题：删掉一部分位置后，输出究竟会偏移多少？推导适用于固定一行、固定分数和值的集合截断，不等于完整DSA模型的质量定理。</p>
+<span id="more"></span>
+
+<h2 id="两阶段：索引器先选，注意力再算"><a href="#两阶段：索引器先选，注意力再算" class="headerlink" title="两阶段：索引器先选，注意力再算"></a>两阶段：索引器先选，注意力再算</h2><p>原报告的DSA包括lightning indexer与细粒度token筛选：索引器为当前查询和先前位置计算分数，取高分位置对应的键值，再在选定集合上计算注意力。报告还讨论了基于MLA的实现，以及索引器的训练对齐。</p>
+<p>筛选分数不应直接称为最终注意力概率。索引器可以使用不同投影、头数和数值精度，它的目标是用较低成本找到有用位置；随后注意力的分数与softmax归一化仍是另一层计算。这里仅解释这一接口，不复现完整索引器或训练阶段。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas" tabindex="0" role="region" aria-label="索引候选、稀疏汇总和独立误差核对，可横向滚动"><img class="no-lazy" src="/images/posts/frontier-sparse.svg" width="900" height="360" alt="索引分数选定候选集合；注意力在保留集合重新归一化；用完整参考的遗漏概率质量核对误差"></div><figcaption><p>宽图可左右滚动，也可打开原图。</p><strong>便宜的筛选与昂贵的汇总各有职责。</strong><p>原创机制图，等宽框不表示真实延迟。遗漏质量需要完整参考或另有保证，不能从保留项直接读出。</p><a href="/images/posts/frontier-sparse.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="先写清比较对象，避免偷换完整模型"><a href="#先写清比较对象，避免偷换完整模型" class="headerlink" title="先写清比较对象，避免偷换完整模型"></a>先写清比较对象，避免偷换完整模型</h2><p>固定一个查询行，完整允许集合I中的有限分数为sᵢ，值为向量vᵢ。完整概率pᵢ=exp(sᵢ)/Σⱼ∈I exp(sⱼ)，输出o=Σpᵢvᵢ。因果或其他任务遮罩已经体现在I中，稀疏筛选不能偷偷放入未来位置。</p>
+<p>选择非空保留集合S⊆I，遗漏质量δ=Σᵢ∉S pᵢ。我们先假设保留项的分数和值没有改变，只在S上重新归一化得到o_S。这是同一计算图某一行的局部对照；重新训练后的完整稀疏模型，其前层表示也可能变化，不能将后者直接套进这个固定量比较。</p>
+
+<div class="article-equation"><strong>恒等式A1：截断后重新归一化</strong><p class="reading-math-inline">o_S=Σᵢ∈S[pᵢ/(1−δ)]vᵢ；o=(1−δ)o_S+δo_R。</p><p data-reading-numbers="true">当<span class="reading-number">0</span>&lt;δ&lt;<span class="reading-number">1</span>时，o_R是删除集合的条件加权输出；δ=<span class="reading-number">0</span>时直接有o=o_S，无须定义空集合的o_R。</p></div>
+
+
+<p data-reading-numbers="true">有限分数与非空S保证保留质量为正。若根本没选出位置，分母为<span class="reading-number">0</span>，必须单独定义错误或回退契约。筛选后重新softmax不是保留完整权重再直接求和；后者权重总和仅为<span class="reading-number">1</span>−δ，计算的是另一个量。</p>
+<h2 id="误差来自遗漏质量，也来自两边的值差异"><a href="#误差来自遗漏质量，也来自两边的值差异" class="headerlink" title="误差来自遗漏质量，也来自两边的值差异"></a>误差来自遗漏质量，也来自两边的值差异</h2><p>从A1直接相减：o−o_S=δ(o_R−o_S)。因此小δ是有用信息，但还要知道被删和保留部分的值向量距离。</p>
+
+<div class="article-equation"><strong>界A2：有限值范围下的输出误差</strong><p data-reading-numbers="true">‖o−o_S‖≤<span class="reading-number">2</span>δV，条件为所有‖vᵢ‖≤V，采用同一个向量范数。</p><p>若所有值向量的两两距离≤D，还可得‖o−o_S‖≤δD。概率和δ无量纲，误差与值向量同单位。</p></div>
+
+
+<p data-reading-numbers="true">第一条由三角不等式和凸组合的范数不超过V得到。第二条可把o_R−o_S写成两组条件概率对每个(vᵢ−vⱼ)的加权平均，其系数非负且总和为<span class="reading-number">1</span>，于是范数不超过D。两条都是最坏情况上界，不保证每次实际误差接近上界。</p>
+<p data-reading-numbers="true">极端但合法的例子：p=[<span class="reading-number">0.99</span>,<span class="reading-number">0.01</span>]、v=[<span class="reading-number">0</span>,<span class="reading-number">1000</span>]，只保留第一项，δ=<span class="reading-number">0.01</span>，完整输出<span class="reading-number">10</span>，保留输出<span class="reading-number">0</span>，误差<span class="reading-number">10</span>。D=<span class="reading-number">1000</span>时δD=<span class="reading-number">10</span>，恰好达到直径界。没有值尺度条件，就不能把“只漏<span class="reading-quantity"><span class="reading-number">1</span>%</span>概率”翻译成绝对误差至多<span class="reading-quantity"><span class="reading-number">1</span>%</span>。</p>
+<h2 id="三项手算，比较两种筛选"><a href="#三项手算，比较两种筛选" class="headerlink" title="三项手算，比较两种筛选"></a>三项手算，比较两种筛选</h2><p data-reading-numbers="true">取未归一化权重[<span class="reading-number">1</span>,<span class="reading-number">2</span>,<span class="reading-number">4</span>]，值[<span class="reading-number">0</span>,<span class="reading-number">3</span>,<span class="reading-number">6</span>]。完整输出为<span class="reading-number">30/7</span>。</p>
+<table>
+<thead>
+<tr>
+<th>保留位置</th>
+<th>遗漏质量δ</th>
+<th>重新归一化输出o_S</th>
+<th>绝对误差</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第二、第三项</td>
+<td class="reading-numeric-cell"><span class="reading-number">1/7</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">5</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">5/7</span></td>
+</tr>
+<tr>
+<td>第一、第二项</td>
+<td class="reading-numeric-cell"><span class="reading-number">4/7</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">2</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">16/7</span></td>
+</tr>
+<tr>
+<td>全部</td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">30/7</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+</tr>
+</tbody></table>
+<p data-reading-numbers="true">第一行中删除输出为<span class="reading-number">0</span>，所以误差=(<span class="reading-number">1/7</span>)|<span class="reading-number">0</span><span class="reading-number">−5</span>|=<span class="reading-number">5/7</span>；第二行删除输出为<span class="reading-number">6</span>，误差=(<span class="reading-number">4/7</span>)|<span class="reading-number">6</span><span class="reading-number">−2</span>|=<span class="reading-number">16/7</span>。原始保留项不重新归一化时，第一行仅得到<span class="reading-number">30/7</span>，恰巧等于完整结果，因为被删值为<span class="reading-number">0</span>；这个巧合不能当作不需要归一化的证明。</p>
+<p data-reading-numbers="true">若能按真实完整p选定固定数量的位置，取最大概率项会使遗漏质量最小，这是简单的交换论证：用更大的未选p替换更小的已选p，保留质量不减。但它不必最小化实际向量输出误差：p=[<span class="reading-number">0.5</span>,<span class="reading-number">0.3</span>,<span class="reading-number">0.2</span>]、v=[<span class="reading-number">0</span>,<span class="reading-number">1</span>,<span class="reading-number">2</span>]时完整输出<span class="reading-number">0.7</span>，只选最大概率项输出<span class="reading-number">0</span>，误差<span class="reading-number">0.7</span>；只选第二项输出<span class="reading-number">1</span>，误差反而只有<span class="reading-number">0.3</span>。实际索引器的排名又未必与真实p相同，这两种差距应分开检查。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[固定当前查询与允许历史] --&gt; B[索引器给候选排名]
+ B --&gt; C[选出非空保留集合]
+ C --&gt; D[在保留项重新归一化]
+ D --&gt; E[得到稀疏输出]
+ A --&gt; F[离线完整参考]
+ F --&gt; G[核对遗漏质量与值尺度]
+ E --&gt; H[比较实际输出误差]
+ G --&gt; H
+  </pre></div>
+
+<h2 id="遗漏质量并不是免费的在线指标"><a href="#遗漏质量并不是免费的在线指标" class="headerlink" title="遗漏质量并不是免费的在线指标"></a>遗漏质量并不是免费的在线指标</h2><p data-reading-numbers="true">δ需要完整概率的分母。如果运行时只计算S内分数，那么保留项softmax权重之和无论如何都是<span class="reading-number">1</span>，无法据此知道漏掉多少质量。离线可以对小规模样本计算完整注意力作为参考；在线若使用估计或界，应说明额外假设和成本。</p>
+<p data-reading-numbers="true">还应区分概率距离与输出距离。把保留分布扩展到I，删除项概率设为<span class="reading-number">0</span>，则两分布的L1距离为<span class="reading-number">2</span>δ：保留位置总共增加δ，删除位置总共减少δ。但即使概率距离相同，值的分布不同也会造成不同输出误差。概率召回只是诊断之一。</p>
+<h2 id="少读位置，不代表整个服务自动线性"><a href="#少读位置，不代表整个服务自动线性" class="headerlink" title="少读位置，不代表整个服务自动线性"></a>少读位置，不代表整个服务自动线性</h2><p>在每个查询保留k个位置时，后续精细汇总的配对数可从N降为k，但筛选器本身、索引维护、键值缓存、访存和调度仍有成本。DSA所述索引器仍会为候选历史计算索引分数；不能仅凭主注意力稀疏就宣称总算法对序列长度严格线性。</p>
+<p>本文建议把测量分为索引、精细注意力、缓存与端到端四项；同时固定上下文、batch、数据类型、硬件和质量目标。固定k与随长度增长的k不是同一种渐近设定。论文中的实现和实验结果应按其配置阅读，本文没有进行模型或GPU性能实验。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[观察稀疏化收益] --&gt; B[先核对候选和因果约束]
+ B --&gt; C[分别测遗漏质量与输出误差]
+ C --&gt; D[加入大值和抵消反例]
+ D --&gt; E[计入筛选与缓存成本]
+ E --&gt; F[再评价端到端质量和延迟]
+  </pre></div>
+
+<h2 id="自检与三篇的共同问题"><a href="#自检与三篇的共同问题" class="headerlink" title="自检与三篇的共同问题"></a>自检与三篇的共同问题</h2>
+<details class="mechanism-check"><summary>保留项softmax权重加起来等于1，是否证明没有遗漏重要质量？</summary><p>不能。它只说明保留集合内部完成了重新归一化；遗漏质量需要完整分布参考，或另有明确假设的估计与界。</p></details>
+<details class="mechanism-check"><summary>选出真实概率最大的k项，是否必然令输出误差最小？</summary><p>不必。它最小化遗漏概率质量，但实际输出误差还取决于值向量距离与相互抵消；A2的上界与实际误差不能混为一谈。</p></details>
+
+
+<p><a href="/esblog/73308.html">神经记忆</a>将历史压入可写映射，<a href="/esblog/73419.html">扩散生成</a>改变生成步骤，本篇改变一轮内读取的集合。三者都在重新分配计算与状态预算，但各自的误差、缓存和评测契约不同。与<a href="/esblog/66369.html">重要性采样</a>也要区分：本篇是确定集合截断，并未按已知抽样概率构造无偏重要性估计。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2512.02556">DeepSeek-AI，DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models，2025，§2.1</a>：DSA索引、筛选及训练。本文遗漏质量恒等式、误差界、手算与检查建议为独立教学分析，不是报告宣称的端到端保证。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/73520.html">https://eulersail.com/esblog/73520.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%A8%80%E7%96%8F%E6%B3%A8%E6%84%8F%E5%8A%9B/">稀疏注意力</a><a class="post-meta__tags" href="/tags/%E6%B3%A8%E6%84%8F%E5%8A%9B%E8%AF%AF%E5%B7%AE/">注意力误差</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/esblog/73419.html" title="扩散语言模型 从LLaDA掩码目标到解码预算"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">扩散语言模型 从LLaDA掩码目标到解码预算</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">172</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">300</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%B4%A2%E5%BC%95%E5%99%A8%E5%85%88%E9%80%89%EF%BC%8C%E6%B3%A8%E6%84%8F%E5%8A%9B%E5%86%8D%E7%AE%97"><span class="toc-text">两阶段：索引器先选，注意力再算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%86%99%E6%B8%85%E6%AF%94%E8%BE%83%E5%AF%B9%E8%B1%A1%EF%BC%8C%E9%81%BF%E5%85%8D%E5%81%B7%E6%8D%A2%E5%AE%8C%E6%95%B4%E6%A8%A1%E5%9E%8B"><span class="toc-text">先写清比较对象，避免偷换完整模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%AF%E5%B7%AE%E6%9D%A5%E8%87%AA%E9%81%97%E6%BC%8F%E8%B4%A8%E9%87%8F%EF%BC%8C%E4%B9%9F%E6%9D%A5%E8%87%AA%E4%B8%A4%E8%BE%B9%E7%9A%84%E5%80%BC%E5%B7%AE%E5%BC%82"><span class="toc-text">误差来自遗漏质量，也来自两边的值差异</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E9%A1%B9%E6%89%8B%E7%AE%97%EF%BC%8C%E6%AF%94%E8%BE%83%E4%B8%A4%E7%A7%8D%E7%AD%9B%E9%80%89"><span class="toc-text">三项手算，比较两种筛选</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%81%97%E6%BC%8F%E8%B4%A8%E9%87%8F%E5%B9%B6%E4%B8%8D%E6%98%AF%E5%85%8D%E8%B4%B9%E7%9A%84%E5%9C%A8%E7%BA%BF%E6%8C%87%E6%A0%87"><span class="toc-text">遗漏质量并不是免费的在线指标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%91%E8%AF%BB%E4%BD%8D%E7%BD%AE%EF%BC%8C%E4%B8%8D%E4%BB%A3%E8%A1%A8%E6%95%B4%E4%B8%AA%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%8A%A8%E7%BA%BF%E6%80%A7"><span class="toc-text">少读位置，不代表整个服务自动线性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E6%A3%80%E4%B8%8E%E4%B8%89%E7%AF%87%E7%9A%84%E5%85%B1%E5%90%8C%E9%97%AE%E9%A2%98"><span class="toc-text">自检与三篇的共同问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73520.html" title="稀疏注意力 从DSA筛选到遗漏质量误差">稀疏注意力 从DSA筛选到遗漏质量误差</a><time datetime="2026-11-25T02:20:00.000Z" title="发表于 2026-11-25 10:20:00">2026-11-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73419.html" title="扩散语言模型 从LLaDA掩码目标到解码预算">扩散语言模型 从LLaDA掩码目标到解码预算</a><time datetime="2026-11-25T02:10:00.000Z" title="发表于 2026-11-25 10:10:00">2026-11-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73308.html" title="推理时记忆 从Titans关联写入到遗忘边界">推理时记忆 从Titans关联写入到遗忘边界</a><time datetime="2026-11-25T02:00:00.000Z" title="发表于 2026-11-25 10:00:00">2026-11-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73197.html" title="在线Softmax 从分块摘要到精确注意力">在线Softmax 从分块摘要到精确注意力</a><time datetime="2026-11-23T02:00:00.000Z" title="发表于 2026-11-23 10:00:00">2026-11-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86251.html" title="双节点热网络 从耦合储能到双时间尺度">双节点热网络 从耦合储能到双时间尺度</a><time datetime="2026-11-20T02:10:00.000Z" title="发表于 2026-11-20 10:10:00">2026-11-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
