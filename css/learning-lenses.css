@@ -7,6 +7,8 @@
 #article-container .learning-lenses h3:before { display:none; }
 #article-container .learning-lenses p { font-size:16px; line-height:1.9; margin:0 0 14px; }
 .learning-lenses a { display:block; padding:7px 0; color:inherit; text-decoration:underline; text-underline-offset:4px; overflow-wrap:anywhere; }
+#article-container .learning-lenses a { color:#354c67; }
+[data-theme="dark"] #article-container .learning-lenses a { color:#badcf3; }
 .learning-lenses a:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
 @media(max-width:900px) { .learning-lenses { grid-template-columns:1fr; } }
 @media(max-width:768px) { .learning-lenses { margin-right:32px; } }
