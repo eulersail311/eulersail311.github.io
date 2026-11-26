@@ -16,13 +16,16 @@
 .kn-controls input,.kn-controls select,.kn-controls button { background:var(--kn-card); color:var(--kn-text); border:1px solid var(--kn-line); border-radius:8px; padding:10px; font:inherit; max-width:100%; }
 .kn-controls button { cursor:pointer; min-height:44px; }
 .kn-status { font-size:15px; line-height:1.8; }
-.kn-viewport { overflow:hidden; height:clamp(460px,70vh,760px); border:1px solid var(--kn-line); border-radius:18px; background-color:var(--kn-card); background-image:radial-gradient(var(--kn-line) .6px,transparent .6px); background-size:22px 22px; }
+.kn-viewport { overflow:hidden; height:clamp(460px,70vh,760px); border:1px solid var(--kn-line); border-radius:12px; background:var(--kn-card); }
 .kn-viewport svg { display:block; width:100%!important; height:100%!important; max-width:none!important; touch-action:none; cursor:grab; user-select:none; }
 .kn-viewport svg:active { cursor:grabbing; }
-.kn-edge { fill:none; stroke:var(--kn-line); stroke-width:1.4; opacity:.45; color:var(--kn-line); }
-.kn-edge.kn-active { stroke:#9472cf; opacity:1; stroke-width:3; }
+.kn-edge { fill:none; stroke:var(--kn-line); stroke-width:1px; vector-effect:non-scaling-stroke; opacity:.32; color:var(--kn-line); }
+.kn-edge.kn-bridge { opacity:.12; }
+.kn-edge.kn-active { stroke:#9472cf; opacity:.9; stroke-width:1.8px; }
+.kn-has-selection .kn-edge:not(.kn-active) { opacity:.07; }
+.kn-label-leader { stroke:var(--kn-line); stroke-width:1px; vector-effect:non-scaling-stroke; opacity:0; pointer-events:none; }
 .kn-node rect { fill:var(--kn-card); stroke:var(--kn-line); stroke-width:1.5; }
-.kn-node text { fill:var(--kn-text); font:13px "Microsoft YaHei",sans-serif; stroke:var(--kn-card); stroke-width:4px; paint-order:stroke; stroke-linejoin:round; opacity:0; pointer-events:none; }
+.kn-node text { fill:var(--kn-text); font:14px "Microsoft YaHei",sans-serif; stroke:var(--kn-card); stroke-width:3px; vector-effect:non-scaling-stroke; paint-order:stroke; stroke-linejoin:round; opacity:0; pointer-events:none; }
 .kn-node.kn-prominent text { opacity:.75; }
 .kn-filtered .kn-node text,.kn-node.kn-neighbor text,.kn-node.kn-selected text { opacity:1; }
 .kn-hit { fill:transparent; stroke:none; cursor:grab; }
@@ -40,7 +43,7 @@
 .kn-fullscreen .kn-status { margin:6px 0; flex:none; }
 .kn-fullscreen .kn-viewport { flex:1; min-height:0; max-height:none; height:auto; }
 @media(max-width:768px){ .kn-fullscreen .kn-controls label { width:auto; flex:1; min-width:120px; }.kn-fullscreen .kn-status{font-size:12px;}.kn-fullscreen .kn-titlebar{max-height:20vh;overflow:auto;} }
-.kn-node .kn-dot { fill:var(--node-color); stroke:var(--kn-card); stroke-width:1.5px; }
+.kn-node .kn-dot { fill:var(--node-color); stroke:var(--kn-card); stroke-width:1px; vector-effect:non-scaling-stroke; }
 .kn-node.kn-selected .kn-dot,.kn-node:focus .kn-dot { stroke:var(--kn-text); stroke-width:3px; }
 .kn-node:focus rect,.kn-node:hover rect { stroke:#9472cf; stroke-width:3; }
 .kn-dim { opacity:.15; }
