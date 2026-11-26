@@ -20,6 +20,17 @@
 .kn-node { pointer-events:none; }
 .kn-world,.kn-node,.kn-node *,.kn-edge { transition:none!important; }
 .kn-node .kn-hit,.kn-node .kn-dot { pointer-events:all; }
+.kn-titlebar { box-sizing:border-box; height:76px; flex-shrink:0; overflow:auto; padding:10px 14px; margin:8px 0; background:var(--kn-card); border-left:3px solid #9472cf; font-size:16px; line-height:1.7; overflow-wrap:anywhere; }
+.kn-titlebar[hidden] { display:block; visibility:hidden; }
+.kn-titlebar a { color:var(--kn-text); text-decoration:underline; }
+#knowledge-network.kn-fullscreen { position:fixed; inset:0; z-index:100000; box-sizing:border-box; width:100%!important; height:100dvh; margin:0!important; padding:16px; display:flex; flex-direction:column; background:var(--kn-card); }
+.kn-fullscreen .kn-intro,.kn-fullscreen .kn-directory,.kn-fullscreen .kn-related { display:none!important; }
+.kn-fullscreen .kn-controls { flex:none; padding:8px; gap:8px; }
+.kn-fullscreen .kn-controls :is(input,select) { box-sizing:border-box; width:100%; min-width:0; }
+#knowledge-network .kn-viewport .kn-node:focus,#knowledge-network .kn-viewport .kn-node:focus-visible { outline:none!important; }
+.kn-fullscreen .kn-status { margin:6px 0; flex:none; }
+.kn-fullscreen .kn-viewport { flex:1; min-height:0; max-height:none; height:auto; }
+@media(max-width:768px){ .kn-fullscreen .kn-controls label { width:auto; flex:1; min-width:120px; }.kn-fullscreen .kn-status{font-size:12px;}.kn-fullscreen .kn-titlebar{max-height:20vh;overflow:auto;} }
 .kn-node .kn-dot { fill:var(--node-color); stroke:var(--kn-card); stroke-width:1.5px; }
 .kn-node.kn-selected .kn-dot,.kn-node:focus .kn-dot { stroke:var(--kn-text); stroke-width:3px; }
 .kn-node:focus rect,.kn-node:hover rect { stroke:#9472cf; stroke-width:3; }
@@ -32,3 +43,4 @@
 @media(max-width:768px){ #knowledge-network { width:calc(100% - 30px); margin-right:30px; }.kn-controls label{width:100%;}.kn-controls{padding:12px;}}
 @media print{.kn-controls,.kn-viewport,.kn-related,.kn-status{display:none!important;}.kn-directory{display:block;color:#111;background:#fff;} .kn-directory a{color:#111!important;} .kn-directory>*,.kn-directory details>*{display:block!important;}}
 @media print{.kn-directory::details-content,.kn-directory details::details-content{content-visibility:visible!important;display:block!important;}}
+@media print{ #knowledge-network.kn-fullscreen{position:static!important;height:auto!important;display:block!important;}.kn-fullscreen .kn-directory,.kn-fullscreen .kn-intro{display:block!important;}.kn-titlebar{display:none!important;} }
