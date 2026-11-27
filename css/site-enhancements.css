@@ -3015,17 +3015,56 @@
   #post #article-container.reading-article table:not(figure.highlight table) th { color: #111; background: #f1f1f1; }
 }
 
-/* The static reading map, content hierarchy and topic routes share each post's
-   category palette. Every essential link remains available without scripts. */
+/* The reading map shares the post palette and its chapter links work without scripts. */
 #post #article-container.reading-article .reading-overview {
-  padding: clamp(18px, 3vw, 28px);
-  border-top: 4px solid var(--article-accent);
-  background: linear-gradient(135deg, var(--article-soft), transparent 65%), var(--sail-surface-strong);
+  padding: clamp(16px, 3vw, 28px);
+  border-color: var(--article-rule);
+  border-block-start: 3px solid var(--article-accent);
+  background: linear-gradient(180deg, var(--article-soft), transparent 8em), var(--sail-surface-strong);
   box-shadow: none;
 }
+#post .reading-article .reading-overview-heading {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .3em 1em;
+  margin-block-end: .85em;
+}
+#post .reading-article .reading-overview-heading strong {
+  color: var(--sail-reading-ink);
+  font-size: 1.24em;
+  line-height: 1.35;
+}
+#post .reading-article .reading-overview-heading span {
+  font-size: .72em;
+  letter-spacing: .075em;
+  overflow-wrap: anywhere;
+}
 #post .reading-article :is(.reading-overview-heading span, .reading-overview-metric > i, .reading-chapters-header i, .reading-tools-label i) { color: var(--article-accent); }
-#post .reading-article .reading-overview-metric { border-color: var(--article-rule); background: var(--sail-surface-strong); }
-#post .reading-article .reading-overview-metric small { white-space: normal; overflow: visible; line-height: 1.55; opacity: 1; }
+#post .reading-article .reading-overview-metrics {
+  gap: 0;
+  border: 1px solid var(--article-rule);
+  border-radius: 10px;
+  background: var(--sail-surface-strong);
+}
+#post .reading-article .reading-overview-metric {
+  padding: .75em;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+#post .reading-article .reading-overview-metric + .reading-overview-metric { border-inline-start: 1px solid var(--article-rule); }
+#post .reading-article .reading-overview-metric strong {
+  color: var(--article-accent);
+  font-size: 1.25em;
+  font-variant-numeric: tabular-nums;
+}
+#post .reading-article .reading-overview-metric small {
+  white-space: normal;
+  overflow: visible;
+  color: var(--sail-reading-ink);
+  line-height: 1.55;
+  opacity: 1;
+}
 @media screen {
   #post .reading-article .reading-overview-metric small,
   #post .reading-article .reading-overview > p { font-size: 0.95em; line-height: 1.8; opacity: 1; }
@@ -3040,11 +3079,9 @@
   cursor: pointer;
   line-height: 1.7;
 }
-#post .reading-article .reading-static-chapters > summary > span { margin-left: 12px; color: var(--sail-reading-ink); font-size: 13px; }
+#post .reading-article .reading-static-chapters > summary > span { margin-inline-start: .8em; color: var(--sail-reading-ink); font-size: .9em; }
 #post .reading-article .reading-static-chapters ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0; margin: 16px 0 0; list-style: none; }
 #post .reading-article .reading-static-chapters li { min-width: 0; margin: 0; }
-#post .reading-article .reading-static-chapters a { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 8px; align-items: start; min-height: 44px; padding: 10px; border-radius: 8px; background: var(--sail-surface-strong); color: var(--sail-reading-ink); font-size: 14px; line-height: 1.65; overflow-wrap: anywhere; }
-#post .reading-article .reading-static-chapters a span { color: var(--article-accent); font-variant-numeric: tabular-nums; }
 #post .reading-article :is(.reading-static-chapters a, .reading-static-chapters summary):focus-visible { outline: 2px solid var(--article-accent); outline-offset: 3px; }
 
 #post #article-container.reading-article > h2 { padding: 0.5em 0.65em 0.6em; border-bottom-width: 2px; border-radius: 8px 8px 0 0; background: linear-gradient(90deg, var(--article-soft), transparent 85%); text-wrap: pretty; }
@@ -3093,13 +3130,23 @@
 #article-container .algorithm-exercises > summary { min-height: 44px; color: var(--sail-accent); font-weight: 700; line-height: 1.8; cursor: pointer; }
 #article-container .algorithm-exercises > summary:focus-visible { outline: 2px solid var(--sail-accent); outline-offset: 3px; }
 @media (max-width: 600px) {
-  #post .reading-article .reading-overview-heading { flex-wrap: wrap; gap: 4px 10px; }
   #post .reading-article .reading-static-chapters ol,
   #post .reading-article .algorithm-topic-pager { grid-template-columns: 1fr; }
-  #post .reading-article .reading-overview-metric { padding: 10px 8px; gap: 6px; }
-  #post .reading-article .reading-overview-metric > i { display: none; }
   #post #article-container.reading-article > h2 { padding-left: 0.45em; padding-right: 0.2em; }
   #post #article-container.reading-article[data-reading-tone='music'] > h2 { padding-left: 0; }
+}
+@media (max-width: 768px) {
+  #post .reading-article .reading-overview-metric { gap: .4em; }
+  #post .reading-article .reading-overview-metric + .reading-overview-metric {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--article-rule);
+  }
+  #post .reading-article .reading-overview-metric > span {
+    display: grid;
+    grid-template-columns: minmax(2ch, max-content) minmax(0, 1fr);
+    align-items: baseline;
+    gap: .65em;
+  }
 }
 @media print {
   #post .reading-article .reading-overview,
@@ -3186,21 +3233,50 @@
 }
 #post #article-container.reading-article > h2:target { border-bottom-color: var(--article-accent); }
 #post #article-container.reading-article > h3:target { border-left-color: var(--article-accent); }
-#post .reading-article .reading-font-status,
-#post .reading-article .reading-chapter-list a > span { color: var(--article-accent); }
-#post .reading-article .reading-chapter-list a { min-height: 44px; overflow-wrap: anywhere; }
-#post .reading-article .reading-chapter-list a > strong {
+#post .reading-article .reading-font-status { color: var(--article-accent); }
+#post #article-container.reading-article :is(.reading-static-chapters, .reading-chapter-list) a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: .65em;
+  min-height: 44px;
+  padding: .5em .6em;
+  border: 1px solid var(--article-rule);
+  border-radius: 8px;
+  color: var(--sail-reading-ink);
+  background: var(--sail-surface-strong);
+  font-size: .95em;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+#post .reading-article :is(.reading-static-chapters, .reading-chapter-list) a > span {
+  display: grid;
+  min-inline-size: 2.2em;
+  min-block-size: 2em;
+  align-content: center;
+  border-radius: 5px;
+  background: var(--article-soft);
+  color: var(--article-accent);
+  text-align: center;
+  font-size: .82em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+#post .reading-article :is(.reading-static-chapters, .reading-chapter-list) a > strong {
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
-  line-height: 1.65;
+  line-height: inherit;
 }
-#post .reading-article .reading-chapter-list a:is(:hover, :focus-visible, [aria-current='location']),
+#post #article-container.reading-article :is(.reading-static-chapters, .reading-chapter-list) a:is(:hover, :focus-visible, [aria-current='location']),
 #post .reading-article .reading-font-controls button:is(:hover, :focus-visible):not(:disabled),
 #post .reading-article .reading-chapters-toggle:is(:hover, :focus-visible) {
   color: var(--article-accent);
   border-color: var(--article-accent);
   background: var(--article-soft);
+}
+#post #article-container.reading-article .reading-chapter-list a[aria-current='location'] {
+  box-shadow: inset 3px 0 var(--article-accent);
 }
 @media (max-width: 600px) {
   #post .reading-article :is(.mechanism-check, .reflection-panel) > :is(summary, p, div) { padding-inline: 1em; }

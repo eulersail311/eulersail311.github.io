@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" width="900" height="380" role="img" aria-labelledby="title desc">
+  <title id="title">单组 Wilson 区间与比例差区间</title>
+  <desc id="desc">33/80 对 25/100。上图两个单组区间交叠，下图 Newcombe 区间下端在零右侧，直接相减所得范围横跨零。</desc>
+  <rect width="900" height="380" rx="20" fill="#f8fbfc"/>
+  <g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#172d42">
+    <text x="32" y="39" font-size="25" font-weight="700">比较两组完成率，要看差值的区间</text>
+    <path d="M32 198H868" stroke="#d7e0e7"/>
+    <text x="32" y="77" font-size="18" font-weight="700">单组完成率与 Wilson 区间</text>
+    <text x="715" y="77" font-size="15" fill="#455e71">区间端点（%）</text>
+    <rect x="408.97" y="97" width="30.01" height="67" fill="#d3e9e3"/>
+    <g font-size="15" fill="#455e71">
+    <line x1="211.00" y1="95" x2="211.00" y2="164" stroke="#d7e0e7"/>
+    <text x="211.00" y="184" text-anchor="middle">10%</text>
+    <line x1="304.80" y1="95" x2="304.80" y2="164" stroke="#d7e0e7"/>
+    <text x="304.80" y="184" text-anchor="middle">20%</text>
+    <line x1="398.60" y1="95" x2="398.60" y2="164" stroke="#d7e0e7"/>
+    <text x="398.60" y="184" text-anchor="middle">30%</text>
+    <line x1="492.40" y1="95" x2="492.40" y2="164" stroke="#d7e0e7"/>
+    <text x="492.40" y="184" text-anchor="middle">40%</text>
+    <line x1="586.20" y1="95" x2="586.20" y2="164" stroke="#d7e0e7"/>
+    <text x="586.20" y="184" text-anchor="middle">50%</text>
+    <line x1="680.00" y1="95" x2="680.00" y2="164" stroke="#d7e0e7"/>
+    <text x="680.00" y="184" text-anchor="middle">60%</text>
+    </g>
+    <path d="M408.97,110v12m0,-6H606.80m0,-6v12" stroke="#0f6c5e" stroke-width="3.5" fill="none"/>
+    <circle cx="504.13" cy="116" r="5.5" fill="#0f6c5e"/>
+    <path d="M281.77,141v12m0,-6H438.98m0,-6v12" stroke="#425e9a" stroke-width="3.5" fill="none"/>
+    <circle cx="351.70" cy="147" r="5.5" fill="#425e9a"/>
+    <g font-size="16">
+      <text x="32" y="122">新版 A（33 / 80）</text>
+      <text x="32" y="153">旧版 B（25 / 100）</text>
+      <text x="715" y="122">31.11 – 52.20</text>
+      <text x="715" y="153">17.55 – 34.30</text>
+    </g>
+    <text x="32" y="228" font-size="18" font-weight="700">新版减旧版的完成率差值</text>
+    <text x="715" y="228" font-size="15" fill="#455e71">区间端点（百分点）</text>
+    <g font-size="15" fill="#455e71">
+    <line x1="211.00" y1="246" x2="211.00" y2="315" stroke="#d7e0e7"/>
+    <text x="211.00" y="337" text-anchor="middle">−5</text>
+    <line x1="263.11" y1="246" x2="263.11" y2="315" stroke="#9b4d26" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="263.11" y="337" text-anchor="middle">0</text>
+    <line x1="367.33" y1="246" x2="367.33" y2="315" stroke="#d7e0e7"/>
+    <text x="367.33" y="337" text-anchor="middle">10</text>
+    <line x1="471.56" y1="246" x2="471.56" y2="315" stroke="#d7e0e7"/>
+    <text x="471.56" y="337" text-anchor="middle">20</text>
+    <line x1="575.78" y1="246" x2="575.78" y2="315" stroke="#d7e0e7"/>
+    <text x="575.78" y="337" text-anchor="middle">30</text>
+    <line x1="680.00" y1="246" x2="680.00" y2="315" stroke="#d7e0e7"/>
+    <text x="680.00" y="337" text-anchor="middle">40</text>
+    </g>
+    <path d="M289.01,257v12m0,-6H570.50m0,-6v12" stroke="#0f6c5e" stroke-width="3.5" fill="none"/>
+    <circle cx="432.47" cy="263" r="5.5" fill="#0f6c5e"/>
+    <path d="M229.77,289v12m0,-6H624.25m0,-6v12" stroke="#667486" stroke-width="3.5" fill="none"/>
+    <circle cx="432.47" cy="295" r="5.5" fill="#667486"/>
+    <g font-size="16">
+      <text x="32" y="269">Newcombe 区间</text>
+      <text x="32" y="301">跨组端点直接相减</text>
+      <text x="715" y="269">2.48 – 29.49</text>
+      <text x="715" y="301">−3.20 – 34.65</text>
+    </g>
+    <text x="32" y="360" font-size="15" fill="#455e71">上下横轴单位不同，圆点标出样本估计。</text>
+  </g>
+</svg>

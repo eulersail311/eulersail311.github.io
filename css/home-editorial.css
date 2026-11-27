@@ -168,6 +168,79 @@
 .sail-journal .sail-post-bottom { margin-top:20px; padding-top:14px; }
 @media (max-width:600px) { .sail-journal .sail-post-card { padding:22px; } }
 
+@media screen {
+  .sail-journal .sail-section-heading:not(.sail-latest-heading) {
+    padding-block-end: 10px;
+    border-block-end: 1px solid var(--editorial-line);
+  }
+
+  .sail-journal .sail-section-heading > a {
+    align-self: end;
+    color: var(--sail-accent);
+    text-decoration: underline;
+    text-underline-offset: .23em;
+  }
+
+  .sail-journal .sail-topic-top { font-size: 10px; }
+  .sail-journal .sail-topic-mark {
+    display: grid;
+    min-width: 36px;
+    min-height: 36px;
+    place-items: center;
+    border: 1px solid var(--editorial-line);
+    border-radius: 9px;
+    background: var(--editorial-paper);
+    font-size: 21px;
+  }
+
+  .sail-journal .sail-topic-bottom { row-gap: 8px; }
+  .sail-journal .sail-topic-bottom > span:last-child {
+    font-weight: 650;
+    text-decoration: underline;
+    text-underline-offset: .23em;
+  }
+
+  .sail-journal .sail-post-card {
+    border-block-start: 1px solid var(--editorial-line);
+    border-inline-start: 3px solid var(--topic-color);
+    background: linear-gradient(180deg, var(--topic-wash), transparent 8em), var(--editorial-paper);
+  }
+
+  .sail-journal .sail-post-card:focus-within { border-color: var(--topic-color); }
+  .sail-journal .sail-post-title:is(:hover, :focus-visible) {
+    color: var(--topic-color);
+    text-decoration: underline;
+    text-underline-offset: .18em;
+  }
+
+  .sail-journal .sail-post-metrics {
+    gap: 5px 8px;
+    color: var(--editorial-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sail-journal .sail-post-metrics > span {
+    padding: .15em .55em;
+    border: 1px solid var(--editorial-line);
+    border-radius: 6px;
+    background: var(--editorial-paper);
+  }
+
+  .sail-journal .sail-post-metrics span + span::before { content: none; }
+  .sail-journal .sail-post-open {
+    min-height: 44px;
+    gap: .55em;
+    padding: .25em .85em;
+    border: 1px solid var(--editorial-line);
+    border-radius: 7px;
+    color: var(--topic-color);
+    background: var(--topic-wash);
+    font-weight: 680;
+  }
+
+  .sail-journal .sail-post-open:is(:hover, :focus-visible) { border-color: var(--topic-color); }
+}
+
 /* Reserve the same usable gutter as article pages for the fixed mobile tools. */
 @media screen and (max-width:768px) {
   .sail-journal { box-sizing:border-box; padding-right:42px; }

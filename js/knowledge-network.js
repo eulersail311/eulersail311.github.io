@@ -71,8 +71,12 @@
       const matrix=layer.getScreenCTM(),points=nodes.map(n=>{const p=new DOMPoint(n.x,n.y).matrixTransform(matrix);return{id:n.id,x:p.x,y:p.y,r:Math.min(10,4+Math.sqrt(n.degree))*scale};});
       const intersects=(a,b,gap=5)=>a.x<b.x+b.w+gap&&b.x<a.x+a.w+gap&&a.y<b.y+b.h+gap&&b.y<a.y+a.h+gap;
       const ordered=[...nodes].sort((a,b)=>(b.id===selected?10000:0)+(b.element.classList.contains('kn-neighbor')?1000:0)+b.degree-((a.id===selected?10000:0)+(a.element.classList.contains('kn-neighbor')?1000:0)+a.degree));
-      for(const n of ordered){const label=n.element.querySelector('text'),p=points.find(p=>p.id===n.id),isSelected=n.id===selected,pixels=isSelected?15:14,eligible=isSelected||(!selected||n.element.classList.contains('kn-neighbor'))&&(camera.k>=1.7||!!select.value||!!search.value||!!focusIds||n.degree>=8);label.style.opacity='0';n.leader.style.opacity='0';
-        if(!eligible||p.x<r.left||p.x>r.right||p.y<r.top||p.y>r.bottom)continue;
+      for(const n of ordered){const label=n.element.querySelector('text'),p=points.find(p=>p.id===n.id),isSelected=n.id===selected,pixels=isSelected?15:14;
+        const eligible=isSelected||(!selected||n.element.classList.contains('kn-neighbor'))&&(camera.k>=1.7||!!select.value||!!search.value||!!focusIds||n.degree>=8);
+        // The zoomed view can contain only low-degree notes. Place one readable label if it fits.
+        const needsLabel=!selected&&occupied.length===0;
+        label.style.opacity='0';n.leader.style.opacity='0';
+        if(!(eligible||needsLabel)||p.x<r.left||p.x>r.right||p.y<r.top||p.y>r.bottom)continue;
         const short=n.title.split(/ 从|[：:]/)[0],caption=isSelected?n.title:([...short].length>18?[...short].slice(0,18).join('')+'…':short),width=Math.min(isSelected?250:170,r.width-32),key=caption+'|'+width+'|'+pixels;
         label.style.fontSize=pixels/scale+'px';label.style.fontWeight=isSelected?'600':'400';
         if(n.labelKey!==key){n.labelKey=key;label.replaceChildren(...wrapTitle(caption,width,pixels).map((line,i)=>el('tspan',{x:0,dy:i?'1.35em':'0'},line)));}

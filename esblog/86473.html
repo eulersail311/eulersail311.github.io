@@ -1,0 +1,380 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>半无限体周期导热 从热穿透深度到测温滞后 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从一维热扩散方程推导半无限体的周期温度场，手算衰减与滞后，再用不同周期和背面条件检验测温深度。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="半无限体周期导热 从热穿透深度到测温滞后">
+<meta property="og:url" content="https://eulersail.com/esblog/86473.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="从一维热扩散方程推导半无限体的周期温度场，手算衰减与滞后，再用不同周期和背面条件检验测温深度。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-27T09:20:00.000Z">
+<meta property="article:modified_time" content="2026-11-27T09:20:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="材料模型">
+<meta property="article:tag" content="瞬态传热">
+<meta property="article:tag" content="周期热响应">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/86473.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '半无限体周期导热 从热穿透深度到测温滞后',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-27 17:20:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/knowledge-network.css?v=20261127-1"><link rel="stylesheet" href="/css/learning-lenses.css?v=20261126-1"><link rel="stylesheet" href="/css/site-enhancements.css?v=20261127-2"><link rel="stylesheet" href="/css/home-editorial.css?v=20261127-2"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261119-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">176</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">303</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/network/"><i class="fa-fw fas fa-project-diagram"></i><span> 知识网络</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/network/"><i class="fa-fw fas fa-project-diagram"></i><span> 知识网络</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">半无限体周期导热 从热穿透深度到测温滞后</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-27T09:20:00.000Z" title="发表于 2026-11-27 17:20:00">2026-11-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-27T09:20:00.000Z" title="更新于 2026-11-27 17:20:00">2026-11-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/">化学与材料</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="半无限体周期导热 从热穿透深度到测温滞后" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="materials"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><strong id="reading-overview-title">阅读地图</strong><span>MATERIALS NOTES</span></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>6</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>4</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>2</strong><small>组对照与手算表</small></span></div></div><p>把概念、模型计算与实测证据分开，阅读时留意条件、单位和比较口径。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>6 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#从薄片的储热写到厚度方向的扩散"><span>01</span><strong>从薄片的储热写到厚度方向的扩散</strong></a></li><li><a href="#为什么同一个长度同时管衰减和相位"><span>02</span><strong>为什么同一个长度同时管衰减和相位</strong></a></li><li><a href="#同一块材料，两个深度何时到峰"><span>03</span><strong>同一块材料，两个深度何时到峰</strong></a></li><li><a href="#同样的表面振幅，周期改变会怎样"><span>04</span><strong>同样的表面振幅，周期改变会怎样</strong></a></li><li><a href="#从两支探头反推材料的热扩散率"><span>05</span><strong>从两支探头反推材料的热扩散率</strong></a></li><li><a href="#背面就在附近，结果有多敏感"><span>06</span><strong>背面就在附近，结果有多敏感</strong></a></li></ol></nav></details></section><p data-reading-numbers="true">把温度探头放在同一块材料的表面、<span class="reading-quantity"><span class="reading-number">10</span> cm</span> 处和 <span class="reading-quantity"><span class="reading-number">20</span> cm</span> 处。表面温度每天在平均值上下各摆动 <span class="reading-quantity"><span class="reading-number">8</span> K</span>，两支埋入探头会摆动多少？温度最高时各是几点？只要厚度方向出现了可以辨认的温差，同一块固体里就需要记录多个温度。上一篇<a href="/esblog/86362.html">周期热响应</a>把温度压缩成一个随时间变化的数，这次让它同时依赖深度与时间，从测点之间的差别判断什么时候需要空间模型。</p>
+<span id="more"></span>
+
+<h2 id="从薄片的储热写到厚度方向的扩散"><a href="#从薄片的储热写到厚度方向的扩散" class="headerlink" title="从薄片的储热写到厚度方向的扩散"></a>从薄片的储热写到厚度方向的扩散</h2><p>先把材料想成一块足够宽、均匀且各向同性的平板，坐标 x 从受热表面向里增大。考察的区域远离侧边，表面温度在横向近似一致，因此只保留垂直表面的传热。材料的热导率 k、密度 ρ、比热 c 视为常数，内部无体积热源、无相变，也没有由流体迁移搬运的热量。</p>
+<p>沿单位面积截出厚度 Δx 的薄片。左侧流入的热通量 q(x) 减去右侧流出的 q(x+Δx)，差额就是片内的储热速率。除以厚度并取极限，得到 ρc∂T/∂t=−∂q/∂x。傅里叶定律 q=−k∂T/∂x 给出由热处指向冷处的导热方向。代回能量式可见，温度随时间如何变取决于温度曲线的弯曲程度。若一小段剖面正好是直线，两侧的热通量相等，经过它的热量可以持续存在，而该段此刻没有净储热。</p>
+
+<div class="article-equation"><strong>方程 D1 · 一维热扩散与温度边界</strong><p class="reading-math-inline">∂θ/∂t = α ∂²θ/∂x²，α = k/(ρc)，θ = T−T̄。</p><p class="reading-math-inline">θ(0,t) = A₀ cos(ωt)，θ(x,t) → 0（x → ∞），ω = 2π/P。</p></div>
+
+
+<p>这里 P 是周期，T̄ 是表面温度的周期平均，A₀ 是从均值到峰顶的振幅，峰谷差为 2A₀。热扩散率 α 的单位是 m²/s，和<a href="/esblog/85526.html">Fick 扩散</a>里的浓度扩散系数有同样的量纲。k 决定给定温度梯度上的导热通量，ρc 决定同一体积升温要储多少热，两者的比值才决定温度扰动扩散得多快。即使两块材料有相同的 k，体积热容较大的那块也会有较小的 α。</p>
+<p>边界条件直接指定的是<strong>材料表面温度</strong>。若记录到的是空气温度、加热功率，或灯照强度，需要另外求空气和材料之间的换热，再得到表面温度。本篇讨论周期稳态，即同一深度每过一个周期回到同一条温度曲线。刚开启加热、旧温度分布尚未消退的记录，还须加入依初始状态而定的瞬态项。</p>
+<h2 id="为什么同一个长度同时管衰减和相位"><a href="#为什么同一个长度同时管衰减和相位" class="headerlink" title="为什么同一个长度同时管衰减和相位"></a>为什么同一个长度同时管衰减和相位</h2><p data-reading-numbers="true">表面按一个频率往返变化，线性方程允许我们先求同频响应。令 θ(x,t)=Re[U(x) exp(iωt)]，Re 表示取实部，i²=<span class="reading-number">−1</span>。把时间微分替换成乘 iω，就得到 αU″=iωU。试探沿深度变化的指数 U∝exp(−λx)，于是 λ²=iω/α。复数 <span class="reading-number">1</span>+i 的平方是 2i，取 λ=(<span class="reading-number">1</span>+i)√[ω/(<span class="reading-number">2</span>α)]，其正实部让 exp(−λx) 向深处衰减。另一支会使指数随深度增长，与深处扰动趋零的条件冲突。最后用 U(<span class="reading-number">0</span>)=A₀ 确定系数。</p>
+
+<div class="article-equation"><strong>公式 D2 · 周期稳态的温度场</strong><p class="reading-math-inline">δ = √(2α/ω) = √(αP/π)，θ(x,t) = A₀ exp(−x/δ) cos(ωt−x/δ)。</p><p>振幅 A(x) = A₀ exp(−x/δ)，相位滞后 φ(x) = x/δ，固定深度的峰值时差 Δt = φ/ω。</p></div>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[给定材料表面的温度周期] --&gt; B[写一维热扩散和深处边界]
+ B --&gt; C[分离同频时间项]
+ C --&gt; D[选择沿深度衰减的复根]
+ D --&gt; E[实部给出振幅衰减]
+ D --&gt; F[虚部给出相位滞后]
+  </pre></div>
+
+<p data-reading-numbers="true">把深度分成一个一个 δ 看就很直观。每增加一个 δ，振幅乘 e⁻¹≈<span class="reading-number">0.368</span>，相位多滞后 <span class="reading-number">1</span> 弧度，时间多滞后约 <span class="reading-quantity"><span class="reading-number">0.159</span> 个</span>周期。这里的 δ 专指振幅降到表面约 <span class="reading-quantity"><span class="reading-number">37</span>%</span> 的尺度。它能帮助比较周期、厚度和测点位置。若需要定义“几乎测不到”的深度，应另设可测振幅阈值，再用指数式计算。</p>
+<p data-reading-numbers="true">可以再做一个实数校验。记 z=ωt−x/δ。对 θ 求时间导数得到 −ωA₀ exp(−x/δ)sin z，对 x 求两阶导数得到 −(<span class="reading-number">2</span>/δ²)A₀ exp(−x/δ)sin z。因为 <span class="reading-number">2</span>α/δ²=ω，两项恰好满足 D1。把 x=<span class="reading-number">0</span> 代回去刚好恢复余弦边界，x 越大峰值对应的 ωt 也越大，滞后方向符合模型。</p>
+<h2 id="同一块材料，两个深度何时到峰"><a href="#同一块材料，两个深度何时到峰" class="headerlink" title="同一块材料，两个深度何时到峰"></a>同一块材料，两个深度何时到峰</h2><p data-reading-numbers="true">用一组可手算的教学参数。设 α=<span class="reading-number">5.0</span>×<span class="reading-quantity"><span class="reading-number">10⁻⁷</span> m²/s</span>，表面平均温度 T̄=<span class="reading-quantity"><span class="reading-number">20</span> °C</span>、振幅 A₀=<span class="reading-quantity"><span class="reading-number">8</span> K</span>，周期 P=<span class="reading-quantity"><span class="reading-number">24</span> h</span>=<span class="reading-number">86</span> <span class="reading-quantity"><span class="reading-number">400</span> s</span>。先算 ω≈<span class="reading-number">7.2722</span>×<span class="reading-number">10⁻⁵</span> rad/s，再得到 δ=√(<span class="reading-number">0.0432</span>/π)≈<span class="reading-quantity"><span class="reading-number">0.11726</span> m</span>。把表面最高温度 <span class="reading-quantity"><span class="reading-number">28</span> °C</span> 的时刻记作计时零点。</p>
+<p data-reading-numbers="true">以 x=<span class="reading-quantity"><span class="reading-number">0.10</span> m</span> 为例，无量纲深度 x/δ≈<span class="reading-number">0.85277</span>，振幅为 <span class="reading-number">8</span> exp(<span class="reading-number">−0.85277</span>)≈<span class="reading-quantity"><span class="reading-number">3.410</span> K</span>。因此这一层从 <span class="reading-quantity"><span class="reading-number">16.590</span> °C</span> 摆到 <span class="reading-quantity"><span class="reading-number">23.410</span> °C</span>。该层到达峰顶时，余弦的括号等于 <span class="reading-number">0</span> 或 <span class="reading-number">2</span>π 的整数倍。取同一轮的第一个峰，时差为 <span class="reading-number">0.85277</span>×<span class="reading-number">24</span>/(<span class="reading-number">2</span>π)≈<span class="reading-quantity"><span class="reading-number">3.257</span> h</span>。埋到 <span class="reading-quantity"><span class="reading-number">20</span> cm</span> 时，无量纲深度恰好翻倍，峰值时差也翻倍，振幅则在 <span class="reading-quantity"><span class="reading-number">10</span> cm</span> 的基础上再乘一次 exp(<span class="reading-number">−0.85277</span>)。</p>
+<table>
+<thead>
+<tr>
+<th>深度</th>
+<th>x/δ</th>
+<th>振幅 A(x)</th>
+<th>单点最高温度</th>
+<th>相对表面峰值的延迟</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">0</span> cm</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">8.000</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">28.000</span> °C</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">0</span> h</span></td>
+</tr>
+<tr>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">5</span> cm</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0.426</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">5.223</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">25.223</span> °C</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">1.629</span> h</span></td>
+</tr>
+<tr>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">10</span> cm</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0.853</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">3.410</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">23.410</span> °C</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">3.257</span> h</span></td>
+</tr>
+<tr>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">20</span> cm</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">1.706</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">1.453</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">21.453</span> °C</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">6.515</span> h</span></td>
+</tr>
+<tr>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">30</span> cm</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">2.558</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">0.619</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">20.619</span> °C</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">9.772</span> h</span></td>
+</tr>
+</tbody></table>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas chart-figure-canvas" tabindex="0" role="region" aria-label="不同深度的二十四小时温度曲线，可横向滚动"><img class="no-lazy" src="/images/posts/thermal-depth-timing.svg" width="900" height="360" alt="表面曲线由28摄氏度开始，10厘米深处在约3.26小时达到23.41摄氏度，20厘米深处在约6.51小时达到21.45摄氏度。"></div><figcaption><strong data-reading-numbers="true">表面、<span class="reading-quantity"><span class="reading-number">10</span> cm</span> 与 <span class="reading-quantity"><span class="reading-number">20</span> cm</span> 的日周期曲线</strong><p data-reading-numbers="true">三条曲线共用 <span class="reading-quantity"><span class="reading-number">20</span> °C</span> 的均值。圆点标记各深度在这一周期的峰顶，横轴从表面达到峰值时开始计时。图中数据由公式 D2 计算。</p><a href="/images/posts/thermal-depth-timing.svg">查看原图</a></figcaption></figure>
+
+
+<p data-reading-numbers="true">假设表面在 14:00 到峰，模型给出的 <span class="reading-quantity"><span class="reading-number">10</span> cm</span> 峰约在 17:15，<span class="reading-quantity"><span class="reading-number">20</span> cm</span> 峰约在 20:31。晚间某时刻发现里层比表面暖也完全可能，因为三条曲线处在周期的不同位置。上表的最高温度是分别对各测点的时间取最大。要画同一分钟的空间剖面，应固定 t，将各位置的 x 分别代入 D2。不能把不同时刻的峰值排成同一时刻的剖面，然后据此推断当下的导热方向。</p>
+
+<details class="mechanism-check"><summary>自检 · 深度从 10 cm 增至 20 cm，振幅减半吗？</summary><p data-reading-numbers="true">每多 <span class="reading-quantity"><span class="reading-number">10</span> cm</span> 要乘 exp(<span class="reading-number">−0.10</span>/δ)≈<span class="reading-number">0.426</span>。比如 <span class="reading-quantity"><span class="reading-number">3.410</span> K</span> 再乘 <span class="reading-number">0.426</span> 得约 <span class="reading-quantity"><span class="reading-number">1.453</span> K</span>。半幅需要的深度增量是 δ ln <span class="reading-number">2</span>≈<span class="reading-quantity"><span class="reading-number">8.13</span> cm</span>。</p></details>
+
+
+<h2 id="同样的表面振幅，周期改变会怎样"><a href="#同样的表面振幅，周期改变会怎样" class="headerlink" title="同样的表面振幅，周期改变会怎样"></a>同样的表面振幅，周期改变会怎样</h2><p data-reading-numbers="true">在这个例子中，若希望日周期的振幅不超过 <span class="reading-quantity"><span class="reading-number">1</span> K</span>，应解 <span class="reading-number">8</span> exp(−x/δ)≤<span class="reading-number">1</span>，得到 x≥δ ln <span class="reading-number">8</span>≈<span class="reading-quantity"><span class="reading-number">0.24384</span> m</span>。这个深度允许最高温度在均值之上 <span class="reading-quantity"><span class="reading-number">1</span> K</span>，峰谷差还是 <span class="reading-quantity"><span class="reading-number">2</span> K</span>。如果规格写的是峰谷差不超过 <span class="reading-quantity"><span class="reading-number">1</span> K</span>，应把振幅上限改为 <span class="reading-quantity"><span class="reading-number">0.5</span> K</span>，再算出至少约 <span class="reading-quantity"><span class="reading-number">32.51</span> cm</span>。读规格时先分清给的是振幅、峰峰值还是某一时刻的绝对温度。</p>
+<p data-reading-numbers="true">若同样的表面振幅改为 <span class="reading-quantity"><span class="reading-number">6</span> h</span> 一轮，周期缩短到四分之一，δ 就减半。此时 <span class="reading-quantity"><span class="reading-number">1</span> K</span> 振幅的目标在约 <span class="reading-quantity"><span class="reading-number">12.19</span> cm</span> 已经满足。对固定的 <span class="reading-quantity"><span class="reading-number">10</span> cm</span> 测点，<span class="reading-quantity"><span class="reading-number">6</span> h</span> 激励的相位滞后从 <span class="reading-number">0.853</span> 增至 <span class="reading-number">1.706</span> rad，时差却从 <span class="reading-quantity"><span class="reading-number">3.257</span> h</span> 缩至约 <span class="reading-quantity"><span class="reading-number">1.629</span> h</span>。原因在 Δt=(x/δ)/ω：频率变为四倍，相位只变为两倍。比较两个实验时应同时报告周期，单列滞后角或单列时差容易造成误读。</p>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas chart-figure-canvas" tabindex="0" role="region" aria-label="二十四小时和六小时周期的振幅随深度衰减曲线，可横向滚动"><img class="no-lazy" src="/images/posts/thermal-penetration-depth.svg" width="900" height="360" alt="从表面振幅8 K开始，24小时周期在24.38厘米处降为1 K，6小时周期在12.19厘米处降为1 K。"></div><figcaption><strong>周期缩为四分之一，达到同一振幅阈值的深度减半</strong><p data-reading-numbers="true">两条曲线使用相同热扩散率和表面振幅。圆点是曲线和 <span class="reading-quantity"><span class="reading-number">1</span> K</span> 阈值线的交点，纵轴从零开始。</p><a href="/images/posts/thermal-penetration-depth.svg">查看原图</a></figcaption></figure>
+
+
+<p>真实的表面温度也可能叠加日周期、慢漂移与更快的起伏。只要材料参数与边界模型仍然线性，可以把稳定周期拆成基波和整数倍频的谐波，对每个频率分别用 D2，再把温度扰动相加。第 m 次谐波的穿透深度为 δ/√m，往往先在深处消失，所以内部温度曲线常比表面平滑。慢漂移和启动过程另行建模。对于严格周期的表面温度，这里对每个非零频率算的是绕均值的摆动。计算平均温度场仍要看表面平均条件及实际背面条件。</p>
+<h2 id="从两支探头反推材料的热扩散率"><a href="#从两支探头反推材料的热扩散率" class="headerlink" title="从两支探头反推材料的热扩散率"></a>从两支探头反推材料的热扩散率</h2><p>假设能在 x₁ 和 x₂ 处取得同步测温序列。先让记录包含多个重复周期，在每个通道拟合「均值 + a cos(ωt) + b sin(ωt)」，用 √(a²+b²) 估计振幅、用 atan2(b,a) 估计以同一时钟为参考的相位。这样可利用整段记录，弱化偶发的温度尖点对最高读数的影响。加上相位展开后，深层的滞后取相对浅层的正增量。实际曲线峰顶附近可能较平，直接挑最高那个采样点，时差会随采样步长跳动。</p>
+
+<div class="article-equation"><strong>公式 D3 · 两探头的振幅与相位反算</strong><p class="reading-math-inline">Δx = x₂−x₁，R = ln[A(x₁)/A(x₂)]，Δφ = φ(x₂)−φ(x₁)。</p><p>理想模型下 R = Δφ = Δx/δ，由任一分量求 δ 后，用 α = πδ²/P 换回热扩散率。</p></div>
+
+
+<p data-reading-numbers="true">把前表的 <span class="reading-quantity"><span class="reading-number">10</span> cm</span> 和 <span class="reading-quantity"><span class="reading-number">20</span> cm</span> 当成两支探头，仅取表格的舍入值。用振幅算 ln(<span class="reading-number">3.410/1.453</span>)≈<span class="reading-number">0.853</span>，δ≈<span class="reading-number">0.10/0.853</span>=<span class="reading-quantity"><span class="reading-number">0.117</span> m</span>。再用峰值差 <span class="reading-number">6.515</span><span class="reading-number">−3.257</span>=<span class="reading-quantity"><span class="reading-number">3.258</span> h</span>，得到 Δφ=<span class="reading-number">2</span>π×<span class="reading-number">3.258/24</span>≈<span class="reading-number">0.853</span>，给出几乎相同的 δ。最后把 P=<span class="reading-number">86</span> <span class="reading-quantity"><span class="reading-number">400</span> s</span> 代回，α≈<span class="reading-number">5.0</span>×<span class="reading-quantity"><span class="reading-number">10⁻⁷</span> m²/s</span>。两测点的比值消掉了表面振幅，区别于拿单个深层振幅直接反推材料参数。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart TD
+ A[同步采集两层温度与表面条件] --&gt; B[拟合同一频率的振幅和相位]
+ B --&gt; C[用对数振幅比估计深度尺度]
+ B --&gt; D[用展开后的相位差估计深度尺度]
+ C --&gt; E[比较两条结果]
+ D --&gt; E
+ E --&gt; F[换不同测距或周期交叉验证]
+  </pre></div>
+
+<p data-reading-numbers="true">两条路径互为检查。当振幅估计支持约 <span class="reading-number">0.85</span> rad，而实测相位差远大于它，可以依次检查时钟偏移、探头响应时间、探头间深度误差、材料分层和边界。相位差按 <span class="reading-number">2</span>π 取模，两探头隔得太远时，仅凭两条记录可能无法判断相差几整轮。增加中间测点、缩小相邻间距，再确认相位随深度变化的连续性。远处振幅接近噪声时，记录的相位也会跟着不稳定。做参数辨识时要兼顾足够的相位差和足够的信噪比。</p>
+
+<details class="mechanism-check"><summary>自检 · 两支探头的时钟差 15 分钟，首先影响哪个反算结果？</summary><p data-reading-numbers="true">若记录覆盖完整稳态周期，恒定时钟偏移会在 <span class="reading-quantity"><span class="reading-number">24</span> h</span> 频率上造成约 <span class="reading-number">0.065</span> rad 的相位误差，理想振幅拟合仍给出相同的幅值。对照振幅和相位可以暴露这个偏差，接着应校准时钟再复测。</p></details>
+
+
+<h2 id="背面就在附近，结果有多敏感"><a href="#背面就在附近，结果有多敏感" class="headerlink" title="背面就在附近，结果有多敏感"></a>背面就在附近，结果有多敏感</h2><p data-reading-numbers="true">对于真实平板，半无限体的近似价值取决于厚度 L、穿透深度 δ 和关注位置 x。同一块板对短周期可能足够厚，对长周期却容易感到背面。可以把 x=L 处的绝热背面作为一个可解算的对照。沿深度的两个指数项都保留，并令 U′(L)=<span class="reading-number">0</span>，解得 U(x)/A₀=cosh[λ(L−x)]/cosh(λL)，其中 λ=(<span class="reading-number">1</span>+i)/δ。若背面钉在恒定平均温度，改用 U(L)=<span class="reading-number">0</span>，结果变为 sinh[λ(L−x)]/sinh(λL)。cosh、sinh 分别是两支指数的半和、半差，把它们展开后便可看出背面引入的校正量。</p>
+<p data-reading-numbers="true">把上面两式都除以半无限解 exp(−λx)，得到校正倍率 [<span class="reading-number">1</span>±exp(<span class="reading-number">−2</span>λ(L−x))]/[<span class="reading-number">1</span>±exp(<span class="reading-number">−2</span>λL)]，加号对应绝热，减号对应固定温度。分子里的指数模长 exp[<span class="reading-number">−2</span>(L−x)/δ] 随测点距背面的距离增加而迅速减小。因此 L/δ 大、(L−x)/δ 也大时，半无限解才容易在该点保持小的相对误差。具体应按允许的振幅或相位误差决定，不能只给一个普适厚度阈值。</p>
+<p data-reading-numbers="true">用同一组日周期参数，在 <span class="reading-quantity"><span class="reading-number">18</span> cm</span> 处比较有限板与半无限体。有限板的振幅取复数 U 的模，延迟由相位滞后除以 ω。例子里把测点放得靠近 <span class="reading-quantity"><span class="reading-number">20</span> cm</span> 板的背面，这能把边界影响看得更清楚。</p>
+<table>
+<thead>
+<tr>
+<th>板厚</th>
+<th>18 cm 处的半无限体参考振幅</th>
+<th>背面绝热</th>
+<th>背面固定在均值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">20</span> cm</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">1.724</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">3.003</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">0.679</span> K</span></td>
+</tr>
+<tr>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">50</span> cm</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">1.724</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">1.729</span> K</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">1.718</span> K</span></td>
+</tr>
+</tbody></table>
+
+<details class="mechanism-check"><summary>自检 · 厚度选成 20 cm，背面绝热能用半无限体近似吗？</summary><p data-reading-numbers="true">要看测点和允许误差。对表中的 <span class="reading-quantity"><span class="reading-number">18</span> cm</span> 测点，绝热有限板给出约 <span class="reading-quantity"><span class="reading-number">3.003</span> K</span>，比 <span class="reading-quantity"><span class="reading-number">1.724</span> K</span> 的半无限体值大约 <span class="reading-quantity"><span class="reading-number">74</span>%</span>。若目标是这一测点的峰值，应该选用有限厚度与绝热边界的模型。</p></details>
+
+
+<p>上手前先画清楚热是从哪里来、哪一面能散热、探头实际埋在哪里。若整块材料在所关心的误差内近似均温，可回看<a href="/esblog/85861.html">集总热容</a>，用一个温度简化模型。若只需分辨两个有清晰几何位置的储热区域，例如加热层与壳体，可从<a href="/esblog/86251.html">双节点热网络</a>起步。需要比较连续的厚度温差、受热区域较窄、材料分层或换热条件变化时，就顺着相应的空间与边界条件修正模型，再用第二个周期、第二个测距交叉验证。</p>
+<p><strong>资料</strong>：半无限体稳态式可查 <a target="_blank" rel="noopener" href="https://bpb-us-e1.wpmucdn.com/sites.mit.edu/dist/6/1810/files/2024/04/AHTTv600.pdf">Lienhard《A Heat Transfer Textbook》第六版 §5.6</a>。针对启动过渡的讨论参见 <a target="_blank" rel="noopener" href="https://elib.uni-stuttgart.de/server/api/core/bitstreams/327b90db-88d2-447d-bcd0-d0b6fc95b108/content">Burow 与 Weigand 的传热论文，式 4–6</a>。利用多深度数据追踪振幅和相位的实证例子见 <a target="_blank" rel="noopener" href="https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2002jb002351">Smerdon 等人的土壤温度研究，§3.1</a>。本文两图及全部表格采用合成教学参数。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/86473.html">https://eulersail.com/esblog/86473.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9D%90%E6%96%99%E6%A8%A1%E5%9E%8B/">材料模型</a><a class="post-meta__tags" href="/tags/%E7%9E%AC%E6%80%81%E4%BC%A0%E7%83%AD/">瞬态传热</a><a class="post-meta__tags" href="/tags/%E5%91%A8%E6%9C%9F%E7%83%AD%E5%93%8D%E5%BA%94/">周期热响应</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/66591.html" title="独立两组比例差 从 Wilson 区间到 Newcombe 区间"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">独立两组比例差 从 Wilson 区间到 Newcombe 区间</div></div></a></div><div class="next-post pull-right"><a href="/esblog/86362.html" title="周期热响应 从热容低通到峰值滞后"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">周期热响应 从热容低通到峰值滞后</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/85861.html" title="集总热容 从冷却时间常数到 Biot 数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-01</div><div class="title">集总热容 从冷却时间常数到 Biot 数</div></div></a></div><div><a href="/esblog/86362.html" title="周期热响应 从热容低通到峰值滞后"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-27</div><div class="title">周期热响应 从热容低通到峰值滞后</div></div></a></div><div><a href="/esblog/85526.html" title="Fick 扩散 从浓度梯度到长度与时间尺度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-22</div><div class="title">Fick 扩散 从浓度梯度到长度与时间尺度</div></div></a></div><div><a href="/esblog/85639.html" title="热膨胀 从自由伸长到约束热应力"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-28</div><div class="title">热膨胀 从自由伸长到约束热应力</div></div></a></div><div><a href="/esblog/85750.html" title="稳态导热 从串联热阻到界面温度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-31</div><div class="title">稳态导热 从串联热阻到界面温度</div></div></a></div><div><a href="/esblog/86251.html" title="双节点热网络 从耦合储能到双时间尺度"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-20</div><div class="title">双节点热网络 从耦合储能到双时间尺度</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">176</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">303</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E8%96%84%E7%89%87%E7%9A%84%E5%82%A8%E7%83%AD%E5%86%99%E5%88%B0%E5%8E%9A%E5%BA%A6%E6%96%B9%E5%90%91%E7%9A%84%E6%89%A9%E6%95%A3"><span class="toc-text">从薄片的储热写到厚度方向的扩散</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%90%8C%E4%B8%80%E4%B8%AA%E9%95%BF%E5%BA%A6%E5%90%8C%E6%97%B6%E7%AE%A1%E8%A1%B0%E5%87%8F%E5%92%8C%E7%9B%B8%E4%BD%8D"><span class="toc-text">为什么同一个长度同时管衰减和相位</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E4%B8%80%E5%9D%97%E6%9D%90%E6%96%99%EF%BC%8C%E4%B8%A4%E4%B8%AA%E6%B7%B1%E5%BA%A6%E4%BD%95%E6%97%B6%E5%88%B0%E5%B3%B0"><span class="toc-text">同一块材料，两个深度何时到峰</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%A0%B7%E7%9A%84%E8%A1%A8%E9%9D%A2%E6%8C%AF%E5%B9%85%EF%BC%8C%E5%91%A8%E6%9C%9F%E6%94%B9%E5%8F%98%E4%BC%9A%E6%80%8E%E6%A0%B7"><span class="toc-text">同样的表面振幅，周期改变会怎样</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E4%B8%A4%E6%94%AF%E6%8E%A2%E5%A4%B4%E5%8F%8D%E6%8E%A8%E6%9D%90%E6%96%99%E7%9A%84%E7%83%AD%E6%89%A9%E6%95%A3%E7%8E%87"><span class="toc-text">从两支探头反推材料的热扩散率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E9%9D%A2%E5%B0%B1%E5%9C%A8%E9%99%84%E8%BF%91%EF%BC%8C%E7%BB%93%E6%9E%9C%E6%9C%89%E5%A4%9A%E6%95%8F%E6%84%9F"><span class="toc-text">背面就在附近，结果有多敏感</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66591.html" title="独立两组比例差 从 Wilson 区间到 Newcombe 区间">独立两组比例差 从 Wilson 区间到 Newcombe 区间</a><time datetime="2026-11-27T09:23:00.000Z" title="发表于 2026-11-27 17:23:00">2026-11-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86473.html" title="半无限体周期导热 从热穿透深度到测温滞后">半无限体周期导热 从热穿透深度到测温滞后</a><time datetime="2026-11-27T09:20:00.000Z" title="发表于 2026-11-27 17:20:00">2026-11-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86362.html" title="周期热响应 从热容低通到峰值滞后">周期热响应 从热容低通到峰值滞后</a><time datetime="2026-11-27T07:11:00.000Z" title="发表于 2026-11-27 15:11:00">2026-11-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66480.html" title="Wilson 区间 从零次失败到反演得分检验">Wilson 区间 从零次失败到反演得分检验</a><time datetime="2026-11-27T07:10:00.000Z" title="发表于 2026-11-27 15:10:00">2026-11-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73520.html" title="稀疏注意力 从DSA筛选到遗漏质量误差">稀疏注意力 从DSA筛选到遗漏质量误差</a><time datetime="2026-11-25T02:20:00.000Z" title="发表于 2026-11-25 10:20:00">2026-11-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/knowledge-network.js?v=20261127-2"></script><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

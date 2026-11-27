@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" width="900" height="340" role="img" aria-labelledby="title desc">
+  <title id="title">四组真实比例下的实际覆盖率</title>
+  <desc id="desc">对容量 12 与 18 的独立二项样本枚举。真实比例各为 50% 时 Wald 覆盖约 93.01%，Newcombe 约 93.82%，均低于名义 95%。</desc>
+  <rect width="900" height="340" rx="20" fill="#f8fbfc"/>
+  <g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#172d42">
+    <text x="32" y="39" font-size="25" font-weight="700">名义 95%，实际覆盖会随真实比例改变</text>
+    <circle cx="40" cy="74" r="5.5" fill="#f8fbfc" stroke="#48638f" stroke-width="3"/>
+    <text x="54" y="80" font-size="16">Wald</text>
+    <path d="M140,67l7,7-7,7-7,-7z" fill="#0f6c5e"/>
+    <text x="154" y="80" font-size="16">Newcombe</text>
+    <line x1="275" y1="74" x2="298" y2="74" stroke="#9b4d26" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="306" y="80" font-size="16">名义 95%</text>
+    <text x="32" y="112" fill="#455e71" font-size="15">真实比例 A / B</text>
+    <g font-size="15" fill="#455e71">
+    <line x1="714.00" y1="105" x2="714.00" y2="277" stroke="#9b4d26" stroke-width="2" stroke-dasharray="5 4"/>
+    <line x1="228.00" y1="105" x2="228.00" y2="277" stroke="#d7e0e7"/>
+    <text x="228.00" y="301" text-anchor="middle">50%</text>
+    <line x1="336.00" y1="105" x2="336.00" y2="277" stroke="#d7e0e7"/>
+    <text x="336.00" y="301" text-anchor="middle">60%</text>
+    <line x1="444.00" y1="105" x2="444.00" y2="277" stroke="#d7e0e7"/>
+    <text x="444.00" y="301" text-anchor="middle">70%</text>
+    <line x1="552.00" y1="105" x2="552.00" y2="277" stroke="#d7e0e7"/>
+    <text x="552.00" y="301" text-anchor="middle">80%</text>
+    <line x1="660.00" y1="105" x2="660.00" y2="277" stroke="#d7e0e7"/>
+    <text x="660.00" y="301" text-anchor="middle">90%</text>
+    <line x1="768.00" y1="105" x2="768.00" y2="277" stroke="#d7e0e7"/>
+    <text x="768.00" y="301" text-anchor="middle">100%</text>
+    </g>
+    <text x="32" y="138" font-size="17">5% / 2%</text>
+    <line x1="357.60" y1="138" x2="766.27" y2="126" stroke="#a8bbc5" stroke-width="2"/>
+    <circle cx="357.60" cy="138" r="5.5" fill="#f8fbfc" stroke="#48638f" stroke-width="3"/>
+    <path d="M766.27,119l7,7-7,7-7,-7z" fill="#0f6c5e"/>
+    <text x="32" y="179" font-size="17">10% / 5%</text>
+    <line x1="564.85" y1="179" x2="754.72" y2="167" stroke="#a8bbc5" stroke-width="2"/>
+    <circle cx="564.85" cy="179" r="5.5" fill="#f8fbfc" stroke="#48638f" stroke-width="3"/>
+    <path d="M754.72,160l7,7-7,7-7,-7z" fill="#0f6c5e"/>
+    <text x="32" y="220" font-size="17">40% / 25%</text>
+    <line x1="677.82" y1="220" x2="722.10" y2="208" stroke="#a8bbc5" stroke-width="2"/>
+    <circle cx="677.82" cy="220" r="5.5" fill="#f8fbfc" stroke="#48638f" stroke-width="3"/>
+    <path d="M722.10,201l7,7-7,7-7,-7z" fill="#0f6c5e"/>
+    <text x="32" y="261" font-size="17">50% / 50%</text>
+    <line x1="692.51" y1="261" x2="701.26" y2="249" stroke="#a8bbc5" stroke-width="2"/>
+    <circle cx="692.51" cy="261" r="5.5" fill="#f8fbfc" stroke="#48638f" stroke-width="3"/>
+    <path d="M701.26,242l7,7-7,7-7,-7z" fill="#0f6c5e"/>
+    <text x="32" y="322" fill="#455e71" font-size="15">两组样本量固定为 12 和 18，逐行对照两种方法。</text>
+    <text x="768" y="322" text-anchor="end" fill="#455e71" font-size="15">实际覆盖率</text>
+  </g>
+</svg>
