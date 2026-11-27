@@ -22,6 +22,7 @@
 .kn-edge { fill:none; stroke:var(--kn-line); stroke-width:1px; vector-effect:non-scaling-stroke; opacity:.32; color:var(--kn-line); }
 .kn-edge.kn-bridge { opacity:.12; }
 .kn-edge.kn-active { stroke:#9472cf; opacity:.9; stroke-width:1.8px; }
+.kn-directions { fill:none; stroke:var(--kn-text); stroke-width:1.6px; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; pointer-events:none; }
 .kn-has-selection .kn-edge:not(.kn-active) { opacity:.07; }
 .kn-label-leader { stroke:var(--kn-line); stroke-width:1px; vector-effect:non-scaling-stroke; opacity:0; pointer-events:none; }
 .kn-node rect { fill:var(--kn-card); stroke:var(--kn-line); stroke-width:1.5; }
@@ -49,6 +50,14 @@
 .kn-dim { opacity:.15; }
 .kn-related { padding:16px; border-left:4px solid #9472cf; margin:18px 0; background:var(--kn-card); }
 .kn-related a { display:block; margin:8px 0; text-decoration:underline; }
+.kn-reference-groups { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:12px; }
+.kn-reference-groups section { min-width:0; }
+#knowledge-network .kn-reference-groups h3 { font-size:16px; margin:0 0 6px; }
+#knowledge-network .kn-reference-groups ul { padding:0; margin:0; list-style:none; }
+.kn-reference-groups li { display:flex; align-items:center; justify-content:space-between; gap:10px; border-top:1px solid color-mix(in srgb,var(--kn-line) 45%,transparent); }
+.kn-reference-groups a { min-width:0; overflow-wrap:anywhere; }
+.kn-reference-groups button { flex:none; min-height:44px; padding:4px 9px; border:1px solid var(--kn-line); border-radius:8px; color:var(--kn-text); background:var(--kn-card); cursor:pointer; }
+@media(max-width:680px) { .kn-reference-groups { grid-template-columns:minmax(0,1fr); } }
 .kn-directory { margin:24px 0; padding:16px; border:1px solid var(--kn-line); border-radius:14px; }
 .kn-directory summary { cursor:pointer; padding:10px; font-weight:700; }
 #knowledge-network :is(a,button,input,select,.kn-viewport):focus-visible { outline:3px solid #9472cf; outline-offset:2px; }

@@ -25,12 +25,24 @@
     tools.append(fitButton,depth,hint);viewport.before(tools);
     const legend=document.createElement('div');legend.className='kn-legend';legend.setAttribute('aria-label','分类颜色与筛选');root.querySelector('.kn-controls').after(legend);
     const summary=document.createElement('p');summary.className='kn-summary';related.before(summary);summary.hidden=true;
+    let directionMarks;
+    const articlesById=new Map(data.nodes.map(article=>[article.id,article]));
     function neighborhood(id,hops){const ids=new Set([id]);let frontier=[id];for(let h=0;h<hops;h++){const next=[];for(const e of data.edges){if(frontier.includes(e.from)&&!ids.has(e.to)){ids.add(e.to);next.push(e.to);}if(frontier.includes(e.to)&&!ids.has(e.from)){ids.add(e.from);next.push(e.from);}}frontier=next;}return ids;}
     function fit(){if(!nodes.length)return;cancelAnimationFrame(frame);const xs=nodes.map(n=>n.x),ys=nodes.map(n=>n.y),cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2,r=svg.getBoundingClientRect(),scale=Math.abs(svg.getScreenCTM()?.a||1);kFit=Math.max(.15,Math.min(10,(r.width/scale-140)/(Math.max(...xs)-Math.min(...xs)+40),(r.height/scale-140)/(Math.max(...ys)-Math.min(...ys)+40)));camera={x:600-cx*kFit,y:400-cy*kFit,k:kFit};transform();}
     let kFit=1;
     function saveView(){if(!root.isConnected)return;try{for(const n of nodes)positionCache.set(n.id,{x:n.x,y:n.y});sessionStorage.setItem(stateKey,JSON.stringify({category:select.value,query:search.value,selected,anchorId,depth:depth.value,camera,positions:[...positionCache]}));}catch{}}
     fitButton.addEventListener('click',fit);
-    depth.addEventListener('change',()=>{if(depth.value==='0'){focusIds=null;anchorId=null;render();fit();return;}const id=explorationId||anchorId||selected;if(!id){depth.value='0';status.textContent='请先悬停或聚焦一篇笔记，再选择局部关联。';return;}anchorId=id;focusIds=neighborhood(anchorId,Number(depth.value));select.value='';search.value='';render();highlight(anchorId);fit();});
+    function exploreFrom(id, hops) {
+      anchorId=id;
+      depth.value=String(hops);
+      focusIds=neighborhood(id,hops);
+      select.value='';
+      search.value='';
+      render();
+      highlight(id);
+      fit();
+    }
+    depth.addEventListener('change',()=>{if(depth.value==='0'){focusIds=null;anchorId=null;render();fit();return;}const id=explorationId||anchorId||selected;if(!id){depth.value='0';status.textContent='请先悬停或聚焦一篇笔记，再选择局部关联。';return;}exploreFrom(id,Number(depth.value));});
     root.addEventListener('click',e=>{if(e.target.closest('a[href*="/esblog/"]')&&Date.now()>=suppress)saveView();},true);
     window.addEventListener('pagehide',saveView);document.addEventListener('pjax:send',()=>{if(root.isConnected)saveView();});
     for(const [i,c] of data.categories.entries()){const button=document.createElement('button');button.type='button';button.textContent=c;button.style.setProperty('--legend-color',palette[i]);button.addEventListener('click',()=>{select.value=c;search.value='';focusIds=null;anchorId=null;depth.value='0';render();fit();});legend.append(button);}
@@ -40,9 +52,22 @@
     function paint(){for(const n of nodes){n.element.setAttribute('transform',`translate(${n.x} ${n.y})`);n.element.dataset.x=n.x.toFixed(2);n.element.dataset.y=n.y.toFixed(2);}for(const e of links){e.element.setAttribute('x1',e.a.x);e.element.setAttribute('y1',e.a.y);e.element.setAttribute('x2',e.b.x);e.element.setAttribute('y2',e.b.y);}transform();}
     const textMeasure=document.createElement('canvas').getContext('2d');
     function wrapTitle(title,width,pixels){textMeasure.font=`${pixels}px "Microsoft YaHei",sans-serif`;const lines=[];let line='';for(const ch of title){if(line&&textMeasure.measureText(line+ch).width>width){lines.push(line);line='';}line+=ch;}if(line)lines.push(line);return lines;}
+    function drawDirections(scale) {
+      const arrows=[];
+      if(selected) for(const {from,to,a,b} of links) {
+        if(from!==selected && to!==selected) continue;
+        const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);
+        if(length*scale<32) continue;
+        const x=a.x+dx*.62,y=a.y+dy*.62;
+        const ux=dx/length/scale,uy=dy/length/scale;
+        arrows.push(`M${x-7*ux+4*uy},${y-7*uy-4*ux} L${x},${y} L${x-7*ux-4*uy},${y-7*uy+4*ux}`);
+      }
+      directionMarks.setAttribute('d',arrows.join(' '));
+    }
     function labels(){
       if(!nodes.length)return;
       const occupied=[],r=svg.getBoundingClientRect(),scale=Math.abs(svg.getScreenCTM()?.a||1)*camera.k;if(!r.width||!r.height||!scale)return;
+      drawDirections(scale);
       const matrix=layer.getScreenCTM(),points=nodes.map(n=>{const p=new DOMPoint(n.x,n.y).matrixTransform(matrix);return{id:n.id,x:p.x,y:p.y,r:Math.min(10,4+Math.sqrt(n.degree))*scale};});
       const intersects=(a,b,gap=5)=>a.x<b.x+b.w+gap&&b.x<a.x+a.w+gap&&a.y<b.y+b.h+gap&&b.y<a.y+a.h+gap;
       const ordered=[...nodes].sort((a,b)=>(b.id===selected?10000:0)+(b.element.classList.contains('kn-neighbor')?1000:0)+b.degree-((a.id===selected?10000:0)+(a.element.classList.contains('kn-neighbor')?1000:0)+a.degree));
@@ -87,8 +112,49 @@
       for(const n of nodes){n.element.classList.toggle('kn-dim',!neighbor.has(n.id));n.element.classList.toggle('kn-selected',n.id===id);n.element.classList.toggle('kn-neighbor',n.id!==id&&neighbor.has(n.id));}
       for(const e of links)e.element.classList.toggle('kn-active',e.from===id||e.to===id);
       labels();
-      related.replaceChildren();related.hidden=false;const article=data.nodes.find(n=>n.id===id),title=document.createElement('strong');title.textContent=article.title+' · 关联笔记';related.append(title);
-      const others=data.nodes.filter(n=>n.id!==id&&neighbor.has(n.id));if(!others.length)related.append(document.createTextNode(' 暂无站内关联。'));for(const n of others){const a=document.createElement('a');a.href=n.url;a.textContent=n.title;related.append(a);}
+      renderReferences(id);
+    }
+    function renderReferences(id) {
+      const outgoing=data.edges.filter(edge=>edge.from===id).map(edge=>edge.to);
+      const incoming=data.edges.filter(edge=>edge.to===id).map(edge=>edge.from);
+      const title=document.createElement('strong');
+      title.textContent=articlesById.get(id).title;
+      const groups=document.createElement('div');
+      groups.className='kn-reference-groups';
+      for(const [direction,heading,ids] of [['out','本文引用',outgoing],['in','引用本文',incoming]]) {
+        const group=document.createElement('section');
+        group.dataset.direction=direction;
+        const label=document.createElement('h3');
+        label.textContent=`${heading} · ${ids.length}`;
+        group.append(label);
+        if(!ids.length) {
+          const empty=document.createElement('p');
+          empty.textContent='暂无站内笔记';
+          group.append(empty);
+        }
+        const list=document.createElement('ul');
+        for(const target of ids) {
+          const article=articlesById.get(target);
+          const row=document.createElement('li');
+          const link=document.createElement('a');
+          link.href=article.url;
+          link.textContent=article.title;
+          const explore=document.createElement('button');
+          explore.type='button';
+          explore.textContent='看关联';
+          explore.setAttribute('aria-label',`查看《${article.title}》的关联笔记`);
+          explore.addEventListener('click',()=>{
+            exploreFrom(target,Number(depth.value)||1);
+            viewport.focus();
+          });
+          row.append(link,explore);
+          list.append(row);
+        }
+        if(ids.length) group.append(list);
+        groups.append(group);
+      }
+      related.replaceChildren(title,groups);
+      related.hidden=false;
     }
     function zoom(factor,cx,cy){if(cx===undefined){const n=nodes.find(n=>n.id===selected);if(n){camera.x=600-n.x*camera.k;camera.y=400-n.y*camera.k;}cx=600;cy=400;}const k=Math.max(.15,Math.min(10,camera.k*factor)),ratio=k/camera.k;camera.x=cx-(cx-camera.x)*ratio;camera.y=cy-(cy-camera.y)*ratio;camera.k=k;transform();}
     function local(event){const p=new DOMPoint(event.clientX,event.clientY).matrixTransform(svg.getScreenCTM().inverse());return{x:p.x,y:p.y};}
@@ -103,6 +169,8 @@
       const map=new Map(nodes.map(n=>[n.id,n]));
       links=data.edges.filter(e=>map.has(e.from)&&map.has(e.to)).map(e=>({...e,a:map.get(e.from),b:map.get(e.to),element:el('line',{'class':'kn-edge','data-from':e.from,'data-to':e.to})}));
       for(const e of links){e.element.classList.toggle('kn-bridge',e.a.community!==e.b.community);layer.append(e.element);}
+      directionMarks=el('path',{'class':'kn-directions','aria-hidden':'true'});
+      layer.append(directionMarks);
       for(const n of nodes){const a=el('a',{href:n.url,'aria-label':n.title,'class':'kn-node'+(n.degree>18?' kn-prominent':''),'data-id':n.id,'data-community':n.community,style:'--node-color:'+n.color});n.element=a;
         a.append(el('title',{},n.title));a.append(el('circle',{r:18,'class':'kn-hit'}));a.append(el('circle',{r:Math.min(10,4+Math.sqrt(n.degree)),'class':'kn-dot'}));
         n.leader=el('line',{'class':'kn-label-leader'});a.append(n.leader);const label=n.title;
