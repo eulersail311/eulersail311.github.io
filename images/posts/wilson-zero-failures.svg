@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" role="img" aria-labelledby="title desc">
+  <title id="title">零失败时的 Wilson 区间</title>
+  <desc id="desc">十件、二十件与一百件零失败的双侧区间上端依次为 27.8%、16.1% 和 3.7%。</desc>
+  <rect width="900" height="300" fill="#f6fafc"/>
+  <g fill="#183147" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+    <text x="36" y="39" font-size="25" font-weight="700">零失败时的 Wilson 区间</text>
+    <path d="M140 68V232 M373.33 68V232 M606.67 68V232 M840 68V232" stroke="#c6d5df" fill="none"/>
+    <path d="M140 97H787.7 M140 149H516 M140 201H226.3" stroke="#116b78" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M140 232H840" stroke="#587082"/>
+    <g font-size="18">
+      <text x="36" y="103">10 件</text><text x="36" y="155">20 件</text><text x="36" y="207">100 件</text>
+      <text x="805" y="103">27.8%</text><text x="531" y="155">16.1%</text><text x="242" y="207">3.7%</text>
+    </g>
+    <g font-size="16" text-anchor="middle">
+      <text x="140" y="254">0%</text><text x="373.33" y="254">10%</text><text x="606.67" y="254">20%</text><text x="840" y="254">30%</text>
+      <text x="490" y="282">候选失败率</text>
+    </g>
+  </g>
+</svg>

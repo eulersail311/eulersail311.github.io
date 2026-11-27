@@ -1,0 +1,299 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Wilson 区间 从零次失败到反演得分检验 | Better late than never</title><meta name="author" content="eulersail"><meta name="copyright" content="eulersail"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用零失败案例比较 Wald 与 Wilson 区间，从得分检验推导端点，再用二项分布直算覆盖率。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Wilson 区间 从零次失败到反演得分检验">
+<meta property="og:url" content="https://eulersail.com/esblog/66480.html">
+<meta property="og:site_name" content="Better late than never">
+<meta property="og:description" content="用零失败案例比较 Wald 与 Wilson 区间，从得分检验推导端点，再用二项分布直算覆盖率。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eulersail.com/img/avatar.png">
+<meta property="article:published_time" content="2026-11-27T07:10:00.000Z">
+<meta property="article:modified_time" content="2026-11-27T07:10:00.000Z">
+<meta property="article:author" content="eulersail">
+<meta property="article:tag" content="统计">
+<meta property="article:tag" content="二项比例">
+<meta property="article:tag" content="Wilson区间">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eulersail.com/img/avatar.png"><link rel="shortcut icon" href="/img/logo.png"><link rel="canonical" href="https://eulersail.com/esblog/66480.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Wilson 区间 从零次失败到反演得分检验',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-11-27 15:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/knowledge-network.css?v=20261127-1"><link rel="stylesheet" href="/css/learning-lenses.css?v=20261126-1"><link rel="stylesheet" href="/css/site-enhancements.css?v=20261127-1"><link rel="stylesheet" href="/css/home-editorial.css?v=20261111-1"><link rel="stylesheet" href="/css/ai-engineering.css?v=20261111-1"><link rel="stylesheet" href="/css/category-atlas.css?v=20261119-1"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">174</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">303</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/network/"><i class="fa-fw fas fa-project-diagram"></i><span> 知识网络</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Better late than never"><span class="site-name">Better late than never</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/network/"><i class="fa-fw fas fa-project-diagram"></i><span> 知识网络</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-compass"></i><span> 探索</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-layer-group"></i><span> 专题</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/AI-%E5%B7%A5%E7%A8%8B/"><i class="fa-fw fas fa-brain"></i><span> AI 工程</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"><i class="fa-fw fas fa-chart-line"></i><span> 数据分析</span></a></li><li><a class="site-page child" href="/algorithms/"><i class="fa-fw fas fa-code"></i><span> 算法与竞赛</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机基础</span></a></li><li><a class="site-page child" href="/categories/%E9%9F%B3%E4%B9%90%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-music"></i><span> 音乐随笔</span></a></li><li><a class="site-page child" href="/categories/%E5%86%99%E4%BD%9C%E4%B8%8E%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/"><i class="fa-fw fas fa-project-diagram"></i><span> 写作与知识管理</span></a></li><li><a class="site-page child" href="/categories/%E5%8C%96%E5%AD%A6%E4%B8%8E%E6%9D%90%E6%96%99/"><i class="fa-fw fas fa-flask"></i><span> 化学与材料</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book-open"></i><span> 资源</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/resources/"><i class="fa-fw fas fa-route"></i><span> 阅读路径</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-headphones"></i><span> 音乐实验室</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Wilson 区间 从零次失败到反演得分检验</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-27T07:10:00.000Z" title="发表于 2026-11-27 15:10:00">2026-11-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-27T07:10:00.000Z" title="更新于 2026-11-27 15:10:00">2026-11-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>3分钟</span></span><span class="post-meta-separator" data-statistics-separator hidden>|</span><span class="post-meta-pv-cv" id="" data-flag-title="Wilson 区间 从零次失败到反演得分检验" data-statistics-container hidden><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">页面浏览量:</span><span id="busuanzi_page_pv" data-counter-state="empty" hidden="hidden"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content reading-article" id="article-container" data-reading-layout="20261021" data-reading-tone="data"><section class="reading-overview" data-reading-static="true" aria-labelledby="reading-overview-title"><div class="reading-overview-heading"><span>DATA NOTEBOOK</span><strong id="reading-overview-title">阅读地图</strong></div><div class="reading-overview-metrics"><div class="reading-overview-metric" data-metric-kind="chapters"><i class="fas fa-list-ul" aria-hidden="true"></i><span><strong>4</strong><small>个主要章节</small></span></div><div class="reading-overview-metric" data-metric-kind="figures"><i class="far fa-image" aria-hidden="true"></i><span><strong>2</strong><small>张图片与图示</small></span></div><div class="reading-overview-metric" data-metric-kind="tables"><i class="fas fa-table" aria-hidden="true"></i><span><strong>1</strong><small>组对照与手算表</small></span></div></div><p>先确认变量、单位与假设，再核对手算、图表和解释范围。</p><details class="reading-static-chapters"><summary><strong>章节速览</strong><span>4 节 · 展开选择</span></summary><nav aria-label="本文章节速览"><ol><li><a href="#让每个候选比例接受同一条检验"><span>01</span><strong>让每个候选比例接受同一条检验</strong></a></li><li><a href="#同样零失败，区间上端差多少"><span>02</span><strong>同样零失败，区间上端差多少</strong></a></li><li><a href="#覆盖率可以用二项概率直接核对"><span>03</span><strong>覆盖率可以用二项概率直接核对</strong></a></li><li><a href="#报告前先核对抽样单位"><span>04</span><strong>报告前先核对抽样单位</strong></a></li></ol></nav></details></section><p data-reading-numbers="true">抽检十件零件，十件都通过。样本失败率是 <span class="reading-quantity"><span class="reading-number">0</span>%</span>，但基于样本比例估计标准误的 Wald 区间也给出 [<span class="reading-quantity"><span class="reading-number">0</span>%</span>, <span class="reading-quantity"><span class="reading-number">0</span>%</span>]。同样零失败，抽了十件和抽了一百件显然提供了不同的证据。先看区间怎样反映样本量，再用重复抽样检查它实际能覆盖多少次。</p>
+<span id="more"></span>
+
+<h2 id="让每个候选比例接受同一条检验"><a href="#让每个候选比例接受同一条检验" class="headerlink" title="让每个候选比例接受同一条检验"></a>让每个候选比例接受同一条检验</h2><p data-reading-numbers="true">设 X 为 n 次相互独立、具有相同失败概率 p 的伯努利试验中的失败次数，样本比例 q=X/n。Wald 的标准误是 √[q(<span class="reading-number">1</span>−q)/n]，所以一旦 q 为 <span class="reading-number">0</span> 或 <span class="reading-number">1</span>，区间宽度就变成零。Wilson 使用候选比例 p₀ 对应的方差 p₀(<span class="reading-number">1</span>−p₀)/n，询问观测值与每个候选值的距离是否超过临界值。下面用双侧 <span class="reading-quantity"><span class="reading-number">95</span>%</span> 名义水平，取标准正态临界值 z≈<span class="reading-number">1.96</span>。</p>
+
+<div class="article-equation"><strong>公式 W1 · 得分检验的接受条件</strong><p class="reading-math-inline">n(q−p₀)² ≤ z²p₀(1−p₀)。</p><p data-reading-numbers="true">对 <span class="reading-number">0</span>&lt;p₀&lt;<span class="reading-number">1</span>，这来自标准化得分的绝对值不超过 z。边界 p₀=<span class="reading-number">0</span> 或 <span class="reading-number">1</span> 直接按退化二项分布处理，恰好与此不等式相符。</p></div>
+
+
+<p data-reading-numbers="true">展开得到 (n+z²)p₀²−(<span class="reading-number">2</span>nq+z²)p₀+nq²≤<span class="reading-number">0</span>。二次项系数为正，接受集位于两根之间，根可写成中心 c 加减半宽 h：</p>
+
+<div class="article-equation"><strong>公式 W2 · 中心与半宽</strong><p data-reading-numbers="true">令 a=z²/n，则 c=(q+a/<span class="reading-number">2</span>)/(<span class="reading-number">1</span>+a)，h=z√[q(<span class="reading-number">1</span>−q)/n+z²/(<span class="reading-number">4</span>n²)]/(<span class="reading-number">1</span>+a)。</p><p data-reading-numbers="true">区间为 [c−h, c+h]。中心可视为 q 与 <span class="reading-number">1/2</span> 的加权平均，样本比例仍为 q。</p></div>
+
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden="">  flowchart LR
+ A[固定观测次数与样本量] --&gt; B[逐个检验候选失败率]
+ B --&gt; C[保留得分检验接受的候选值]
+ C --&gt; D[求二次不等式的两个端点]
+  </pre></div>
+
+<h2 id="同样零失败，区间上端差多少"><a href="#同样零失败，区间上端差多少" class="headerlink" title="同样零失败，区间上端差多少"></a>同样零失败，区间上端差多少</h2><p data-reading-numbers="true">当 q=<span class="reading-number">0</span> 时，W1 化成 p₀[(n+z²)p₀−z²]≤<span class="reading-number">0</span>。下端为 <span class="reading-number">0</span>，上端为 z²/(n+z²)。表中使用 z=<span class="reading-number">1.96</span>，百分比四舍五入到一位。</p>
+<table>
+<thead>
+<tr>
+<th>抽检件数</th>
+<th>失败数</th>
+<th>样本失败率</th>
+<th>Wilson 双侧 95% 区间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="reading-numeric-cell"><span class="reading-number">10</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">0</span>%</span></td>
+<td data-reading-numbers="true">[<span class="reading-quantity"><span class="reading-number">0</span>%</span>, <span class="reading-quantity"><span class="reading-number">27.8</span>%</span>]</td>
+</tr>
+<tr>
+<td class="reading-numeric-cell"><span class="reading-number">20</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">0</span>%</span></td>
+<td data-reading-numbers="true">[<span class="reading-quantity"><span class="reading-number">0</span>%</span>, <span class="reading-quantity"><span class="reading-number">16.1</span>%</span>]</td>
+</tr>
+<tr>
+<td class="reading-numeric-cell"><span class="reading-number">100</span></td>
+<td class="reading-numeric-cell"><span class="reading-number">0</span></td>
+<td data-reading-numbers="true"><span class="reading-quantity"><span class="reading-number">0</span>%</span></td>
+<td data-reading-numbers="true">[<span class="reading-quantity"><span class="reading-number">0</span>%</span>, <span class="reading-quantity"><span class="reading-number">3.7</span>%</span>]</td>
+</tr>
+</tbody></table>
+
+<figure class="evidence-figure concept-figure"><div class="concept-figure-canvas chart-figure-canvas" tabindex="0" role="region" aria-label="零次失败时的区间对照，可横向滚动"><img class="no-lazy" src="/images/posts/wilson-zero-failures.svg" width="900" height="300" alt="三组零失败抽检对应的 Wilson 上端依次为 27.8%、16.1%、3.7%"></div><figcaption><strong>零失败的观测相同，样本量改变区间上端</strong><p data-reading-numbers="true">三条线段共用 <span class="reading-number">0</span>–<span class="reading-quantity"><span class="reading-number">30</span>%</span> 横轴，左端均为零。每条线的右端为双侧区间上端。</p><a href="/images/posts/wilson-zero-failures.svg">查看原图</a></figcaption></figure>
+
+
+<h2 id="覆盖率可以用二项概率直接核对"><a href="#覆盖率可以用二项概率直接核对" class="headerlink" title="覆盖率可以用二项概率直接核对"></a>覆盖率可以用二项概率直接核对</h2><p data-reading-numbers="true">假设真实失败率是 <span class="reading-quantity"><span class="reading-number">5</span>%</span>、n=<span class="reading-number">10</span>。把 p₀=<span class="reading-number">0.05</span> 和每种可能的 q=k/<span class="reading-number">10</span> 代入 W1，只有 k=<span class="reading-number">0</span>、<span class="reading-number">1</span> 时区间包含真实比例。因此这组参数下实际覆盖率是 <span class="reading-number">0.95¹⁰</span><span class="reading-number">+10</span>×<span class="reading-number">0.05</span>×<span class="reading-number">0.95⁹</span>≈<span class="reading-quantity"><span class="reading-number">91.39</span>%</span>。换一个真实比例，能覆盖它的计数集合可能改变。<span class="reading-quantity"><span class="reading-number">95</span>%</span> 是构造区间时使用的名义水平，对一次已经算出的区间，应按这个频率学派的重复抽样规则解释。</p>
+
+<details class="mechanism-check"><summary>自检 · 真实失败率为 5% 时，为什么 k=2 已超出接受范围？</summary><p data-reading-numbers="true">左侧为 <span class="reading-number">10</span>×(<span class="reading-number">0.2</span><span class="reading-number">−0.05</span>)²=<span class="reading-number">0.225</span>，右侧约为 <span class="reading-number">0.1825</span>。随着 k 从 <span class="reading-number">2</span> 继续增加，左侧只会更大。</p></details>
+<details class="mechanism-check"><summary>自检 · 二十件全失败时，下端是多少？</summary><p data-reading-numbers="true">交换成功与失败后，区间由 [<span class="reading-number">0</span>, <span class="reading-number">0.1611</span>] 映射到约 [<span class="reading-number">0.8389</span>, <span class="reading-number">1</span>]，也可直接在 W1 中代入 q=<span class="reading-number">1</span>。</p></details>
+
+
+<h2 id="报告前先核对抽样单位"><a href="#报告前先核对抽样单位" class="headerlink" title="报告前先核对抽样单位"></a>报告前先核对抽样单位</h2><p>同批零件共享工艺波动、同一个用户重复出现、停止规则由中途结果决定时，简单的固定 n 独立二项模型需要重新审视。报告应给出失败数、抽检数、抽样单位、区间算法和名义水平。若只需要单侧上界，先明确单侧覆盖目标，再选相应临界值。必须控制二项模型下的最小覆盖率时，可比较 Clopper–Pearson 的精确二项构造，代价通常是更保守的区间。</p>
+<p><a href="/esblog/65694.html">阈值与基准率</a>用比率说明分类指标的分母，<a href="/esblog/64893.html">配对 Bootstrap</a>进一步讨论比较两个模型时如何保留同一抽样单位上的配对。本篇讨论一个二项比例。推导参照 <a target="_blank" rel="noopener" href="https://nvlpubs.nist.gov/nistpubs/TechnicalNotes/NIST.TN.2119.pdf">NIST 技术说明 2119 §2.3、§3.4 和 §4.1</a>，表格和覆盖率为教学算例。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://eulersail.com">eulersail</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://eulersail.com/esblog/66480.html">https://eulersail.com/esblog/66480.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://eulersail.com" target="_blank">Better late than never</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BB%9F%E8%AE%A1/">统计</a><a class="post-meta__tags" href="/tags/%E4%BA%8C%E9%A1%B9%E6%AF%94%E4%BE%8B/">二项比例</a><a class="post-meta__tags" href="/tags/Wilson%E5%8C%BA%E9%97%B4/">Wilson区间</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/esblog/86362.html" title="周期热响应 从热容低通到峰值滞后"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">周期热响应 从热容低通到峰值滞后</div></div></a></div><div class="next-post pull-right"><a href="/esblog/73520.html" title="稀疏注意力 从DSA筛选到遗漏质量误差"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">稀疏注意力 从DSA筛选到遗漏质量误差</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/esblog/66038.html" title="全方差分解 从组内波动到组间均值差异"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-17</div><div class="title">全方差分解 从组内波动到组间均值差异</div></div></a></div><div><a href="/esblog/66149.html" title="分位数合并 从经验分布到分片尾延迟的统计边界"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-17</div><div class="title">分位数合并 从经验分布到分片尾延迟的统计边界</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">eulersail</div><div class="author-info__description">在技术、阅读与声音之间持续建立连接</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">174</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">303</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/eulersail311"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">把零散经验整理成可以再次使用的知识</div></div><div class="card-widget card-reading-paths" id="card-reading-paths"><div class="item-headline"><i class="fas fa-route"></i><span>从这里开始</span></div><div class="item-content"><nav class="sail-path-list" aria-label="专题阅读入口">
+  <a href="/algorithms/">
+    <span class="sail-path-icon"><i class="fas fa-code" aria-hidden="true"></i></span>
+    <span><strong>算法路线</strong><small>按知识依赖逐步练习</small></span>
+  </a>
+  <a href="/music/">
+    <span class="sail-path-icon"><i class="fas fa-headphones" aria-hidden="true"></i></span>
+    <span><strong>音乐实验室</strong><small>从短实验进入完整作品</small></span>
+  </a>
+  <a href="/resources/">
+    <span class="sail-path-icon"><i class="fas fa-compass" aria-hidden="true"></i></span>
+    <span><strong>资源索引</strong><small>按主题找到下一篇文章</small></span>
+  </a>
+</nav>
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A9%E6%AF%8F%E4%B8%AA%E5%80%99%E9%80%89%E6%AF%94%E4%BE%8B%E6%8E%A5%E5%8F%97%E5%90%8C%E4%B8%80%E6%9D%A1%E6%A3%80%E9%AA%8C"><span class="toc-text">让每个候选比例接受同一条检验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%A0%B7%E9%9B%B6%E5%A4%B1%E8%B4%A5%EF%BC%8C%E5%8C%BA%E9%97%B4%E4%B8%8A%E7%AB%AF%E5%B7%AE%E5%A4%9A%E5%B0%91"><span class="toc-text">同样零失败，区间上端差多少</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A6%86%E7%9B%96%E7%8E%87%E5%8F%AF%E4%BB%A5%E7%94%A8%E4%BA%8C%E9%A1%B9%E6%A6%82%E7%8E%87%E7%9B%B4%E6%8E%A5%E6%A0%B8%E5%AF%B9"><span class="toc-text">覆盖率可以用二项概率直接核对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%A5%E5%91%8A%E5%89%8D%E5%85%88%E6%A0%B8%E5%AF%B9%E6%8A%BD%E6%A0%B7%E5%8D%95%E4%BD%8D"><span class="toc-text">报告前先核对抽样单位</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/86362.html" title="周期热响应 从热容低通到峰值滞后">周期热响应 从热容低通到峰值滞后</a><time datetime="2026-11-27T07:11:00.000Z" title="发表于 2026-11-27 15:11:00">2026-11-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/66480.html" title="Wilson 区间 从零次失败到反演得分检验">Wilson 区间 从零次失败到反演得分检验</a><time datetime="2026-11-27T07:10:00.000Z" title="发表于 2026-11-27 15:10:00">2026-11-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73520.html" title="稀疏注意力 从DSA筛选到遗漏质量误差">稀疏注意力 从DSA筛选到遗漏质量误差</a><time datetime="2026-11-25T02:20:00.000Z" title="发表于 2026-11-25 10:20:00">2026-11-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73419.html" title="扩散语言模型 从LLaDA掩码目标到解码预算">扩散语言模型 从LLaDA掩码目标到解码预算</a><time datetime="2026-11-25T02:10:00.000Z" title="发表于 2026-11-25 10:10:00">2026-11-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/esblog/73308.html" title="推理时记忆 从Titans关联写入到遗忘边界">推理时记忆 从Titans关联写入到遗忘边界</a><time datetime="2026-11-25T02:00:00.000Z" title="发表于 2026-11-25 10:00:00">2026-11-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By eulersail</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.19/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  btf.addModeChange('mermaid', runMermaid)
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/knowledge-network.js?v=20261127-1"></script><script src="/js/article-visuals.js"></script><script src="/js/site-components.js?v=20261101-2"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="/js/page-view-counter.js?v=20261015-3"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

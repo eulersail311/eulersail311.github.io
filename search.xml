@@ -4,6 +4,64 @@
   
     
     <entry>
+      <title>周期热响应 从热容低通到峰值滞后</title>
+      <link href="/esblog/86362.html"/>
+      <url>/esblog/86362.html</url>
+      
+        <content type="html"><![CDATA[<p>两台加热器的平均功率和功率振幅完全一样，一台缓慢起伏，另一台快速起伏。连接到相同的物体，哪台会带来更大的温度摆幅？在<a href="/esblog/85861.html">集总热容</a>的基础上，把恒定输入改成周期输入，便能把摆幅和峰值延迟一起算出来。</p><span id="more"></span><h2 id="从能量账本分出平均与摆动"><a href="#从能量账本分出平均与摆动" class="headerlink" title="从能量账本分出平均与摆动"></a>从能量账本分出平均与摆动</h2><p>物体内部近似均温，热容 C（J&#x2F;K）和对环境的热导 G（W&#x2F;K）为正常数，环境温度 T∞ 固定。输入功率为 P̄+A cos(ωt)，其中 P̄≥A≥0；ω&gt;0 是角频率，周期为 2π&#x2F;ω。假设这一温度范围内可用线性散热近似，无相变。令 θ&#x3D;T−T∞，τ&#x3D;C&#x2F;G。</p><div class="article-equation"><strong>方程 T1 · 单节点的受迫能量平衡</strong><p>C dθ/dt + Gθ = P̄ + A cos(ωt)。</p><p>三项量纲均为 W。周期稳态在完整周期内的平均储热速率为零，故平均温升为 P̄/G。</p></div><p>令 x&#x3D;θ−P̄&#x2F;G，得到 τ dx&#x2F;dt+x&#x3D;(A&#x2F;G)cos(ωt)。试探 x&#x3D;u cos(ωt)+v sin(ωt)，比较系数得到 u+(ωτ)v&#x3D;A&#x2F;G、v−(ωτ)u&#x3D;0。于是 u&#x3D;(A&#x2F;G)&#x2F;(1+(ωτ)²)，v&#x3D;(ωτ)u。余弦和正弦可以合成一个滞后的余弦。</p><div class="article-equation"><strong>公式 T2 · 周期振幅和峰值延迟</strong><p>温度振幅 B=(A/G)/√[1+(ωτ)²]，滞后角 φ=arctan(ωτ)，峰值延迟为 φ/ω。</p><p>周期稳态温升为 P̄/G+B cos(ωt−φ)。任意初态还需加上 D exp(−t/τ)，D 由初温确定。</p></div><div class="mermaid-wrap"><pre class="mermaid-src" hidden>  flowchart LR A[按周期拆出平均功率和摆动] --&gt; B[用热阻求平均温升] A --&gt; C[用角频率乘时间常数] C --&gt; D[求温度振幅与滞后角] D --&gt; E[结合初温补上衰减项]  </pre></div><h2 id="用同一个物体比较三种加热节奏"><a href="#用同一个物体比较三种加热节奏" class="headerlink" title="用同一个物体比较三种加热节奏"></a>用同一个物体比较三种加热节奏</h2><p>设 C&#x3D;100 J&#x2F;K、G&#x3D;5 W&#x2F;K、P̄&#x3D;20 W、A&#x3D;10 W，则 τ&#x3D;20 s，平均温升为 4 K，静态换算振幅 A&#x2F;G&#x3D;2 K。表格均为初始指数项消失后的结果。</p><table><thead><tr><th>ωτ</th><th>周期</th><th>温升振幅</th><th>滞后角</th><th>峰值延迟</th></tr></thead><tbody><tr><td>0.1</td><td>1256.64 s</td><td>1.990 K</td><td>5.71°</td><td>19.93 s</td></tr><tr><td>1</td><td>125.66 s</td><td>1.414 K</td><td>45.00°</td><td>15.71 s</td></tr><tr><td>10</td><td>12.57 s</td><td>0.199 K</td><td>84.29°</td><td>2.94 s</td></tr></tbody></table><figure class="evidence-figure concept-figure"><div class="concept-figure-canvas chart-figure-canvas" tabindex="0" role="region" aria-label="周期加热的归一化响应，可横向滚动"><img class="no-lazy" src="/images/posts/thermal-periodic-response.svg" width="900" height="300" alt="归一化输入以相位零为峰，温度在八分之一个周期后达到峰值，振幅约为输入的 0.707 倍"></div><figcaption><strong>当 ωτ=1 时，温度峰落后八分之一个周期</strong><p>虚线是功率摆动除以 A，实线是温升摆动除以 A/G。两条曲线共用无量纲纵轴。</p><a href="/images/posts/thermal-periodic-response.svg">查看原图</a></figcaption></figure><p>频率越高，滞后角越逼近 90°，但一个周期在变短，换算成秒的延迟反而减小。慢速极限中 φ≈ωτ，所以角度趋近零，而延迟趋近 τ；快速极限中 B≈A&#x2F;(ωC)，同样振幅的功率在每段升温时间内留下的温度波动更小。</p><details class="mechanism-check"><summary>自检 · 功率何时到峰，温升何时到峰？</summary><p>ωτ=1 时，功率在 t=0 到峰；在周期稳态，温升第一个峰在 π/(4ω)≈15.71 s。代入 T1，此时储热速率为零，瞬时输入 20+10/√2 W，与散热 5×(4+√2) W 相等。</p></details><details class="mechanism-check"><summary>自检 · 物体从环境温度启动，能直接套周期峰值吗？</summary><p>ωτ=1 时周期解在 t=0 的温升为 5 K，而初温升为 0 K，故 D=−5 K。第一个周期还带着指数项，直接用稳态峰值会跳过这段起始过程。</p></details><h2 id="什么时候换模型"><a href="#什么时候换模型" class="headerlink" title="什么时候换模型"></a>什么时候换模型</h2><p>若快周期只加热表层，先检查内部均温假设；若边界换热随温度显著变化，重新检查 G 是否可视为常数。需要分别预测加热体与外壳温度时，可用<a href="/esblog/86251.html">双节点热网络</a>同时保留两处储能。这里的峰值和振幅来自合成参数，实际器件还需要测得边界工况与热参数。</p><p>热容和热阻建模参照 <a href="https://ocw.mit.edu/courses/6-622-power-electronics-spring-2023/mit6_622_s23_lec162.pdf">MIT OCW 热建模讲义</a>，一阶受迫响应参照 <a href="https://ocw.mit.edu/courses/2-004-systems-modeling-and-control-ii-fall-2007/6a56e07276103d6f3b6c5ed871bb9caa_29.pdf">MIT OCW 正弦输入讲义</a>。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 化学与材料 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 瞬态传热 </tag>
+            
+            <tag> 热容 </tag>
+            
+            <tag> 周期热响应 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Wilson 区间 从零次失败到反演得分检验</title>
+      <link href="/esblog/66480.html"/>
+      <url>/esblog/66480.html</url>
+      
+        <content type="html"><![CDATA[<p>抽检十件零件，十件都通过。样本失败率是 0%，但基于样本比例估计标准误的 Wald 区间也给出 [0%, 0%]。同样零失败，抽了十件和抽了一百件显然提供了不同的证据。先看区间怎样反映样本量，再用重复抽样检查它实际能覆盖多少次。</p><span id="more"></span><h2 id="让每个候选比例接受同一条检验"><a href="#让每个候选比例接受同一条检验" class="headerlink" title="让每个候选比例接受同一条检验"></a>让每个候选比例接受同一条检验</h2><p>设 X 为 n 次相互独立、具有相同失败概率 p 的伯努利试验中的失败次数，样本比例 q&#x3D;X&#x2F;n。Wald 的标准误是 √[q(1−q)&#x2F;n]，所以一旦 q 为 0 或 1，区间宽度就变成零。Wilson 使用候选比例 p₀ 对应的方差 p₀(1−p₀)&#x2F;n，询问观测值与每个候选值的距离是否超过临界值。下面用双侧 95% 名义水平，取标准正态临界值 z≈1.96。</p><div class="article-equation"><strong>公式 W1 · 得分检验的接受条件</strong><p>n(q−p₀)² ≤ z²p₀(1−p₀)。</p><p>对 0&lt;p₀&lt;1，这来自标准化得分的绝对值不超过 z。边界 p₀=0 或 1 直接按退化二项分布处理，恰好与此不等式相符。</p></div><p>展开得到 (n+z²)p₀²−(2nq+z²)p₀+nq²≤0。二次项系数为正，接受集位于两根之间，根可写成中心 c 加减半宽 h：</p><div class="article-equation"><strong>公式 W2 · 中心与半宽</strong><p>令 a=z²/n，则 c=(q+a/2)/(1+a)，h=z√[q(1−q)/n+z²/(4n²)]/(1+a)。</p><p>区间为 [c−h, c+h]。中心可视为 q 与 1/2 的加权平均，样本比例仍为 q。</p></div><div class="mermaid-wrap"><pre class="mermaid-src" hidden>  flowchart LR A[固定观测次数与样本量] --&gt; B[逐个检验候选失败率] B --&gt; C[保留得分检验接受的候选值] C --&gt; D[求二次不等式的两个端点]  </pre></div><h2 id="同样零失败，区间上端差多少"><a href="#同样零失败，区间上端差多少" class="headerlink" title="同样零失败，区间上端差多少"></a>同样零失败，区间上端差多少</h2><p>当 q&#x3D;0 时，W1 化成 p₀[(n+z²)p₀−z²]≤0。下端为 0，上端为 z²&#x2F;(n+z²)。表中使用 z&#x3D;1.96，百分比四舍五入到一位。</p><table><thead><tr><th>抽检件数</th><th>失败数</th><th>样本失败率</th><th>Wilson 双侧 95% 区间</th></tr></thead><tbody><tr><td>10</td><td>0</td><td>0%</td><td>[0%, 27.8%]</td></tr><tr><td>20</td><td>0</td><td>0%</td><td>[0%, 16.1%]</td></tr><tr><td>100</td><td>0</td><td>0%</td><td>[0%, 3.7%]</td></tr></tbody></table><figure class="evidence-figure concept-figure"><div class="concept-figure-canvas chart-figure-canvas" tabindex="0" role="region" aria-label="零次失败时的区间对照，可横向滚动"><img class="no-lazy" src="/images/posts/wilson-zero-failures.svg" width="900" height="300" alt="三组零失败抽检对应的 Wilson 上端依次为 27.8%、16.1%、3.7%"></div><figcaption><strong>零失败的观测相同，样本量改变区间上端</strong><p>三条线段共用 0–30% 横轴，左端均为零。每条线的右端为双侧区间上端。</p><a href="/images/posts/wilson-zero-failures.svg">查看原图</a></figcaption></figure><h2 id="覆盖率可以用二项概率直接核对"><a href="#覆盖率可以用二项概率直接核对" class="headerlink" title="覆盖率可以用二项概率直接核对"></a>覆盖率可以用二项概率直接核对</h2><p>假设真实失败率是 5%、n&#x3D;10。把 p₀&#x3D;0.05 和每种可能的 q&#x3D;k&#x2F;10 代入 W1，只有 k&#x3D;0、1 时区间包含真实比例。因此这组参数下实际覆盖率是 0.95¹⁰+10×0.05×0.95⁹≈91.39%。换一个真实比例，能覆盖它的计数集合可能改变。95% 是构造区间时使用的名义水平，对一次已经算出的区间，应按这个频率学派的重复抽样规则解释。</p><details class="mechanism-check"><summary>自检 · 真实失败率为 5% 时，为什么 k=2 已超出接受范围？</summary><p>左侧为 10×(0.2−0.05)²=0.225，右侧约为 0.1825。随着 k 从 2 继续增加，左侧只会更大。</p></details><details class="mechanism-check"><summary>自检 · 二十件全失败时，下端是多少？</summary><p>交换成功与失败后，区间由 [0, 0.1611] 映射到约 [0.8389, 1]，也可直接在 W1 中代入 q=1。</p></details><h2 id="报告前先核对抽样单位"><a href="#报告前先核对抽样单位" class="headerlink" title="报告前先核对抽样单位"></a>报告前先核对抽样单位</h2><p>同批零件共享工艺波动、同一个用户重复出现、停止规则由中途结果决定时，简单的固定 n 独立二项模型需要重新审视。报告应给出失败数、抽检数、抽样单位、区间算法和名义水平。若只需要单侧上界，先明确单侧覆盖目标，再选相应临界值。必须控制二项模型下的最小覆盖率时，可比较 Clopper–Pearson 的精确二项构造，代价通常是更保守的区间。</p><p><a href="/esblog/65694.html">阈值与基准率</a>用比率说明分类指标的分母，<a href="/esblog/64893.html">配对 Bootstrap</a>进一步讨论比较两个模型时如何保留同一抽样单位上的配对。本篇讨论一个二项比例。推导参照 <a href="https://nvlpubs.nist.gov/nistpubs/TechnicalNotes/NIST.TN.2119.pdf">NIST 技术说明 2119 §2.3、§3.4 和 §4.1</a>，表格和覆盖率为教学算例。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 数据分析 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 统计 </tag>
+            
+            <tag> 二项比例 </tag>
+            
+            <tag> Wilson区间 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>稀疏注意力 从DSA筛选到遗漏质量误差</title>
       <link href="/esblog/73520.html"/>
       <url>/esblog/73520.html</url>

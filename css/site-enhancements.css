@@ -3444,3 +3444,55 @@
     outline-offset: -2px;
   }
 }
+
+@media screen {
+  #post #article-container.reading-article > h2 {
+    padding-block: .56em;
+    border-block-end: 1px solid var(--article-rule);
+  }
+
+  #post #article-container.reading-article:not([data-reading-tone='music']) > h2 {
+    border-inline-start: .18em solid var(--article-accent);
+    border-radius: 0 .45em .45em 0;
+  }
+
+  #post #article-container.reading-article :is(.concept-figure, .evidence-figure) figcaption {
+    padding: .85em 1em;
+    border-block-start: 1px solid var(--article-rule);
+    background: var(--article-soft);
+  }
+
+  #post #article-container.reading-article :is(.concept-figure, .evidence-figure) figcaption > strong {
+    display: block;
+    color: var(--article-accent);
+  }
+
+  #post #article-container.reading-article .chart-figure-canvas img[width='900'] {
+    min-width: 720px;
+  }
+
+  #post #article-container.reading-article .article-equation {
+    border-inline-start: .2em solid var(--article-accent);
+  }
+
+  #post #article-container.reading-article .article-equation > strong:first-child {
+    display: block;
+    padding: .55em 1em;
+    border-block-end: 1px solid var(--article-rule);
+    color: var(--article-accent);
+  }
+
+  #post #article-container.reading-article .article-equation:has(> strong:first-child) > p {
+    margin: 0;
+    padding: .5em 1em;
+  }
+
+  #post #article-container.reading-article table:not(figure.highlight table) tbody > tr:nth-child(even) {
+    background: var(--article-soft);
+  }
+
+  #post #article-container.reading-article table:not(figure.highlight table) tbody > tr:focus-within {
+    outline: 2px solid var(--article-accent);
+    outline-offset: -2px;
+  }
+}
